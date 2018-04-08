@@ -10,6 +10,7 @@ sudo apt-get install -y nodejs
 sudo npm install -g electron --unsafe-perm=true --allow-root
 cd next
 npm install
+npm run build
 sudo npm install -g electron-packager
 npm run package-linux-x64
 </pre>
