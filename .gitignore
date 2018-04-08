@@ -1,0 +1,6 @@
+dist/
+docs/
+next-win32-ia32/
+node_modules/
+resources/
+navcoind.exe
