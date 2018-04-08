@@ -13,3 +13,7 @@ npm install
 sudo npm install -g electron-packager
 npm run package-linux-x64
 </pre>
+
+Notes
+=====
+You should replace "node_modules\bitcoin-core\dist\src\methods.js" file with "https://raw.githubusercontent.com/sakdeniz/next/master/lib/methods.js" after clone.
