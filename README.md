@@ -16,4 +16,7 @@ npm run package-linux-x64
 
 Notes
 =====
-You should replace "node_modules\bitcoin-core\dist\src\methods.js" file with "https://raw.githubusercontent.com/sakdeniz/next/master/lib/methods.js" after clone.
+<ul>
+<li>You should replace "node_modules\bitcoin-core\dist\src\methods.js" file with "https://raw.githubusercontent.com/sakdeniz/next/master/lib/methods.js" after clone.</li>
+<li>You should download latest daemon file for your current OS and copy it to root directory your electron application folder after package.</li>
+</ul>
