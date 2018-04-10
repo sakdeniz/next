@@ -13,8 +13,9 @@ var bshell=false;
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var now = new Date(); 
 var datetime = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
-const rpcuser = crypto.createHash('md5').update(datetime, 'utf8').digest('hex');
-const rpcpassword = crypto.createHash('md5').update(datetime, 'utf8').digest('hex');
+const randomBytes=crypto.randomBytes(256);
+const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 var server = require("./server");
 var parameters = ["-rpcuser=" + rpcuser + " -rpcport=44445 -rpcpassword=" + rpcpassword + " -testnet -server -rpcbind=127.0.0.1 -addnode=46.4.24.136"];
