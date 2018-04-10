@@ -30,7 +30,7 @@
     methods: {
 	listtransactions: function (event)
 	{
-		axios.post(window.hostname+'listtransactions',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'listtransactions',{token:window.token},window.config).then(function(res)
 		{
 			console.log("Transactions");
 			//console.log("Status:" + res.status)

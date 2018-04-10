@@ -34,7 +34,7 @@
     methods: {
 	getnewaddress: function (event)
 	{
-		axios.post(window.hostname+'getnewaddress',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'getnewaddress',{token:window.token},window.config).then(function(res)
 		{
 			//console.log("Status:" + res.status)
 			//console.log("Return:" + res.data)
@@ -46,7 +46,7 @@
     },
 	listtransactions: function (event)
 	{
-		axios.post(window.hostname+'listaddressgroupings',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'listaddressgroupings',{token:window.token},window.config).then(function(res)
 		{
 			console.log("Accounts");
 			var account="";

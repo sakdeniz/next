@@ -169,7 +169,7 @@
 	},
 	getblockchaininfo: function (event)
 	{
-		axios.post(window.hostname+'getblockchaininfo',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'getblockchaininfo',{token:window.token},window.config).then(function(res)
 		{
 			errorhandler(res.data);
 			for (var key in res.data)
@@ -185,7 +185,7 @@
     },
     getinfo: function (event)
 	{
-		axios.post(window.hostname+'getinfo',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'getinfo',{token:window.token},window.config).then(function(res)
 		{
 			//console.log("Status:" + res.status)
 			//console.log("Return:" + res.data)
@@ -211,7 +211,7 @@
     },
 	getstakinginfo: function (event)
 	{
-		axios.post(window.hostname+'getstakinginfo',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'getstakinginfo',{token:window.token},window.config).then(function(res)
 		{
 			//console.log("Status:" + res.status)
 			//console.log("Return:" + res.data)
@@ -230,7 +230,7 @@
     },
 	getstakereport: function (event)
 	{
-		axios.post(window.hostname+'getstakereport',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'getstakereport',{token:window.token},window.config).then(function(res)
 		{
 			for (var key in res.data)
 			{
@@ -245,7 +245,7 @@
     },
 	listtransactions: function (event)
 	{
-		axios.post(window.hostname+'listtransactions',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'listtransactions',{token:window.token},window.config).then(function(res)
 		{
 			var count = Object.keys(res.data).length
 			$("#transaction_count").html(count);

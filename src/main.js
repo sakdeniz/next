@@ -10,8 +10,10 @@ const router = new VueRouter({
   routes,
   linkActiveClass: 'nav-item active'
 })
-//window.hostname='http://navcoin-vue.navcommunity.net:3000/';
+var arr=document.URL.match(/rpcpassword=([0-9A-Za-z]+)/)
+window.token=arr[1];
 window.hostname='http://localhost:3000/';
+window.config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 var vm = new Vue({
   el: '#app',
   data:{},

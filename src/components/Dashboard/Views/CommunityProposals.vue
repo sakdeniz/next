@@ -54,7 +54,7 @@ export default {
     },
 data: function () {
         var array_proposals = []
-		axios.post(window.hostname+'listproposals',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'listproposals',{token:window.token},window.config).then(function(res)
 		{
 			var i=0;
 			console.log("Status:" + res.status)
@@ -125,7 +125,7 @@ data: function () {
 		{
 			//swal(proposal_hash+"\r\n"+vote_type);
 			var config = {headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-			axios.post(window.hostname+'proposalvote',{proposal_hash:proposal_hash,vote_type:vote_type},config).then(function(res)
+			axios.post(window.hostname+'proposalvote',{token:window.token,proposal_hash:proposal_hash,vote_type:vote_type},config).then(function(res)
 			{
 				errorhandler(res.data);
 				console.log("Status:" + res.status);

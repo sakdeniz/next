@@ -69,8 +69,7 @@
 			swal("Error", "Please enter a dead line date", "error");
 			return;
 		}
-		var config = {headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-		axios.post(window.hostname+'validateaddress',{address:$("#navcoinaddress").val()},config).then(function(res)
+		axios.post(window.hostname+'validateaddress',{token:window.token,address:$("#navcoinaddress").val()},window.config).then(function(res)
 		{
 			var isAdressValid=false;
 			/*console.log("Status:" + res.status)
@@ -92,7 +91,7 @@
 				else
 				{
 					var epoch=moment($("#deadline").val()).unix();
-					axios.post(window.hostname+'createproposal',{desc:$("#desc").val(),navcoinaddress:$("#navcoinaddress").val(),amount:$("#amount").val(),deadline:epoch},config).then(function(res)
+					axios.post(window.hostname+'createproposal',{token:window.token,desc:$("#desc").val(),navcoinaddress:$("#navcoinaddress").val(),amount:$("#amount").val(),deadline:epoch},window.config).then(function(res)
 					{
 						var hash="";
 						var strDZeel="";

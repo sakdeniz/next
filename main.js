@@ -1,6 +1,4 @@
 var os = require("os");
-var server = require("./server");
-var parameters = ["-rpcuser=test -rpcport=44445 -rpcpassword=test -testnet -server -rpcbind=127.0.0.1 -addnode=46.4.24.136"];
 var child = require('child_process').execFile;
 var executablePath;
 var daemonPath;
@@ -9,9 +7,18 @@ const axios = require('axios');
 const {app, BrowserWindow} = require('electron');
 const path = require('path');
 const url = require('url');
+const crypto = require('crypto');
 var bshell=false;
 //os.type(); // Linux, Darwin or Window_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
+var now = new Date(); 
+var datetime = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
+const rpcuser = crypto.createHash('md5').update(datetime, 'utf8').digest('hex');
+const rpcpassword = crypto.createHash('md5').update(datetime, 'utf8').digest('hex');
+const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
+var server = require("./server");
+var parameters = ["-rpcuser=" + rpcuser + " -rpcport=44445 -rpcpassword=" + rpcpassword + " -testnet -server -rpcbind=127.0.0.1 -addnode=46.4.24.136"];
+console.log("Daemon Parameters : [" + parameters + "]");
 if (os.platform()=="win32")
 {
 	executablePath="navcoind.exe";
@@ -68,22 +75,19 @@ else
 	});
 }
 let win
+
 function createWindow ()
 {
-	win=new BrowserWindow({width: 1024, height: 800})
+	win=new BrowserWindow({width: 1024, height: 800});
 	//win.setFullScreen(true);
 	win.setMenu(null);
-    win.loadURL(url.format({
-      pathname: path.join(__dirname, 'dist/index.html'),
-      protocol: 'file:',
-      slashes: true
-    }))
+	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}`);
     //win.webContents.openDevTools();
 	win.on('close', function (event) {
 		event.preventDefault();
 		console.log(newProcess);
 		console.log("win.on -> close");
-		axios.post('http://localhost:3000/stop',{data:{d1:'d1'}}).then(function(res)
+		axios.post('http://localhost:3000/stop',{token:rpcpassword},config).then(function(res)
 		{
 			console.log(res.data);
 		}).catch(function(err)

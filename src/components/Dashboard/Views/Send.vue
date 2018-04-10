@@ -44,8 +44,7 @@
 	{
 		//alert($("#to").val());
 		//alert($("#amount").val());
-		var config = {headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-		axios.post(window.hostname+'validateaddress',{address:$("#to").val()},config).then(function(res)
+		axios.post(window.hostname+'validateaddress',{token:window.token,address:$("#to").val()},window.config).then(function(res)
 		{
 			console.log("Send");
 			var isAdressValid=false;
@@ -71,7 +70,7 @@
 				}
 				else
 				{
-					axios.post(window.hostname+'sendtoaddress',{to:$("#to").val(),amount:$("#amount").val(),comment:$("#comment").val(),commentto:$("#commentto").val()},config).then(function(res)
+					axios.post(window.hostname+'sendtoaddress',{token:window.token,to:$("#to").val(),amount:$("#amount").val(),comment:$("#comment").val(),commentto:$("#commentto").val()},window.config).then(function(res)
 					{
 						console.log("Status:" + res.status)
 						console.log("Return:" + res.data)

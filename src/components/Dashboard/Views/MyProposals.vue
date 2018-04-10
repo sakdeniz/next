@@ -53,7 +53,7 @@ data: function () {
 		var nav_address_list = [];
 		var o="";
 		var i=0;
-			axios.post(window.hostname+'listaddressgroupings',{data:{d1:'d1'}}).then(function(res)
+			axios.post(window.hostname+'listaddressgroupings',{token:window.token},window.config).then(function(res)
 			{
 			jsonQ.each(res.data, function (key, value)
 			{
@@ -63,7 +63,7 @@ data: function () {
 					nav_address_list.push({address:item[0]});
 				});
 			});
-			axios.post(window.hostname+'listproposals',{data:{d1:'d1'}}).then(function(res2)
+			axios.post(window.hostname+'listproposals',{token:window.token},window.config).then(function(res2)
 			{
 				jsonQ.each(res2.data, function (key, value)
 				{
@@ -138,8 +138,7 @@ data: function () {
 		proposalvote: function (proposal_hash,vote_type)
 		{
 			//swal(proposal_hash+"\r\n"+vote_type);
-			var config = {headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-			axios.post(window.hostname+'proposalvote',{proposal_hash:proposal_hash,vote_type:vote_type},config).then(function(res)
+			axios.post(window.hostname+'proposalvote',{token:window.token,proposal_hash:proposal_hash,vote_type:vote_type},window.config).then(function(res)
 			{
 				errorhandler(res.data);
 				console.log("Status:" + res.status);

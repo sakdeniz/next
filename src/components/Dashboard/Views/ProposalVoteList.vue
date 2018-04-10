@@ -50,14 +50,14 @@ data: function () {
 		var nav_address_list = [];
 		var o="";
 		var i=0;
-		axios.post(window.hostname+'proposalvotelist',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'proposalvotelist',{token:window.token},window.config).then(function(res)
 		{
 			var hash,voteType,strDZeel,nAmount,nVotesYes,nVotesNo,fState="";
 			var sProposalTitle,Phash,PvoteType,PstrDZeel,PnAmount,PnVotesYes,PnVotesNo,PfState="";
 			console.log("Status:" + res.status)
 			console.log("Return:" + res.data)
 			$("#debug").val(JSON.stringify(res.data));
-			axios.post(window.hostname+'listaddressgroupings',{data:{d1:'d1'}}).then(function(res)
+			axios.post(window.hostname+'listaddressgroupings',{token:window.token},window.config).then(function(res)
 			{
 			jsonQ.each(res.data, function (key, value)
 			{
@@ -161,8 +161,7 @@ data: function () {
 		proposalvote: function (proposal_hash,vote_type)
 		{
 			swal(proposal_hash+"\r\n"+vote_type);
-			var config = {headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-			axios.post(window.hostname+'proposalvote',{proposal_hash:proposal_hash,vote_type:vote_type},config).then(function(res)
+			axios.post(window.hostname+'proposalvote',{token:window.token,proposal_hash:proposal_hash,vote_type:vote_type},window.config).then(function(res)
 			{
 				console.log("Status:" + res.status);
 				console.log("Return:" + res.data);

@@ -31,7 +31,7 @@
     methods: {
 	listtransactions: function (event)
 	{
-		axios.post(window.hostname+'listaddressgroupings',{data:{d1:'d1'}}).then(function(res)
+		axios.post(window.hostname+'listaddressgroupings',{token:window.token},window.config).then(function(res)
 		{
 			console.log("Receive");
 			var account="";
