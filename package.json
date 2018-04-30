@@ -12,10 +12,11 @@
     "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
     "test": "npm run unit",
     "lint": "eslint --ext .js,.vue src test/unit/specs",
-    "package-win32-ia32": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform win32 --arch ia32 --appname next --asar --icon src/assets/next.ico",
-    "package-win32-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform win32 --arch x64 --appname next --asar --icon src/assets/next.ico",
-    "package-macos-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform darwin --arch x64 --appname next --asar",
-    "package-linux-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform linux --arch x64 --appname next --asar"
+    "package-windows-ia32": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform win32 --arch ia32 --appname next --asar --icon src/assets/next.ico",
+    "package-windows-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform win32 --arch x64 --appname next --asar --icon src/assets/next.ico",
+    "package-linux-ia32": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform linux --arch ia32 --appname next --asar",
+    "package-linux-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform linux --arch x64 --appname next --asar",
+    "package-macos-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform darwin --arch x64 --appname next --asar"
   },
   "dependencies": {
     "asar": "^0.14.3",
@@ -33,9 +34,11 @@
     "get-json": "^1.0.0",
     "google-maps": "^3.2.1",
     "http-json-request": "0.0.4",
+    "iniparser": "^1.0.5",
     "jsonq": "^1.1.0",
     "moment": "^2.20.1",
     "net": "^1.0.2",
+    "semantic-ui-vue": "^0.2.8",
     "tls": "0.0.1",
     "v-tooltip": "^2.0.0-rc.1",
     "vue": "^2.5.2",

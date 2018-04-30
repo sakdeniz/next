@@ -10,13 +10,14 @@
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <link href='http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css' rel='stylesheet' type='text/css'>
 <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" rel="stylesheet" type='text/css'></link>
 <link href="static/css/nucleo-icons.css" rel="stylesheet" />
 <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://raw.githubusercontent.com/s-yadav/jsonQ/master/jsonQ.min.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@latest/dist/sweetalert2.all.min.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
@@ -27,6 +28,7 @@
 <script>
 function copy(selector)
 {
+  swal("Success!", "Your wallet address copied to clipboard", "success");
   var $temp = $("<div>");
   $("body").append($temp);
   $temp.attr("contenteditable", true)
@@ -35,6 +37,5 @@ function copy(selector)
    .focus();
   document.execCommand("copy");
   $temp.remove();
-  swal("Success!", "Your wallet address copied to clipboard", "success");
 }
 </script>

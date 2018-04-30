@@ -1,15 +1,22 @@
 <template>
   <div class="content">
   <div class="container-fluid">
+	<!-- !-->
 	<div class="row">
-	<div class="col-md-12">
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/create-proposal"><i class="ion-plus-round"></i>&nbsp;Create Proposal</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/community-proposals"><i class="ion-navicon-round"></i>&nbsp;All Proposals</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/my-proposals"><i class="ion-heart"></i>&nbsp;My Proposals</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/proposal-vote-list"><i class="ion-checkmark-round"></i>&nbsp;Proposal Vote List</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/payment-request-vote-list"><i class="ion-log-out"></i>&nbsp;Payment Request Vote List</router-link>
+	<div class="col-md-12 col-sm-12">
+	<sui-dropdown icon="ion-navicon-round" class="labeled icon large violet" text="Menu" button floating>
+    <sui-dropdown-menu>
+	<router-link to="/admin/create-proposal" tag="sui-dropdown-item"><i class="ion-plus-round"></i>&nbsp;Create Proposal</router-link>
+	<router-link to="/admin/community-proposals" tag="sui-dropdown-item"><i class="ion-grid"></i>&nbsp;All Proposals</router-link>
+	<router-link to="/admin/my-proposals" tag="sui-dropdown-item"><i class="ion-heart"></i>&nbsp;My Proposals</router-link>
+	<router-link to="/admin/proposal-vote-list" tag="sui-dropdown-item"><i class="ion-checkmark-round"></i>&nbsp;Proposal Vote List</router-link>
+	<router-link to="/admin/payment-request-vote-list" tag="sui-dropdown-item"><i class="ion-log-out"></i>&nbsp;Payment Request Vote List</router-link>
+    </sui-dropdown-menu>
+    </sui-dropdown>
+	<br><br>
 	</div>
 	</div>
+	<!-- !-->
 	<h4>Proposal Vote List</h4>
   	<!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
 	<h5>{{proposal_info}}</h5>
@@ -50,14 +57,14 @@ data: function () {
 		var nav_address_list = [];
 		var o="";
 		var i=0;
-		axios.post(window.hostname+'proposalvotelist',{token:window.token},window.config).then(function(res)
+		axios.post(window.hostname+'proposalvotelist',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
 		{
 			var hash,voteType,strDZeel,nAmount,nVotesYes,nVotesNo,fState="";
 			var sProposalTitle,Phash,PvoteType,PstrDZeel,PnAmount,PnVotesYes,PnVotesNo,PfState="";
 			console.log("Status:" + res.status)
 			console.log("Return:" + res.data)
 			$("#debug").val(JSON.stringify(res.data));
-			axios.post(window.hostname+'listaddressgroupings',{token:window.token},window.config).then(function(res)
+			axios.post(window.hostname+'listaddressgroupings',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
 			{
 			jsonQ.each(res.data, function (key, value)
 			{
@@ -161,7 +168,7 @@ data: function () {
 		proposalvote: function (proposal_hash,vote_type)
 		{
 			swal(proposal_hash+"\r\n"+vote_type);
-			axios.post(window.hostname+'proposalvote',{token:window.token,proposal_hash:proposal_hash,vote_type:vote_type},window.config).then(function(res)
+			axios.post(window.hostname+'proposalvote',{token:window.token,rpcport:window.rpcport,proposal_hash:proposal_hash,vote_type:vote_type},window.config).then(function(res)
 			{
 				console.log("Status:" + res.status);
 				console.log("Return:" + res.data);

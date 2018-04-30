@@ -1,22 +1,28 @@
 <template>
   <div class="content">
     <div class="container-fluid">
+	<!-- !-->
 	<div class="row">
-	<div class="col-md-12">
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/create-proposal"><i class="ion-plus-round"></i>&nbsp;Create Proposal</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/community-proposals"><i class="ion-navicon-round"></i>&nbsp;All Proposals</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/my-proposals"><i class="ion-heart"></i>&nbsp;My Proposals</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/proposal-vote-list"><i class="ion-checkmark-round"></i>&nbsp;Proposal Vote List</router-link>
-	<router-link class="btn btn-sm btn-fill btn-info" style="margin-bottom:5px" to="/admin/payment-request-vote-list"><i class="ion-log-out"></i>&nbsp;Payment Request Vote List</router-link>
+	<div class="col-md-12 col-sm-12">
+	<sui-dropdown icon="ion-navicon-round" class="labeled icon large violet" text="Menu" button floating>
+    <sui-dropdown-menu>
+	<router-link to="/admin/create-proposal" tag="sui-dropdown-item"><i class="ion-plus-round"></i>&nbsp;Create Proposal</router-link>
+	<router-link to="/admin/community-proposals" tag="sui-dropdown-item"><i class="ion-grid"></i>&nbsp;All Proposals</router-link>
+	<router-link to="/admin/my-proposals" tag="sui-dropdown-item"><i class="ion-heart"></i>&nbsp;My Proposals</router-link>
+	<router-link to="/admin/proposal-vote-list" tag="sui-dropdown-item"><i class="ion-checkmark-round"></i>&nbsp;Proposal Vote List</router-link>
+	<router-link to="/admin/payment-request-vote-list" tag="sui-dropdown-item"><i class="ion-log-out"></i>&nbsp;Payment Request Vote List</router-link>
+    </sui-dropdown-menu>
+    </sui-dropdown>
+	<br><br>
 	</div>
 	</div>
-	<br>
+	<!-- !-->
 	<div class="row">
 	<div class="col-md-12">
 	<div class="card"><div class="card-header"><h4 class="card-title">Create Proposal</h4></div><div class="card-body">
 	<!--<div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="proposal_title"></textarea></div>!-->
 	<br>Proposal Title : <input type="text" class="form-control" style="width:100%;" id="desc" name="desc"></input>
-	<br>Your Wallet Address : <input type="text" class="form-control" style="width:100%;" id="navcoinaddress" name="navcoinaddress"></input>
+	<br>Payment Address : <button title="Select" class="btn btn-xs btn-fill btn-success" v-on:click="selectAddress" style="margin-bottom:5px;"><i class="ion-arrow-down-b"></i> Select</button><input type="text" class="form-control" style="width:100%;" id="navcoinaddress" name="navcoinaddress"></input>
 	<br>Amount in NAV :<input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
 	<br>Deadline : <input type="date" class="form-control" style="width:100%;" id="deadline" name="deadline"></input>
 	<br><button class='btn btn-fill btn-info' v-on:click='createproposal'><i class="ion-paper-airplane"></i>&nbsp;Create</button>
@@ -49,6 +55,44 @@
 	{
 	},
     methods: {
+	selectAddress: function (event)
+	{
+		var navAddressList = [];
+		axios.post(window.hostname+'listaddressgroupings',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
+		{
+			jsonQ.each(res.data, function (key, value)
+			{
+				jQuery.each(value, function(index, item)
+				{
+				   	navAddressList.push({address:item[0],name:item[0]});
+				});
+			});
+			var options = {};
+			$.map(navAddressList,
+            function(o) {
+                options[o.address] = o.name;
+            });
+			const {value: navaddress} = swal({
+			title: 'Select an address',
+			input: 'select',
+			inputOptions: options,
+			inputPlaceholder: 'Select an address',
+			showCancelButton: true,
+			inputValidator: (value) => {
+			return new Promise((resolve) =>
+			{
+				resolve();
+			})
+			}
+			}).then(formValues =>
+			{
+				if (formValues["value"]) $("#navcoinaddress").val(formValues["value"]);
+			});
+		}).catch(function(err)
+		{
+			console.log(err)
+		})
+	},
 	createproposal: function (event)
 	{
 		//mjtf3avTGA9uHvcGnkWT2KbffprvZstbwt
@@ -69,7 +113,7 @@
 			swal("Error", "Please enter a dead line date", "error");
 			return;
 		}
-		axios.post(window.hostname+'validateaddress',{token:window.token,address:$("#navcoinaddress").val()},window.config).then(function(res)
+		axios.post(window.hostname+'validateaddress',{token:window.token,rpcport:window.rpcport,address:$("#navcoinaddress").val()},window.config).then(function(res)
 		{
 			var isAdressValid=false;
 			/*console.log("Status:" + res.status)
@@ -91,7 +135,7 @@
 				else
 				{
 					var epoch=moment($("#deadline").val()).unix();
-					axios.post(window.hostname+'createproposal',{token:window.token,desc:$("#desc").val(),navcoinaddress:$("#navcoinaddress").val(),amount:$("#amount").val(),deadline:epoch},window.config).then(function(res)
+					axios.post(window.hostname+'createproposal',{token:window.token,rpcport:window.rpcport,desc:$("#desc").val(),navcoinaddress:$("#navcoinaddress").val(),amount:$("#amount").val(),deadline:epoch},window.config).then(function(res)
 					{
 						var hash="";
 						var strDZeel="";

@@ -1,8 +1,11 @@
 <template>
   <div class="content">
-    <div class="container-fluid">Receive<span id='address-count'></span>
+    <div class="row">
+	<div class="container-fluid">Receive
+	<span id='address-count'></span>
 	<!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
 	<div id="address-table"></div>
+	</div>
 	</div>
   </div>
 </template>
@@ -31,7 +34,7 @@
     methods: {
 	listtransactions: function (event)
 	{
-		axios.post(window.hostname+'listaddressgroupings',{token:window.token},window.config).then(function(res)
+		axios.post(window.hostname+'listaddressgroupings',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
 		{
 			console.log("Receive");
 			var account="";

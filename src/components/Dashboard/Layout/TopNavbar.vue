@@ -15,11 +15,11 @@
       </button>
       <div class="collapse navbar-collapse justify-content-end">
         <span style="font-size:24px;color:#bbbbbb;">
-		<a style="color:#bbbbbb;" title="Facebook" target="_blank" href="https://www.facebook.com/navcoin"><i class="ion-social-facebook"></i></a>&nbsp;&nbsp;&nbsp;
-		<a style="color:#bbbbbb;" title="Twitter" target="_blank" href="https://www.twitter.com/navcoin"><i class="ion-social-twitter"></i></a>&nbsp;&nbsp;&nbsp;
+		<a class="external" style="color:#bbbbbb;" title="Facebook" target="_blank" href="https://www.facebook.com/navcoin"><i class="ion-social-facebook"></i></a>&nbsp;&nbsp;&nbsp;
+		<a class="external" style="color:#bbbbbb;" title="Twitter" target="_blank" href="https://www.twitter.com/navcoin"><i class="ion-social-twitter"></i></a>&nbsp;&nbsp;&nbsp;
 		<a style="color:#bbbbbb;" title="Github" target="_blank" href="https://www.github.com/navcoin"><i class="ion-social-github"></i></a>&nbsp;&nbsp;&nbsp;
 		<a style="color:#bbbbbb;" title="Reddit" target="_blank" href="https://www.reddit.com/r/NavCoin/"><i class="ion-social-reddit"></i></a>&nbsp;&nbsp;&nbsp;
-		<a style="color:#bbbbbb;" title="Instagram" target="_blank" href="https://www.instagram.com/navcore"><i class="ion-social-instagram"></i></a>&nbsp;&nbsp;&nbsp;
+		<a class="external" style="color:#bbbbbb;" title="Instagram" target="_blank" href="https://www.instagram.com/navcore"><i class="ion-social-instagram"></i></a>&nbsp;&nbsp;&nbsp;
 		</span>
 		<ul class="nav navbar-nav mr-auto" style="display:none">
           <li class="nav-item">

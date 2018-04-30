@@ -2,17 +2,21 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import App from './App.vue'
 import LightBootstrap from './light-bootstrap-main'
+import SuiVue from 'semantic-ui-vue';
 import routes from './routes/routes'
 var jsonQ=require("jsonq");
-Vue.use(VueRouter)
-Vue.use(LightBootstrap)
+Vue.use(VueRouter);
+Vue.use(LightBootstrap);
+Vue.use(SuiVue);
 const router = new VueRouter({
   routes,
   linkActiveClass: 'nav-item active'
 })
-var arr=document.URL.match(/rpcpassword=([0-9A-Za-z]+)/)
-window.token=arr[1];
 window.hostname='http://localhost:3000/';
+var rpcpassword=document.URL.match(/rpcpassword=([0-9A-Za-z]+)/)
+var rpcport=document.URL.match(/rpcport=([0-9]+)/)
+window.token=rpcpassword[1];
+window.rpcport=rpcport[1];
 window.config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 var vm = new Vue({
   el: '#app',
