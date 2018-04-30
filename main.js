@@ -20,9 +20,17 @@ var bTestnet=true;
 var testnet;
 const appDataPath=app.getPath("appData")+"\\NavCoin4";
 var iniparser=require('iniparser');
-var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
-console.log("Config.testnet:"+conf.testnet);
-if (conf.testnet=="1") bTestnet=true; else bTestnet=false;
+try
+{
+	var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
+	console.log("navcoin.conf file found.");
+	console.log("Config.testnet:"+conf.testnet);
+	if (conf.testnet=="1") bTestnet=true; else bTestnet=false;
+}
+catch (e)
+{
+	console.log("navcoinf.conf file not found.");
+}
 if (bTestnet)
 {
 	rpcport=44445;
