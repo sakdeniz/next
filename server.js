@@ -7,9 +7,9 @@ var qs = require('querystring');
 var server;
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
-const appDataPath=process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences/Navcoin4' : '/var/local/NavCoin4');
-const fileAddressBook=appDataPath+"\\addressbook.dat";
-const fileWalletPassword=appDataPath+"\\walletpass.dat";
+const appDataPath=process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences/Navcoin4/' : '/var/local/NavCoin4/');
+const fileAddressBook=appDataPath+"addressbook.dat";
+const fileWalletPassword=appDataPath+"walletpass.dat";
 
 function sendResponse(res, statusCode, body)
 {
