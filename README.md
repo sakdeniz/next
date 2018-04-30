@@ -31,8 +31,10 @@ git pull
 
 MacOS Code Sign
 ==========================
+<pre>
 https://ademcan.net/blog/2017/06/17/how-to-submit-an-electron-app-to-the-mac-appstore/
 http://developer.apple.com/certificationauthority/AppleWWDRCA.cer
 electron-osx-sign next.app
 codesign --deep --verbose --force --sign "3rd Party Mac Developer Application: XXXXXX XXXXXXXX (XXXXXXXXXX)" next.app
 codesign --verify -vvvv next.app
+</pre>
