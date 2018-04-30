@@ -213,6 +213,7 @@ server = http.createServer(function (req, res)
 });
 console.log("Next NodeJS server started...");
 console.log("Adress book file :"+fileAddressBook);
+console.log("Wallet password file :"+fileWalletPassword);
 process.on('uncaughtException', function(err)
 {
   console.log('Caught exception: ' + err);
