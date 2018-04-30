@@ -17,7 +17,7 @@
     "package-linux-ia32": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform linux --arch ia32 --appname next --asar",
     "package-linux-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform linux --arch x64 --appname next --asar",
     "package-macos-x64": "electron-packager . --electron-version 1.8.2 --overwrite --executable-name next --platform darwin --arch x64 --appname next",
-    "sign-macos-x64": "codesign --deep --verbose --force --sign "Developer ID Application: Seyhan Akdeniz (882SDNXSH8)" next.app"
+    "sign-macos-x64": "codesign --deep --verbose --force --sign 'Developer ID Application: Seyhan Akdeniz (882SDNXSH8)' next-macos-x64/next.app"
   },
   "dependencies": {
     "asar": "^0.14.3",
