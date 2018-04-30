@@ -1,3 +1,4 @@
+
 var os=require("os");
 var child=require('child_process').execFile;
 var executablePath;
@@ -67,7 +68,7 @@ const defaults = {cwd: undefined,env: process.env,shell:bshell,windowsVerbatimAr
 var newProcess;
 if (os.platform()=="linux" || os.platform()=="darwin")
 {
-	daemonPath=process.cwd()+"/navcoind";
+	daemonPath=app.getAppPath()+"/navcoind";
 	console.log("Setting daemon file as executable " + daemonPath);
 	var chmodProcess=child("chmod +x " + daemonPath, null, defaults, function(err, data)
 	{
@@ -127,7 +128,7 @@ function createWindow ()
 		});
 		`);
     });*/
-	win.webContents.openDevTools();
+	//win.webContents.openDevTools();
 	win.on('close', function (event) {
 		event.preventDefault();
 		win.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Please wait...'});`);

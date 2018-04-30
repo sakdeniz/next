@@ -19,6 +19,7 @@ Notes
 =====
 <ul>
 <li>You should replace "node_modules\bitcoin-core\dist\src\methods.js" file with "https://raw.githubusercontent.com/sakdeniz/next/master/lib/methods.js" after clone.</li>
+<li>You should replace "node_modules\bootstrap\dist\css\bootstrap.css" file with "https://raw.githubusercontent.com/sakdeniz/next/master/lib/bootstrap.css" after clone.</li>
 <li>You should download latest daemon file for your current OS and copy it to root directory your electron application folder after package.</li>
 </ul>
 
@@ -36,5 +37,6 @@ https://ademcan.net/blog/2017/06/17/how-to-submit-an-electron-app-to-the-mac-app
 http://developer.apple.com/certificationauthority/AppleWWDRCA.cer
 electron-osx-sign next.app
 codesign --deep --verbose --force --sign "3rd Party Mac Developer Application: XXXXXX XXXXXXXX (XXXXXXXXXX)" next.app
+codesign --deep --verbose --force --sign "Developer ID Application: XXXXXX XXXXXXXX (XXXXXXXXXX)" next.app
 codesign --verify -vvvv next.app
 </pre>
