@@ -1,100 +1,37 @@
 <template>
   <div class="content">
     <div class="container-fluid">Transactions<span id='transaction-count'></span>
-	<!--<div class="row"><div class="col-md-12"><div id="debug"></div></div></div>!-->
-	<div id="transaction-table"></div>
+		<table>
+			<thead>
+				<tr><th>Category</th><th>Address</th><th>Amount</th><th>Confirmations</th><th>Date</th><th>Comment</th><th>To</th></tr>
+			</thead>
+			<tbody v-if="transactions">
+				<tr :key=transaction.id v-for="transaction of transactions">
+					<td>{{transaction.category}}</td><td>{{transaction.address}}</td><td>{{transaction.amount}}</td><td>{{transaction.confirmations}}</td><td>{{formatTime(transaction.timereceived)}}</td><td>{{transaction.comment}}</td><td>to</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
   </div>
 </template>
 <script>
-  import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-  import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
-  import Card from 'src/components/UIComponents/Cards/Card.vue'
-  import LTable from 'src/components/UIComponents/Table.vue'
-  import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
-  import axios from 'axios';
-  import moment from 'moment';
-  
-  export default {
-    components: {
-      Checkbox,
-      Card,
-      LTable,
-      ChartCard,
-      StatsCard
-    },
-	created: function ()
-	{
-		this.listtransactions();
-	},
-    methods: {
-	listtransactions: function (event)
-	{
-		axios.post(window.hostname+'listtransactions',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
-		{
-			console.log("Transactions");
-			//console.log("Status:" + res.status)
-			//console.log("Return:" + res.data)
-			//$("#debug").html("<pre>"+JSON.stringify(res.data,null,'\t')+"</pre>");
-			var count = Object.keys(res.data).length;
-			$("#transaction-count").html(" (" + count +")");
-			var o="";
-			var html="";
-			o=o+"<tr><th>Category</th><th>Address</th><th>Amount</th><th>Confirmations</th><th>Date</th><th>Comment</th><th>To</th></tr>";
-			jsonQ.each(res.data, function (key, value)
-			{
-				//console.log(key + ' : ' + value);
-				o=o+"<tr>";
-				var category="";
-				var address="";
-				var amount="";
-				var confirmations="";
-				var timereceived="";
-				var comment="";
-				var to="";
-				jsonQ.each(value, function (k, v)
-				{
-					if (k=="category")
-					{
-						category=v;
-					}					
-					if (k=="address")
-					{
-						address=v;
-					}
-					if (k=="amount")
-					{
-						amount=v;
-					}
-					if (k=="confirmations")
-					{
-						confirmations=v;
-					}
-					if (k=="timereceived")
-					{
-						timereceived=moment.unix(v).format("MM/DD/YYYY HH:MM:SS");
-					}
-					if (k=="comment")
-					{
-						comment=v;
-					}
-					if (k=="to")
-					{
-						to=v;
-					}
-				});
-				o=o+"<td>" + category + "</td><td>" + address + "</td><td>" + amount + "</td><td>" + confirmations + "</td><td>" + timereceived + "</td><td>" + comment + "</td><td>" + to + "</td>";
-				o=o+"</tr>";
-			});
-			html="<table>"+o
-			html=html+"</table>";
-			$("#transaction-table").html(o);
+import axios from "axios";
+import moment from "moment";
 
-		}).catch(function(err)
-		{
-			console.log(err)
-		})
-    }
+export default {
+	data: function() {
+		return { transactions: [] }
+	},
+  components: {},
+  created: function() {
+		axios.post(window.hostname + "listtransactions", { token: window.token, rpcport: window.rpcport }, window.config)
+    .then(function(response) { this.transactions = response.data })
+    .catch(function(err) { console.log(err) })
   },
+  methods: {
+		formatTime: function(time) {
+			return moment.unix(time).format("MM/DD/YYYY HH:MM:SS")
+		},
   }
+};
 </script>
