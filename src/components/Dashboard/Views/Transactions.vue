@@ -25,8 +25,8 @@ export default {
   components: {},
   created: function() {
 		axios.post(window.hostname + "listtransactions", { token: window.token, rpcport: window.rpcport }, window.config)
-    .then(function(response) { this.transactions = response.data })
-    .catch(function(err) { console.log(err) })
+    .then((response) => { this.transactions = response.data })
+    .catch((err) => { console.log(err) })
   },
   methods: {
 		formatTime: function(time) {
