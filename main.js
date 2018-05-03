@@ -20,6 +20,7 @@ var bTestnet=true;
 var testnet;
 const appDataPath=app.getPath("appData")+"\\NavCoin4";
 var iniparser=require('iniparser');
+var bError=true;
 try
 {
 	var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
@@ -78,20 +79,27 @@ if (os.platform()=="linux" || os.platform()=="darwin")
 {
 	daemonPath=app.getAppPath()+"/navcoind";
 	console.log("Setting daemon file as executable " + daemonPath);
+	var buttons = ['OK', 'Cancel'];
 	var chmodProcess=child("chmod +x " + daemonPath, null, defaults, function(err, data)
 	{
-		console.log(err)
-		console.log(data.toString());
-		newProcess = child(executablePath, parameters, defaults, function(err, data)
+		newProcess=child(executablePath, parameters, defaults, function(err, data)
 		{
-			console.log(err)
-			console.log(data.toString());
+			if (err)
+			{
+				bError=false;
+				console.log(err)
+				dialog.showMessageBox({ type: 'error', buttons: buttons, message: err.message }, function (buttonIndex)
+				{
+					win=null;
+					app.exit();
+				});
+			}
 		});
 		if (newProcess.pid!=undefined) console.log("Daemon started. PID :" + newProcess.pid); else console.log("Daemon start failed.");
 		newProcess.on("exit", function ()
 		{
 			console.log("Daemon stopped.");
-			win.destroy();
+			setTimeout(CloseApp, 1000);
 		});
 	});
 }
@@ -99,19 +107,37 @@ else
 {
 	newProcess=child(executablePath, parameters, defaults, function(err, data)
 	{
-		console.log(err)
-		console.log(data.toString());
+		if (err)
+		{
+			bError=false;
+			console.log(err)
+			dialog.showMessageBox({ type: 'error', buttons: buttons, message: err.message }, function (buttonIndex)
+			{
+				win=null;
+				app.exit();
+			});
+		}
 	});
 	if (newProcess.pid!=undefined) console.log("Daemon started. PID :" + newProcess.pid); else console.log("Daemon start failed.");
     newProcess.on("exit", function ()
 	{
 		console.log("Daemon stopped.");
-		win.destroy();
+		setTimeout(CloseApp, 1000);
 	});
 }
 let win
+
+function CloseApp ()
+{
+	if(bError)
+	{
+		win.destroy();
+	}
+}
+
 function createWindow ()
 {
+	if (!bError) return false;
 	win=new BrowserWindow({width: 1024, height: 800});
 	//win.setFullScreen(true);
 	win.setMenu(null);
@@ -152,8 +178,11 @@ function createWindow ()
 	});
     win.on('closed', () => {
 		console.log("win.on -> closed");
-		win=null;
-		app.exit();
+		if(bError)
+		{
+			win=null;
+			app.exit();
+		}
     })
 }
 app.on('ready', createWindow)
@@ -166,7 +195,7 @@ app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin')
 	{
 		console.log("app.on -> window-all-closed");
-		app.quit();
+		if(bError) app.quit();
     }
 })
 app.on('activate', () => {
