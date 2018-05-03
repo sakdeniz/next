@@ -7,7 +7,7 @@ var qs = require('querystring');
 var server;
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
-const appDataPath=process.env.APPDATA+"\\NavCoin4\\" || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support/Navcoin4/' : '/var/local/NavCoin4/');
+const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support/Navcoin4/' : '/var/local/NavCoin4/');
 const fileAddressBook=appDataPath+"addressbook.dat";
 const fileWalletPassword=appDataPath+"walletpass.dat";
 
@@ -20,7 +20,7 @@ function sendResponse(res, statusCode, body)
 
 function sendError(res, statusCode, body)
 {
-	var obj={"error":body}; 
+	var obj={"error":body};
 	console.log("[ERROR] "+ body);
 	res.writeHead(statusCode);
 	res.write(JSON.stringify(obj))
@@ -40,7 +40,7 @@ server = http.createServer(function (req, res)
 	});
 	req.on('end', function ()
 	{
-		var post=JSON.parse(body);
+		var post= body ? JSON.parse(body) : {}
 		const client = new Client({host:"localhost", port:post.rpcport,username:post.token,password:post.token});
 		client.command("foobar").then((retval) =>
 		{
@@ -219,3 +219,5 @@ process.on('uncaughtException', function(err)
   console.log('Caught exception: ' + err);
 });
 server.listen(argv.p || 3000);
+
+console.log('Server running on port ' + (argv.p || 3000))
