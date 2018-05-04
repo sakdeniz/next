@@ -163,7 +163,8 @@ function createWindow ()
 		`);
     });*/
 	//win.webContents.openDevTools();
-	win.on('close', function (event) {
+	win.on('close', function (event)
+	{
 		event.preventDefault();
 		win.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Please wait...'});`);
 		//console.log(newProcess);

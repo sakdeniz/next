@@ -20,17 +20,12 @@
 	<h4>Payment Request Vote List</h4>
   	<!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
 	<h5>{{proposal_info}}</h5>
-	<table class="table"><tr><th nowrap>Your Vote</th><th nowrap>Request ID</th><th nowrap>Amount</th><th nowrap>Positive Votes</th><th nowrap>Negative Votes</th><th nowrap>Status</th></tr><tr v-for="proposal_vote in array_proposal_votes"><td nowrap><center><i v-bind:class="proposal_vote.voteType"></i></center></td><td nowrap>{{proposal_vote.strDZeel}}</td><td nowrap>{{proposal_vote.nAmount}} NAV</td><td nowrap>{{proposal_vote.nVotesYes}}</td><td nowrap>{{proposal_vote.nVotesNo}}</td><td nowrap style='width:100%'>{{proposal_vote.fState}}</td></tr></table>
+	<table class="ui celled padded table"><tr><th nowrap>Your Vote</th><th nowrap>Request ID</th><th nowrap>Amount</th><th nowrap>Positive Votes</th><th nowrap>Negative Votes</th><th nowrap>Status</th></tr><tr v-for="proposal_vote in array_proposal_votes"><td nowrap><center><i v-bind:class="proposal_vote.voteType"></i></center></td><td nowrap>{{proposal_vote.strDZeel}}</td><td nowrap>{{proposal_vote.nAmount}} NAV</td><td nowrap>{{proposal_vote.nVotesYes}}</td><td nowrap>{{proposal_vote.nVotesNo}}</td><td nowrap style='width:100%'>{{proposal_vote.fState}}</td></tr></table>
 	</div>
   </div>
 </template>
 
 <script>
-  import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-  import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
-  import Card from 'src/components/UIComponents/Cards/Card.vue'
-  import LTable from 'src/components/UIComponents/Table.vue'
-  import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
   import axios from 'axios';
   import moment from 'moment';
   import Vue from 'vue';
@@ -42,14 +37,10 @@
  
 var proposal_info="";
 export default {
-    components: {
-      Checkbox,
-      Card,
-      LTable,
-      ChartCard,
-      StatsCard
+    components:
+	{
     },
-data: function () {
+	data: function () {
 		var array_proposal_votes = [];
 		var array_payment_request_votes = [];
 		var nav_address_list = [];
