@@ -14,10 +14,6 @@
         <i class="ion-archive"></i>
         <p>Receive</p>
       </sidebar-link>
-      <sidebar-link to="/admin/accounts">
-        <i class="ion-filing"></i>
-        <p>Accounts</p>
-      </sidebar-link>
       <sidebar-link to="/admin/transactions">
         <i class="ion-arrow-swap"></i>
         <p>Transactions</p>

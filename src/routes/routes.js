@@ -4,7 +4,6 @@ import Overview from 'src/components/Dashboard/Views/Overview.vue'
 import Send from 'src/components/Dashboard/Views/Send.vue'
 import Receive from 'src/components/Dashboard/Views/Receive.vue'
 import Transactions from 'src/components/Dashboard/Views/Transactions.vue'
-import Accounts from 'src/components/Dashboard/Views/Accounts.vue'
 import Settings from 'src/components/Dashboard/Views/Settings.vue'
 import CommunityProposals from 'src/components/Dashboard/Views/CommunityProposals.vue'
 import MyProposals from 'src/components/Dashboard/Views/MyProposals.vue'
@@ -44,11 +43,6 @@ const routes = [
         path: 'transactions',
         name: 'Transactions',
         component: Transactions
-      },
-      {
-        path: 'accounts',
-        name: 'Accounts',
-        component: Accounts
       },
       {
         path: 'settings',

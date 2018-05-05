@@ -1,64 +1,70 @@
 <template>
   <div class="content">
-    <div class="row">
+	<div class="row"><div class="col-md-12"><button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button></div></div>
+	<br>
+	<div class="row">
 	<div class="container-fluid">Receive
-	<span id='address-count'></span>
-	<!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
-	<div id="address-table"></div>
+	<span>({{total_address}})</span>
+			<table class="ui celled padded table">
+			<thead>
+				<tr><th></th><th>Address</th><th>Balance</th><th>Account</th></tr>
+			</thead>
+			<tbody v-if="addresslist">
+				<tr :key=addresslist.address v-for="item of addresslist">
+					<td><button role="button" title='Copy to clipboard' class='ui icon button' v-on:click='copytoclipboard(item.address)'><i class='ion-android-clipboard'></i></button></td><td><div v-bind:id="item.address">{{item.address}}</div></td><td>{{item.balance}}</td><td style="width:100%">{{item.account}}</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 	</div>
   </div>
 </template>
-
 <script>
-  import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-  import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
-  import Card from 'src/components/UIComponents/Cards/Card.vue'
-  import LTable from 'src/components/UIComponents/Table.vue'
-  import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
   import axios from 'axios';
-  import moment from 'moment';
-
   export default {
-    components: {
-      Checkbox,
-      Card,
-      LTable,
-      ChartCard,
-      StatsCard
+   	data: function()
+	{
+		return {addresslist: [],total_address:0}
+	},
+	components:
+	{
     },
 	created: function ()
 	{
-		this.listtransactions();
+		this.listaddressgroupings();
 	},
     methods: {
-	listtransactions: function (event)
+	getnewaddress: function (event)
 	{
+		axios.post(window.hostname+'getnewaddress',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
+		{
+			swal("Success!", "Address generated\r\n\r\n"+res.data, "success");
+		}).catch(function(err)
+		{
+			console.log(err);
+		})
+    },
+	copytoclipboard: function (selector)
+	{
+		copy(selector);
+	},
+	listaddressgroupings: function (event)
+	{
+		let vm=this;
 		axios.post(window.hostname+'listaddressgroupings',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
 		{
-			console.log("Receive");
 			var account="";
 			var i=0;
-			//console.log("Status:" + res.status)
-			//console.log("Return:" + res.data)
-			//$("#debug").html(JSON.stringify(res.data));
-			var count = Object.keys(res.data).length;
-			var o="";
-			var html="";
-			o=o+"<tr><th></th><th>Address</th><th>Balance</th><th>Account</th></tr>";
 			jsonQ.each(res.data, function (key, value)
 			{
 				jQuery.each(value, function(index, item)
 				{
 					if (item[2]!=undefined) account=item[2]; else account="";
-					o=o+"<tr><td><button class='btn btn-fill btn-success' onclick=\"copy('#i" + item[0] + "')\"><i class='ion-clipboard'></i></button></td><td id='i" + item[0] + "'>" + item[0] + "</td><td>" + item[1] + "</td><td>" + account + "</td></tr>";
+					vm.addresslist.push({address:item[0],balance:item[1],account:account});
 					i++;
 				});
-				$("#address-count").html(" (" + i +")");
+				vm.total_address=i;
 			});
-			html="<table>"+o;
-			html=html+"</table>";
-			$("#address-table").html(o);
 
 		}).catch(function(err)
 		{
