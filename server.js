@@ -4,6 +4,8 @@ var path = require('path');
 var http = require('http');
 var argv = require('minimist')(process.argv.slice(2));
 var qs = require('querystring');
+var axios = require('axios');
+
 var server;
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
@@ -206,6 +208,11 @@ server = http.createServer(function (req, res)
 				if (req.url=="/getstakinginfo")
 				{
 					client.command('getstakinginfo').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/navcommunity-getproposals")
+				{
+					axios.post("http://navcommunity.net/api/getproposals.php", {},{})
+					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 				}
 			}
 		});
