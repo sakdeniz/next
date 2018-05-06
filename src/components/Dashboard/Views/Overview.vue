@@ -1,16 +1,24 @@
 <template>
   <div class="content">
 	<div class="container-fluid">
-	  <div class="row"><div id='div_status' class="col-md-12">
-			<span v-if="errorMessage" class="btn btn-xs btn-fill btn-default" id="status">{{errorMessage}}</span><br><br></div>
-			<div id='div_info' class="col-md-12">
-				<span class="btn btn-xs btn-fill btn-warning" id="version"><i class="ion-code"></i>&nbsp;Version {{info.version}}</span>&nbsp;
-			<span class="btn btn-xs btn-fill btn-success" id="net"><i class='ion-earth'></i>{{info.testnet === true ? 'testnet' : 'mainnet'}}</span>&nbsp;
-			<span class="btn btn-xs btn-fill btn-info" id="blocks"><i class='ion-cube'></i>&nbsp;Block {{info.blocks}}</span>&nbsp;
-			<span class="btn btn-xs btn-fill btn-info"><i class='ion-asterisk'></i>&nbsp;{{blockchainInfo.headers}} </span>&nbsp;
-			<span class="btn btn-xs btn-fill btn-info"><i class='ion-android-checkmark-circle'></i> {{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}</span>&nbsp;
-			<span class="btn btn-xs btn-fill btn-primary"><i class='ion-flash'></i> {{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</span>
-			<br><br></div></div>
+		<div v-if="errorMessage" class="ui tiny button purple" style="margin-bottom:5px"><div class="row"><div class="col-md-12"><i class="asterisk loading icon"></i>&nbsp;{{errorMessage}}</div></div></div>
+		<div class="row" v-else>
+			<div class="col-md-12">
+			<sui-dropdown icon="ion-network" class="labeled icon teal tiny button floating">
+			{{info.testnet === true ? 'Test' : 'Main'}}
+			<sui-dropdown-menu>
+			<sui-dropdown-item icon="ion-home" v-on:click="switchnetwork('mainnet')">Main</sui-dropdown-item>
+			<sui-dropdown-item icon="ion-erlenmeyer-flask" v-on:click="switchnetwork('testnet')">Test</sui-dropdown-item>
+			<sui-dropdown-item icon="ion-wrench" v-on:click="switchnetwork('devet')">Dev</sui-dropdown-item>
+			</sui-dropdown-menu>
+			</sui-dropdown>
+			<button role="button" class="ui icon labeled tiny button blue"><i class="ion-code icon"></i>v{{info.version}}</button>
+			<button role="button" class="ui icon labeled tiny button violet"><i class="ion-cube icon"></i>{{info.blocks}}/{{blockchainInfo.headers}}</button>
+			<button role="button" class="ui icon labeled tiny button purple"><i class="ion-android-checkmark-circle icon"></i>{{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}%</button>
+			<button role="button" class="ui icon labeled tiny button green"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
+			<br><br>
+			</div>
+		</div>
       <div class="row">
         <div class="col-xl-3 col-md-6">
           <stats-card>
@@ -119,6 +127,14 @@ function numberWithCommas(n) {
     (parts[1] ? "." + parts[1] : "")
   );
 }
+function test()
+{
+const updateBtn = document.getElementById('updateBtn')
+
+updateBtn.addEventListener('click', function () {
+  ipc.send('update-notify-value', document.getElementById('notifyVal').value)
+})
+}
 
 export default {
   name: "Overview",
@@ -137,7 +153,6 @@ export default {
     })
   },
   created: function() {
-    this.getCombinedProposals();
     this.resync();
     this.timer = setInterval(this.resync, 5000);
   },
@@ -171,12 +186,22 @@ export default {
       return proposals.filter(item => item.featured === '1')
     },
     resync: function() {
-      this.getTransactions();
-      this.getBlockchainInfo();
-      this.getStakingInfo();
-      this.getStakeReport();
-      this.getInfo();
+		this.getBlockchainInfo();
+		this.getInfo();
+		this.getStakingInfo();
+		this.getStakeReport();
+		this.getTransactions();
+		if (this.blockchainInfo.verificationprogress)
+		{
+			if (parseFloat(this.blockchainInfo.verificationprogress*100).toFixed(0)=="100") this.getCombinedProposals();
+		}
+		
     },
+    switchnetwork: function(network)
+	{
+		swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Changing network to ' + network + ' ...'});
+		console.log(network);
+	},
     proposalvote: function(proposal_hash, vote_type) {
       var config = {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },

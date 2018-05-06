@@ -14,11 +14,20 @@ Vue.use(VueRouter);
 Vue.use(LightBootstrap);
 Vue.use(SuiVue);
 
-const router = new VueRouter({
 const router=new VueRouter({
   routes,
   linkActiveClass: 'nav-item active'
 })
+
+window.hostname='http://localhost:3000/';
+var rpcpassword=document.URL.match(/rpcpassword=([0-9A-Za-z]+)/)
+var rpcport=document.URL.match(/rpcport=([0-9]+)/)
+if (rpcpassword && rpcport)
+{
+	window.token=rpcpassword[1];
+	window.rpcport=rpcport[1];
+	window.config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
+}
 
 new Vue({
   el: '#app',

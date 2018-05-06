@@ -7,7 +7,6 @@
 	</div>
 	<div class="col-md-12">
 	<div class="card"><div class="card-header"><h4 class="card-title">Send</h4></div><div class="card-body">
-	<!--<div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div><br>!-->
 	Send to this address : <input type="text" class="form-control" style="width:100%;" id="to" name="to"></input>
 	<br>Amount (NAV) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
 	<br>Comment (Optional) : <input type="text" class="form-control" style="width:100%;" id="comment" name="comment"></input><small>A comment used to store what the transaction is for. This is not part of the transaction, just kept in your wallet.</small>
@@ -33,14 +32,8 @@
 </template>
 
 <script>
-  import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-  import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
-  import Card from 'src/components/UIComponents/Cards/Card.vue'
-  import LTable from 'src/components/UIComponents/Table.vue'
-  import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
   import axios from 'axios';
   import moment from 'moment';
-
 function isOkPass(p)
 {
     var anUpperCase = /[A-Z]/;
@@ -79,12 +72,8 @@ function isOkPass(p)
     return obj;
 }
   export default {
-    components: {
-      Checkbox,
-      Card,
-      LTable,
-      ChartCard,
-      StatsCard
+    components:
+	{
     },
 	data: function () {
 		var i=0;

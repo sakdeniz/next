@@ -26,11 +26,7 @@
 </template>
 
 <script>
-  import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-  import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
   import Card from 'src/components/UIComponents/Cards/Card.vue'
-  import LTable from 'src/components/UIComponents/Table.vue'
-  import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
   import axios from 'axios';
   import moment from 'moment';
   import Vue from 'vue';
@@ -54,11 +50,7 @@
 	var proposal_info="";
 export default {
     components: {
-      Checkbox,
       Card,
-      LTable,
-      ChartCard,
-      StatsCard
     },
 data: function () {
 		var array_proposals = [];
@@ -158,25 +150,6 @@ data: function () {
 			});
 			return {array_proposals,proposal_info}
     },
-	created: function ()
-	{
-	},
-	updated: function ()
-	{
-	console.log("updated");
-	},
-	beforeCreate: function ()
-	{
-	console.log("beforecreate");
-	},
-	beforeCreate: function ()
-	{
-	console.log("beforecreate");
-	},
-	activated: function ()
-	{
-	console.log("activated");
-	},
     methods:
 	{
 		proposalvote: function (proposal_hash,vote_type)

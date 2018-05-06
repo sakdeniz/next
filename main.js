@@ -1,4 +1,3 @@
-
 var os=require("os");
 var child=require('child_process').execFile;
 var executablePath;
@@ -16,22 +15,22 @@ var breindexchainstate=false;
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var rpcport;
-var bTestnet=true;
 var testnet;
+var addnode;
+var reindexchainstate;
+var bTestnet=true;
 const appDataPath=app.getPath("appData")+"\\NavCoin4";
+const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 var iniparser=require('iniparser');
 var bError=true;
-try
-{
-	var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
-	console.log("navcoin.conf file found.");
-	console.log("Config.testnet:"+conf.testnet);
-	if (conf.testnet=="1") bTestnet=true; else bTestnet=false;
-}
-catch (e)
-{
-	console.log("navcoinf.conf file not found.");
-}
+const defaults = {cwd: undefined,env: process.env,shell:bshell,windowsVerbatimArguments:true};
+var newProcess;
+var bExit=true;
+let win;
+const randomBytes=crypto.randomBytes(256);
+const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+var server=require("./server");
 if (bTestnet)
 {
 	rpcport=44445;
@@ -44,43 +43,112 @@ else
 	testnet="";
 	addnode="";
 }
-if (breindexchainstate) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
-const randomBytes=crypto.randomBytes(256);
-const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
-const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
-const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-var server=require("./server");
-var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindexchainstate + " -server -rpcbind=127.0.0.1"+addnode];
-console.log("Daemon Parameters : [" + parameters + "]");
-if (os.platform()=="win32")
+StartDaemon();
+newProcess.on("exit", function ()
 {
-	executablePath="navcoind.exe";
-	bshell=false;
+	console.log("Daemon stopped.");
+	setTimeout(CloseApp, 1000);
+});
+
+function RestartDaemon(network)
+{
+	bExit=false;
+	console.log("Restart Daemon:"+network);
+	axios.post('http://localhost:3000/stop',{token:rpcpassword,rpcport:rpcport},config).then(function(res)
+	{
+		console.log(res.data);
+		if (network=="testnet")
+		{
+			rpcport=44445;
+			testnet=" -testnet";
+			addnode=" -addnode=46.4.24.136";
+		}
+		if (network=="mainnet")
+		{
+			rpcport=44444;
+			testnet="";
+			addnode="";
+		}
+	}).catch(function(err)
+	{
+		console.log(err);
+	})
 }
-if (os.platform()=="linux")
+
+function StartDaemon ()
 {
-	executablePath="./navcoind";
-	bshell=true;
-}
-if (os.platform()=="darwin")
-{
-	executablePath=app.getAppPath()+"/./navcoind";
-	bshell=true;
-}
-console.log("App Path : "+app.getAppPath());
-console.log("App Data Path : "+appDataPath);
-console.log("Shell : "+bshell);
-console.log("Platform : "+os.platform());
-console.log("Testnet : "+bTestnet);
-console.log("RPC Port : "+rpcport);
-const defaults = {cwd: undefined,env: process.env,shell:bshell,windowsVerbatimArguments:true};
-var newProcess;
-if (os.platform()=="linux" || os.platform()=="darwin")
-{
-	daemonPath=app.getAppPath()+"/navcoind";
-	console.log("Setting daemon file as executable " + daemonPath);
-	var buttons = ['OK', 'Cancel'];
-	var chmodProcess=child("chmod +x " + daemonPath, null, defaults, function(err, data)
+	try
+	{
+		var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
+		console.log("navcoin.conf file found.");
+		console.log("Config.testnet:"+conf.testnet);
+		if (conf.testnet=="1") bTestnet=true; else bTestnet=false;
+	}
+	catch (e)
+	{
+		console.log("navcoinf.conf file not found.");
+	}
+	if (breindexchainstate) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindexchainstate + " -server -rpcbind=127.0.0.1"+addnode];
+	console.log("Daemon Parameters : [" + parameters + "]");
+	if (os.platform()=="win32")
+	{
+		executablePath="navcoind.exe";
+		bshell=false;
+	}
+	if (os.platform()=="linux")
+	{
+		executablePath="./navcoind";
+		bshell=true;
+	}
+	if (os.platform()=="darwin")
+	{
+		executablePath=app.getAppPath()+"/./navcoind";
+		bshell=true;
+	}
+	console.log("App Path : "+app.getAppPath());
+	console.log("App Data Path : "+appDataPath);
+	console.log("Shell : "+bshell);
+	console.log("Platform : "+os.platform());
+	console.log("Testnet : "+bTestnet);
+	console.log("RPC Port : "+rpcport);
+
+	if (os.platform()=="linux" || os.platform()=="darwin")
+	{
+		daemonPath=app.getAppPath()+"/navcoind";
+		console.log("Setting daemon file as executable " + daemonPath);
+		var buttons = ['OK', 'Cancel'];
+		var chmodProcess=child("chmod +x " + daemonPath, null, defaults, function(err, data)
+		{
+			newProcess=child(executablePath, parameters, defaults, function(err, data)
+			{
+				if (err)
+				{
+					bError=false;
+					console.log(err)
+					dialog.showMessageBox({ type: 'error', buttons: buttons, message: err.message }, function (buttonIndex)
+					{
+						win=null;
+						app.exit();
+					});
+				}
+			});
+			if (newProcess.pid!=undefined)
+			{
+				if (bExit==false)
+				{
+					win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);
+				}
+				bExit=true;
+				console.log("Daemon started. PID :" + newProcess.pid);
+			}
+			else
+			{
+				console.log("Daemon start failed.");
+			}
+		});
+	}
+	else
 	{
 		newProcess=child(executablePath, parameters, defaults, function(err, data)
 		{
@@ -95,50 +163,43 @@ if (os.platform()=="linux" || os.platform()=="darwin")
 				});
 			}
 		});
-		if (newProcess.pid!=undefined) console.log("Daemon started. PID :" + newProcess.pid); else console.log("Daemon start failed.");
+		if (newProcess.pid!=undefined)
+		{
+			if (bExit==false)
+			{
+				win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);
+			}
+			bExit=true;
+			console.log("Daemon started. PID :" + newProcess.pid);
+		}
+		else
+		{
+			console.log("Daemon start failed.");
+		}
+	}
+}
+
+function CloseApp ()
+{
+	if(bError && bExit)
+	{
+		win.destroy();
+	}
+	else
+	{
+		StartDaemon();
 		newProcess.on("exit", function ()
 		{
 			console.log("Daemon stopped.");
 			setTimeout(CloseApp, 1000);
 		});
-	});
-}
-else
-{
-	newProcess=child(executablePath, parameters, defaults, function(err, data)
-	{
-		if (err)
-		{
-			bError=false;
-			console.log(err)
-			dialog.showMessageBox({ type: 'error', buttons: buttons, message: err.message }, function (buttonIndex)
-			{
-				win=null;
-				app.exit();
-			});
-		}
-	});
-	if (newProcess.pid!=undefined) console.log("Daemon started. PID :" + newProcess.pid); else console.log("Daemon start failed.");
-    newProcess.on("exit", function ()
-	{
-		console.log("Daemon stopped.");
-		setTimeout(CloseApp, 1000);
-	});
-}
-let win
-
-function CloseApp ()
-{
-	if(bError)
-	{
-		win.destroy();
 	}
 }
 
 function createWindow ()
 {
 	if (!bError) return false;
-	win=new BrowserWindow({width: 1024, height: 800});
+	win=new BrowserWindow({width: 1080, height: 800});
 	//win.setFullScreen(true);
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);
@@ -162,12 +223,16 @@ function createWindow ()
 		});
 		`);
     });*/
+	win.webContents.on('console-message', function(level,message ,line ,sourceId)
+	{
+		//console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
+		if (line=="mainnet" || line=="testnet") RestartDaemon(line);
+	});
 	//win.webContents.openDevTools();
 	win.on('close', function (event)
 	{
 		event.preventDefault();
 		win.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Please wait...'});`);
-		//console.log(newProcess);
 		console.log("win.on -> close");
 		axios.post('http://localhost:3000/stop',{token:rpcpassword,rpcport:rpcport},config).then(function(res)
 		{
@@ -179,7 +244,7 @@ function createWindow ()
 	});
     win.on('closed', () => {
 		console.log("win.on -> closed");
-		if(bError)
+		if(bError && bExit)
 		{
 			win=null;
 			app.exit();
@@ -193,7 +258,7 @@ app.on('browser-window-created',function(e,window)
 	console.log("app.on -> browser-window-created");
 });
 app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin')
+	if (process.platform !== 'darwin' && bExit)
 	{
 		console.log("app.on -> window-all-closed");
 		if(bError) app.quit();

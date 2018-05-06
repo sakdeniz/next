@@ -1,7 +1,6 @@
 <template>
   <div class="content">
     <div class="container-fluid">
-	<!-- !-->
 	<div class="row">
 	<div class="col-md-12 col-sm-12">
 	<sui-dropdown icon="ion-navicon-round" class="labeled icon large violet" text="Menu" button floating>
@@ -16,11 +15,9 @@
 	<br><br>
 	</div>
 	</div>
-	<!-- !-->
 	<div class="row">
 	<div class="col-md-12">
 	<div class="card"><div class="card-header"><h4 class="card-title">Create Proposal</h4></div><div class="card-body">
-	<!--<div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="proposal_title"></textarea></div>!-->
 	<br>Proposal Title : <input type="text" class="form-control" style="width:100%;" id="desc" name="desc"></input>
 	<br>Payment Address : <button title="Select" class="btn btn-xs btn-fill btn-success" v-on:click="selectAddress" style="margin-bottom:5px;"><i class="ion-arrow-down-b"></i> Select</button><input type="text" class="form-control" style="width:100%;" id="navcoinaddress" name="navcoinaddress"></input>
 	<br>Amount in NAV :<input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
@@ -35,21 +32,12 @@
 </template>
 
 <script>
-  import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-  import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
-  import Card from 'src/components/UIComponents/Cards/Card.vue'
-  import LTable from 'src/components/UIComponents/Table.vue'
-  import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
   import axios from 'axios';
   import moment from 'moment';
 
   export default {
-    components: {
-      Checkbox,
-      Card,
-      LTable,
-      ChartCard,
-      StatsCard
+    components:
+	{
     },
 	created: function ()
 	{
@@ -95,9 +83,6 @@
 	},
 	createproposal: function (event)
 	{
-		//mjtf3avTGA9uHvcGnkWT2KbffprvZstbwt
-		//alert($("#to").val());
-		//alert($("#amount").val());
 		if ($("#desc").val()=="")
 		{
 			swal("Error", "Please enter a proposal description", "error");
@@ -116,8 +101,6 @@
 		axios.post(window.hostname+'validateaddress',{token:window.token,rpcport:window.rpcport,address:$("#navcoinaddress").val()},window.config).then(function(res)
 		{
 			var isAdressValid=false;
-			/*console.log("Status:" + res.status)
-			console.log("Return:" + res.data)*/
 			jsonQ.each(res.data, function (key, value)
 			{
 				console.log(key+"="+value);
@@ -147,8 +130,6 @@
 						$("#deadline").val("");
 						jsonQ.each(res.data, function (key, value)
 						{
-							
-							jsonQ["hash"];
 							if (key=="hash") hash=value;
 							if (key=="strDZeel") strDZeel=value;
 						});
@@ -161,7 +142,7 @@
 			}
 			else
 			{
-				console.log("Address invalid...");
+				console.log("Invalid address...");
 				swal("Invalid address", "Address not valid, check the address...", "error");
 			}
 		}).catch(function(err)

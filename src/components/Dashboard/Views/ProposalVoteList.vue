@@ -18,7 +18,6 @@
 	</div>
 	<!-- !-->
 	<h4>Proposal Vote List</h4>
-  	<!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
 	<h5>{{proposal_info}}</h5>
 	<table class="ui celled padded table"><tr><th nowrap>Your Vote</th><th>View</th><th nowrap>Proposal Title</th><th nowrap>Amount</th><th nowrap>Positive Votes</th><th nowrap>Negative Votes</th><th nowrap>Status</th></tr><tr v-for="proposal_vote in array_proposal_votes"><td nowrap><center><i v-bind:class="proposal_vote.voteType"></i></center></td><td nowrap><a target="_blank" class="btn btn-sm btn-fill btn-primary" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal_vote.hash"><i class="fa fa-eye" aria-hidden="true"></i>&nbsp;View</a></td><td nowrap>{{proposal_vote.strDZeel}}</td><td nowrap>{{proposal_vote.nAmount}} NAV</td><td nowrap>{{proposal_vote.nVotesYes}}</td><td nowrap>{{proposal_vote.nVotesNo}}</td><td nowrap style='width:100%'>{{proposal_vote.fState}}</td></tr></table>
 	<h4>Payment Request List</h4>
@@ -52,9 +51,6 @@ export default {
 		{
 			var hash,voteType,strDZeel,nAmount,nVotesYes,nVotesNo,fState="";
 			var sProposalTitle,Phash,PvoteType,PstrDZeel,PnAmount,PnVotesYes,PnVotesNo,PfState="";
-			console.log("Status:" + res.status)
-			console.log("Return:" + res.data)
-			$("#debug").val(JSON.stringify(res.data));
 			axios.post(window.hostname+'listaddressgroupings',{token:window.token,rpcport:window.rpcport},window.config).then(function(res)
 			{
 			jsonQ.each(res.data, function (key, value)
@@ -71,11 +67,9 @@ export default {
 			o="";
 			jsonQ.each(res.data, function (key, value)
 			{
-				//console.log(key+"="+value+"\r\n");
 				voteType=key;
 				jQuery.each(value, function(key2, value2)
 				{
-					//console.log(key2+"="+value2);
 					var r=value2;
 					r=r.replace("CProposal","");
 					r=r.replace(/"/g, "").replace(/'/g, "").replace(/\(|\)/g, "");
@@ -135,25 +129,6 @@ export default {
 		})
 		return {array_proposal_votes,array_payment_request_votes,proposal_info}
     },
-	created: function ()
-	{
-	},
-	updated: function ()
-	{
-	console.log("updated");
-	},
-	beforeCreate: function ()
-	{
-	console.log("beforecreate");
-	},
-	beforeCreate: function ()
-	{
-	console.log("beforecreate");
-	},
-	activated: function ()
-	{
-	console.log("activated");
-	},
     methods:
 	{
 		proposalvote: function (proposal_hash,vote_type)
