@@ -5,7 +5,7 @@ var http = require('http');
 var argv = require('minimist')(process.argv.slice(2));
 var qs = require('querystring');
 var axios = require('axios');
-
+const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 var server;
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
@@ -43,7 +43,11 @@ server = http.createServer(function (req, res)
 	req.on('end', function ()
 	{
 		var post= body ? JSON.parse(body) : {}
-		const client = new Client({host:"localhost", port:post.rpcport,username:post.token,password:post.token});
+		if (post.rpcport) port=post.rpcport; else port=44445;
+		if (post.token) token=post.token; else token="test";
+		const client = new Client({host:"localhost", port:port,username:token,password:token});
+		/*console.log("Port:"+port);
+		console.log("Token:"+token);*/
 		client.command("foobar").then((retval) =>
 		{
 		}).catch((e) =>
@@ -213,6 +217,19 @@ server = http.createServer(function (req, res)
 				{
 					axios.post("http://navcommunity.net/api/getproposals.php", {},{})
 					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+				}
+				if (req.url=="/navcommunity-getstoreitems")
+				{
+					axios.post("http://navcommunity.net/api/getstoreitems.php", {},{})
+					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+				}
+				if (req.url=="/navcommunity-buystoreitems")
+				{
+					client.sendToAddress(post.store_item_payment_address,post.store_item_price,post.store_item_id,post.store_item_id).then((retval) => 
+					axios.post("http://navcommunity.net/api/buystoreitems.php", "store_item_id="+post.store_item_id+"&store_item_price="+post.store_item_price+"&store_item_payment_address="+post.store_item_payment_address+"&name="+post.name+"&surname="+post.surname+"&address="+post.address+"&country="+post.country+"&notes="+post.notes+"&city="+post.city+"&zipcode="+post.zipcode+"&state="+post.state+"&phone="+post.phone+"&email="+post.email+"&notes="+post.notes+"&txid="+retval,config)
+					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+					).catch((e) => {sendError(res, 200,e);});
+					
 				}
 			}
 		});

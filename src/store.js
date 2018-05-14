@@ -13,6 +13,10 @@ const store = new Vuex.Store({
     stakeReport: {},
     info: {},
     proposals: [],
+	storeitems: [],
+	storeItems:[],
+	buystoreitems: [],
+	buyStoreItems:[],
     communitySiteProposals: [],
     combinedProposals: [],
     errorMessage: '',
@@ -27,6 +31,8 @@ const store = new Vuex.Store({
     addStakeReport (state, stakeReport) { state.stakeReport = stakeReport },
     addProposals (state, proposals) { state.proposals = proposals || state.proposals },
     addCommunitySiteProposals (state, proposals) { state.communitySiteProposals = proposals },
+    addStoreItems (state, storeitems) { state.storeItems = storeitems },
+    buyStoreItems (state, buystoreitems) { state.buyStoreItems = buystoreitems },
     addCombineProposals (state, combined) {
       const combinedProposals = []
       if (!combined || !combined.community || !combined.proposals) {
@@ -80,6 +86,18 @@ const store = new Vuex.Store({
       API.getCommunitySiteProposals()
         .then(proposals => context.commit('addCommunitySiteProposals', proposals))
         .catch(err => context.commit('error', err))
+    },
+    getStoreItems(context) {
+      API.getStoreItems()
+        .then(storeitems => context.commit('addStoreItems', storeitems[1].items))
+        .catch(err => context.commit('error', err))
+    },
+    async buyStoreItems(context,store_item_id,store_item_price,store_item_payment_address,name,surname,country,address,city,state,zipcode,phone,email,notes) {
+      const buystoreitems = await API.buyStoreItems(store_item_id,store_item_price,store_item_payment_address,name,surname,country,address,city,state,zipcode,phone,email,notes);
+	  if (buystoreitems)
+	  {
+		context.commit('buyStoreItems', buystoreitems);
+	  }
     },
     async getCombinedProposals(context) {
       try {

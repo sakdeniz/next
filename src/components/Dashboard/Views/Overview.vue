@@ -47,7 +47,7 @@
 			  <h4 class="card-title">NAV</h4>
             </div>
             <div slot="footer">
-              <i class="fa fa-calendar-o"></i>Last 7 Day
+              <i class="fa fa-calendar-o"></i>Last 7 Days
             </div>
           </stats-card>
         </div>
@@ -94,7 +94,7 @@
               <span v-show="proposal.author" class="ui purple button pull-right">&nbsp;
                 <i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</span>
                 <div><i class="fa ion-trophy text-primary"></i>&nbsp;{{proposal.amount}} NAV</div>
-                <div><i class="fa fa-clock-o text-danger"></i>&nbsp;{{proposal.deadline}}</div>
+                <div><i class="fa fa-clock-o text-danger"></i>&nbsp;{{getDate(proposal.deadline)}}</div>
                 <div><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}</div>
                 <div>
                   <div class='btn-group'>
@@ -126,14 +126,6 @@ function numberWithCommas(n) {
     parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
     (parts[1] ? "." + parts[1] : "")
   );
-}
-function test()
-{
-const updateBtn = document.getElementById('updateBtn')
-
-updateBtn.addEventListener('click', function () {
-  ipc.send('update-notify-value', document.getElementById('notifyVal').value)
-})
 }
 
 export default {
@@ -182,7 +174,10 @@ export default {
     getTime: () => {
       return moment().format("D MMM, YYYY HH:mm:ss");
     },
-    getFeaturedProposals: (proposals) => {
+    getDate: (v) => {
+      return moment.unix(v).format("MM/DD/YYYY");
+    },    
+	getFeaturedProposals: (proposals) => {
       return proposals.filter(item => item.featured === '1')
     },
     resync: function() {

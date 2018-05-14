@@ -1,0 +1,1 @@
+navcoind -testnet -rpcport=44445 -rpcuser=test -rpcpassword=test

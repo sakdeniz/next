@@ -18,6 +18,10 @@
         <i class="ion-arrow-swap"></i>
         <p>Transactions</p>
       </sidebar-link>
+      <sidebar-link to="/admin/store">
+        <i class="ion-bag"></i>
+        <p>STORE</p>
+      </sidebar-link>
       <sidebar-link to="/admin/community-proposals">
         <i class="ion-erlenmeyer-flask"></i>
         <p>COMMUNITY FUND</p>
