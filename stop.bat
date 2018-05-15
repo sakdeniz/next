@@ -1,1 +1,0 @@
-navcoin-cli -rpcuser=test -rpcpassword=test -rpcport=44445 stop
