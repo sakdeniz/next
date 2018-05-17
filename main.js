@@ -199,7 +199,7 @@ function CloseApp ()
 function createWindow ()
 {
 	if (!bError) return false;
-	win=new BrowserWindow({width: 1080, height: 800});
+	win=new BrowserWindow({width: 1150, height: 800});
 	//win.setFullScreen(true);
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);

@@ -17,7 +17,7 @@ const handleError = (res) => {
 const getTransactions = () => {
   return axios.post(hostname + "listtransactions", { token: token, rpcport: rpcport }, config)
   .then(handleError)
-  .then(response => response.data)
+  .then(response => response.data.reverse())
 }
 
 const getBlockchainInfo = () => {

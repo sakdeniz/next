@@ -213,6 +213,18 @@ server = http.createServer(function (req, res)
 				{
 					client.command('getstakinginfo').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/dumpmasterprivkey")
+				{
+					client.command('dumpmasterprivkey').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/signmessage")
+				{
+					client.signMessage(post.navaddress,post.message).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/verifymessage")
+				{
+					client.verifyMessage(post.navaddress,post.signature,post.message).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/navcommunity-getproposals")
 				{
 					axios.post("http://navcommunity.net/api/getproposals.php", {},{})

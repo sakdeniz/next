@@ -3,14 +3,18 @@
 	<div class="row"><div class="col-md-12"><button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button></div></div>
 	<br>
 	<div class="row">
-	<div class="container-fluid">Receive
-	<span>({{total_address}})</span>
+	<div class="container-fluid">Receive&nbsp;<span>({{total_address}})</span><br><br>
+	<div class="ui toggle checkbox">
+  <input name="check1" type="checkbox" v-model="checked">
+  <label>Hide zero balances</label>
+</div>
+	
 			<table class="ui celled padded table">
 			<thead>
 				<tr><th></th><th>Address</th><th>Balance</th><th>Account</th></tr>
 			</thead>
 			<tbody v-if="addresslist">
-				<tr :key=addresslist.address v-for="item of addresslist">
+				<tr :key=addresslist.address v-for="item of addresslist" v-if="(!checked && item.balance=='0') || checked && item.balance!='0'">
 					<td><button role="button" title='Copy to clipboard' class='ui icon button' v-on:click='copytoclipboard(item.address)'><i class='ion-android-clipboard'></i></button></td><td><div v-bind:id="item.address">{{item.address}}</div></td><td>{{item.balance}}</td><td style="width:100%">{{item.account}}</td>
 				</tr>
 			</tbody>
@@ -24,7 +28,7 @@
   export default {
    	data: function()
 	{
-		return {addresslist: [],total_address:0}
+		return {addresslist: [],total_address:0,checked: false}
 	},
 	components:
 	{

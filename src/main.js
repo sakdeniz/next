@@ -41,7 +41,8 @@ new Vue({
   render: h => h(App),
   router
 })
-/*if (!rpcpassword || !rpcport)
+
+if (!rpcpassword || !rpcport)
 {
 	vm = new Vue({
 	el: '#app',
@@ -54,10 +55,11 @@ new Vue({
 else
 {
 	vm = new Vue({
+    store: store,
 	el: '#app',
 	data:{},
 	methods:{},
 	render: h => h(App),
 	router
 	})
-}*/
+}

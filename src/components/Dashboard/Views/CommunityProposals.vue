@@ -31,30 +31,79 @@
     </sui-dropdown-menu>
     </sui-dropdown>
 	
+	<div class="ui action left icon input large">
+            <i class="search icon"></i>
+            <input placeholder="Search..." type="text" v-model="search">
+            <div class="ui teal button">Search</div>
+          </div>
+		  
 	<br><br>
 	
 	</div>
 	</div>
 	
-	<!-- !-->
-	<div class="row">
-	<div class="col-md-12 col-sm-6">
-	<div class="card"><div class="card-header">
-	<h4><i class="ion-pie-graph"></i>&nbsp;Community Fund Stats</h4></div>
-	<div class="card-body">
-	<div>Available : {{cfund_available}} NAV</div>
-	<div>Locked : {{cfund_locked}} NAV</div>
-	<div>Voting Period Start : {{cfund_starting}}</div>
+	
+	<div class="ui two column grid">
+  <div class="column">
+    <div class="ui segment">
+      <a class="ui red ribbon label">Overview</a>
+      <p></p>
+      	<div>Available : {{formatnumbers(cfund_available)}} <div class="ui purple horizontal label">NAV</div></div>
+		<div>Locked : {{formatnumbers(cfund_locked)}} <div class="ui purple horizontal label">NAV</div></div>
+      <p></p>
+      <a class="ui blue ribbon label">Current Period</a>
+      <p></p>
+	  	<div>Voting Period Start : {{cfund_starting}}</div>
 	<div>Voting Period End : {{cfund_ending}}</div>
 	<div>Voted Proposals : {{cfund_voted_proposals}}</div>
 	<div>Voted Payment Requests : {{cfund_voted_payment_requests}}</div>
-	</div></div>
-	</div>
-	</div>
+
+    </div>
+  </div>
+  <div class="column">
+    <div class="ui segment">
+      <a class="ui orange right ribbon label">Status</a>
+      <p></p>
+	  
+	  <div class="ui divided selection list">
+  <a class="item">
+    <div class="ui orange horizontal label" style="width:100px">Pending</div>
+    {{array_proposals.filter(item => item.status=="Pending").length}}
+  </a>
+  <a class="item">
+    <div class="ui green horizontal label" style="width:100px">Accepted</div>
+    {{array_proposals.filter(item => item.status=="Accepted").length}}
+  </a>
+  <a class="item">
+    <div class="ui red horizontal label" style="width:100px">Rejected</div>
+    {{array_proposals.filter(item => item.status=="Rejected").length}}
+  </a>
+  <a class="item">
+    <div class="ui yellow horizontal label" style="width:100px">Expired</div>
+    {{array_proposals.filter(item => item.status=="Expired").length}}
+  </a>
+  <a class="item">
+    <div class="ui horizontal label" style="width:100px">Total</div>
+    {{array_proposals.length}}
+  </a>
+</div>
+
+	  
+	  <div class="ui tag labels">
+	  <div class="ui label gray" v-for="category in array_categories">{{category.name}}<div class="detail">{{array_proposals.filter(item => item.category_name==category.name).length}}</div>
+	  </div>
+	  <div class="ui label gray">Uncategorized<div class="detail">{{array_proposals.filter(item => item.category_name=="").length}}</div>
+	</div>	  
+    </div>
+  </div>
+</div>
+<br>
+</div>	
 	<!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
 	<h4>Community Proposals</h4>
-	<div class="row"><div v-for="proposal in array_proposals" class="col-md-6 col-sm-6"><div class="card"><div class="card-header">
-	<h4><span>{{proposal.desc}}</span></h4>
+	<div v-if='search'>Search : {{search}}</div>
+	<div class="row"><div v-for="proposal in array_proposals" v-if="!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1" class="col-md-6 col-sm-6"><div class="card"><div class="card-header">
+	<h6><span>{{proposal.desc}}</span></h6>
 	<div>
 	<button role="button" v-show="proposal.bCategory" class="ui icon left labeled button"><i class="ion-bookmark icon icon"></i>{{proposal.category_name}}</button>
 	</div>
@@ -111,8 +160,9 @@ export default {
 data: function () {
 	var array_proposals = [];
 	var array_categories = [];
+	var search="";
     return {
-        array_proposals,array_categories
+        array_proposals,array_categories,search
       }
     },
 	created: function ()
@@ -133,6 +183,11 @@ data: function () {
 	},
     methods:
 	{
+	    formatnumbers: function (n)
+		{
+			var parts=n.toString().split(".");
+			return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+		},
 		listproposals: function (filter,proposal_category_id)
 		{
 		var array_proposals_remote = [];

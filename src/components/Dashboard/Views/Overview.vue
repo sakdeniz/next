@@ -1,7 +1,7 @@
 <template>
   <div class="content">
 	<div class="container-fluid">
-		<div v-if="errorMessage" class="ui tiny button purple" style="margin-bottom:5px"><div class="row"><div class="col-md-12"><i class="asterisk loading icon"></i>&nbsp;{{errorMessage}}</div></div></div>
+		<div v-if="errorMessage" class="ui tiny button purple" style="margin-bottom:25px"><div class="row"><div class="col-md-12"><i class="asterisk loading icon"></i>&nbsp;{{errorMessage}}</div></div></div>
 		<div class="row" v-else>
 			<div class="col-md-12">
 			<sui-dropdown icon="ion-network" class="labeled icon teal tiny button floating">
@@ -19,76 +19,43 @@
 			<br><br>
 			</div>
 		</div>
-      <div class="row">
-        <div class="col-xl-3 col-md-6">
-          <stats-card>
-            <div slot="header" class="icon-warning">
-              <i class="ion-ios-albums-outline text-info"></i>
-            </div>
-            <div slot="content">
-              <p class="card-category">BALANCE</p>
-              <h5 class="card-title" id="balance">{{numberWithCommas(info.balance)}}</h5>
-			  <h4 class="card-title">NAV</h4>
-            </div>
-            <div slot="footer">
-              <i class="fa fa-refresh"></i><span id='balance_updated'>{{info.blocks ? getTime() : ''}}</span>
-            </div>
-          </stats-card>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <stats-card>
-            <div slot="header" class="icon-success">
-              <i class="ion-flash text-success"></i>
-            </div>
-            <div slot="content">
-              <p class="card-category">STAKING</p>
-              <h5 class="card-title">{{numberWithCommas(stakeReport['Last 7 Days'])}}</h5>
-			  <h4 class="card-title">NAV</h4>
-            </div>
-            <div slot="footer">
-              <i class="fa fa-calendar-o"></i>Last 7 Days
-            </div>
-          </stats-card>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <stats-card>
-            <div slot="header" class="icon-danger">
-              <i class="ion-arrow-swap text-danger"></i>
-            </div>
-            <div slot="content">
-              <p class="card-category">TRANSACTIONS</p>
-              <h4 class="card-title" id="transaction_count">{{transactions.length}}</h4>
-            </div>
-            <div slot="footer">
-              <i class="fa fa-clock-o"></i>Today
-            </div>
-          </stats-card>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <stats-card>
-            <div slot="header" class="icon-info">
-              <i class="ion-earth text-primary"></i>
-            </div>
-            <div slot="content">
-              <p class="card-category">CONNECTIONS</p>
-              <h4 class="card-title" id="connections">{{info.connections}}</h4>
-            </div>
-            <div slot="footer">
-              <i class="fa fa-refresh"></i>Updated now
-            </div>
-          </stats-card>
-        </div>
-      </div>
-
+<div class="ui four column grid">		
+  <div>
+    <div class="ui segment">
+      <a class="ui purple ribbon label">Balance</a>
+      <span>{{numberWithCommas(info.balance)}}</span> <div class="ui purple horizontal label">NAV</div>
+	  <!--<span id='balance_updated'>{{info.blocks ? getTime() : ''}}</span>!-->
+      <p></p>
+    </div>
+	</div>
+  <div>
+    <div class="ui segment">
+      <a class="ui red ribbon label">Staking</a>
+      <span>{{numberWithCommas(stakeReport['Last 7 Days'])}}</span> <div class="ui purple horizontal label">NAV</div>
+      <p></p>
+    </div>
+	</div>
+	<div>
+    <div class="ui segment">
+      <a class="ui blue ribbon label">Transactions</a>
+      <span>{{transactions.length}}</span>
+      <p></p>
+    </div>
+	</div>
+	<div>
+    <div class="ui segment">
+      <a class="ui green ribbon label">Connection</a>
+      <span>{{info.connections}}</span>
+      <p></p>
+    </div>
+	</div>
+	</div>
 
       <h4 class="card-title">Community Fund <button class="btn btn-fill btn-sm btn-info"> Featured Proposals</button></h4>
       <div class="row">
         <div v-for="proposal in getFeaturedProposals(proposals)" :key="proposal.hash" class="col-md-6 col-sm-12">
           <div class="card"><div class="card-header">
-            <h4><span>{{proposal.description}}</span></h4></div>
+            <h6><span>{{proposal.description}}</span></h6></div>
             <div class="card-body">
               <div class="card card-user"><img v-bind:src="proposal.image" /></div>
               <span v-show="proposal.author" class="ui purple button pull-right">&nbsp;
@@ -162,6 +129,7 @@ export default {
     }),
     numberWithCommas: n => {
       if (!n) { return "0.00" }
+	  n=(Math.round(n*100)/100).toFixed(2);
       var parts = n.toString().split(".");
       return (
         parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") +
