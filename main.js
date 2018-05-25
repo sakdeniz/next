@@ -1,17 +1,24 @@
+//os.type(); // Linux, Darwin or Window_NT
+//os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
 var child=require('child_process').execFile;
-var executablePath;
-var daemonPath;
 const dialog=require('electron').dialog;
 const axios=require('axios');
 const {app,BrowserWindow}=require('electron');
+const isDev=require('electron-is-dev');
 const path=require('path');
 const url=require('url');
 const crypto=require('crypto');
+const appDataPath=app.getPath("appData")+"\\NavCoin4";
+const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
+const defaults = {cwd:__dirname,env:process.env,shell:bshell,windowsVerbatimArguments:true};
+const randomBytes=crypto.randomBytes(256);
+const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+var executablePath;
+var daemonPath;
 var bshell=false;
 var breindexchainstate=false;
-//os.type(); // Linux, Darwin or Window_NT
-//os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var rpcport;
@@ -19,17 +26,11 @@ var testnet;
 var addnode;
 var reindexchainstate;
 var bTestnet=true;
-const appDataPath=app.getPath("appData")+"\\NavCoin4";
-const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 var iniparser=require('iniparser');
 var bError=true;
-const defaults = {cwd: undefined,env: process.env,shell:bshell,windowsVerbatimArguments:true};
 var newProcess;
 var bExit=true;
 let win;
-const randomBytes=crypto.randomBytes(256);
-const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
-const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 var server=require("./server");
 if (bTestnet)
 {
@@ -43,6 +44,41 @@ else
 	testnet="";
 	addnode="";
 }
+if (!isDev)
+{
+	console.log('Running in development');
+	const EBU = require('./updater');
+	EBU.init({'api': 'https://next.navcommunity.net/update/'});
+	EBU.check(function(error)
+	{
+		if(error)
+		{
+			console.log('NEXT update error:'+error);
+			const dialogOpts = {
+				type: 'error',
+				buttons: ['OK'],
+				title: 'Application Update Failed',
+				message: "Update Failed",
+				detail: error
+			}
+			if (error!="no_update_available") dialog.showMessageBox(dialogOpts);
+			return false;
+		}
+		console.log('NEXT updated successfully!');
+		const dialogOpts = {
+			type: 'info',
+			buttons: ['OK'],
+			title: 'Application Update',
+			message: "Update Success",
+			detail: 'NEXT updated successfully!'
+		}
+		dialog.showMessageBox(dialogOpts);
+	});		
+}
+else
+{
+	console.log('Running in production');
+}
 StartDaemon();
 newProcess.on("exit", function ()
 {
@@ -54,6 +90,16 @@ function RestartDaemon(network)
 {
 	bExit=false;
 	console.log("Restart Daemon:"+network);
+	try
+	{
+		var fs = require('fs');
+		var iniBuilder = require('ini-builder');
+		var data = iniBuilder.parse(fs.readFileSync(appDataPath+"\\navcoin.conf"));
+	}
+	catch (e)
+	{
+		console.log("Configuration file exception occured.")
+	}
 	axios.post('http://localhost:3000/stop',{token:rpcpassword,rpcport:rpcport},config).then(function(res)
 	{
 		console.log(res.data);
@@ -62,13 +108,53 @@ function RestartDaemon(network)
 			rpcport=44445;
 			testnet=" -testnet";
 			addnode=" -addnode=46.4.24.136";
+			try
+			{
+				if(iniBuilder.find(data, 'testnet'))
+				{
+					console.log("Config file testnet key exist, changing value to 1");
+					iniBuilder.find(data, 'testnet').value = '1';
+				}
+				else
+				{
+					console.log("Config file testnet key not exist, creating...");
+					data.push({
+						path: ['testnet'],
+						value: '1'
+					});
+				}
+			}
+			catch (e)
+			{
+				console.log("Configuration file exception occured.")
+			}
 		}
 		if (network=="mainnet")
 		{
 			rpcport=44444;
 			testnet="";
 			addnode="";
+			try
+			{
+				if(iniBuilder.find(data, 'testnet'))
+				{
+					console.log("Config file testnet key exist, changing value to 0");
+					iniBuilder.find(data, 'testnet').value = '0';
+				}
+				else
+				{
+					console.log("Config file testnet key not exist, creating...");
+					data.push({
+						path: ['testnet'],
+						value: '0'
+					});
+				}
+			}
+			catch (e)
+			{
+			}
 		}
+		fs.writeFileSync(appDataPath+"\\navcoin.conf", iniBuilder.serialize(data));
 	}).catch(function(err)
 	{
 		console.log(err);
@@ -82,7 +168,20 @@ function StartDaemon ()
 		var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
 		console.log("navcoin.conf file found.");
 		console.log("Config.testnet:"+conf.testnet);
-		if (conf.testnet=="1") bTestnet=true; else bTestnet=false;
+		if (conf.testnet=="1")
+		{
+			rpcport=44445;
+			testnet=" -testnet";
+			addnode=" -addnode=46.4.24.136";
+			bTestnet=true;
+		}
+		else
+		{
+			rpcport=44444;
+			testnet="";
+			addnode="";
+			bTestnet=false;
+		}
 	}
 	catch (e)
 	{
@@ -112,7 +211,6 @@ function StartDaemon ()
 	console.log("Platform : "+os.platform());
 	console.log("Testnet : "+bTestnet);
 	console.log("RPC Port : "+rpcport);
-
 	if (os.platform()=="linux" || os.platform()=="darwin")
 	{
 		daemonPath=app.getAppPath()+"/navcoind";
@@ -199,7 +297,7 @@ function CloseApp ()
 function createWindow ()
 {
 	if (!bError) return false;
-	win=new BrowserWindow({width: 1150, height: 800});
+	win=new BrowserWindow({width: 1275, height: 800});
 	//win.setFullScreen(true);
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);

@@ -1,0 +1,65 @@
+directories:
+  output: electron-builder
+  buildResources: build
+appId: net.navcommunity.next
+buildVersion : 1.0.0
+copyright: Copyright © 2018 NavCommunity.net
+productName: Next
+forceCodeSigning: false
+asar: false
+compression: maximum
+artifactName: '${productName}-${os}-${arch}-${buildVersion}.${ext}'
+files:
+  - '!.*'
+  - '!js*'
+  - '!LICENSE*'
+  - '!README.md'
+  - '!index.html'
+  - '!jquery-3.3.1.min.js'
+  - '!src/*'
+  - '!static/*'
+  - '!config/*'
+  - '!resources/*'
+  - '!lib/*'
+  - '!docs/*'
+  - '!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme,test,__tests__,tests,powered-test,example,examples,*.d.ts}'
+  - '!**/node_modules/.bin'
+  - '!**/node_modules/search-index/si${/*}'
+mac:
+  category: public.app-category.reference
+dmg:
+  background: build/appdmg.png
+  icon: build/icon.icns
+  iconSize: 128
+  contents:
+    - x: 532
+      'y': 249
+      type: link
+      path: /Applications
+    - x: 281
+      'y': 249
+      type: file
+linux:
+  target:
+    - deb
+    - rpm
+  maintainer: NavCommunity <admin@navcommunity.net>
+
+win:
+  icon: src/assets/next.ico
+  target:
+    - nsis
+nsis:
+  oneClick: true
+  perMachine: false
+  packElevateHelper : true
+  allowToChangeInstallationDirectory: false
+  displayLanguageSelector : true
+  unicode : true
+  runAfterFinish : true
+  createDesktopShortcut : true
+  createStartMenuShortcut : true
+  shortcutName : "NEXT"
+npmRebuild: true
+nodeGypRebuild: false
+electronVersion: 1.8.7

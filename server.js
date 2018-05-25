@@ -10,6 +10,7 @@ var server;
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
 const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support/Navcoin4/' : '/var/local/NavCoin4/');
+const fileConfig=appDataPath+"navcoin.conf";
 const fileAddressBook=appDataPath+"addressbook.dat";
 const fileWalletPassword=appDataPath+"walletpass.dat";
 
@@ -146,6 +147,30 @@ server = http.createServer(function (req, res)
 					console.log(data);
 					sendResponse(res, 200,data);
 				}
+				if (req.url=="/loadconfig")
+				{
+					var fs=require('fs');
+					var data=fs.readFileSync(fileConfig,'utf8');
+					console.log(data);
+					sendResponse(res, 200,data);
+				}
+				if (req.url=="/saveconfig")
+				{
+					var fs=require('fs');
+					fs.writeFile(fileConfig,post.data, function (err)
+					{
+						if (err)
+						{
+							console.log("An error occured while saving config file.");
+							sendResponse(res, 200,"Failed to write config file.");
+						}
+						else
+						{
+							console.log("Config file succesfully saved.");
+							sendResponse(res, 200,"Config file succesfully saved.");
+						}
+					});
+				}
 				if (req.url=="/validateaddress")
 				{
 					console.log(post.address);
@@ -153,7 +178,16 @@ server = http.createServer(function (req, res)
 				}
 				if (req.url=="/sendtoaddress")
 				{
-					client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					if (post.isprivate)
+					{
+						console.log("Private Send");
+						client.anonSend(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
+					else
+					{
+						console.log("Send");
+						client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
 				}
 				if (req.url=="/createproposal")
 				{
@@ -225,6 +259,22 @@ server = http.createServer(function (req, res)
 				{
 					client.verifyMessage(post.navaddress,post.signature,post.message).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/addanonserver")
+				{
+					console.log("node="+post.node+" command="+post.command);
+					client.addAnonServer(post.node,post.command,"true").then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/getanonservers")
+				{
+					var fs=require('fs');
+					var data=fs.readFileSync(fileConfig,'utf8');
+					var arr=[];
+					data.split("\r\n").map(function (val)
+					{
+						if (val.indexOf("addanonserver")!=-1) arr.push(val.split("=")[1]);
+					});
+					sendResponse(res, 200,JSON.stringify(arr));
+				}
 				if (req.url=="/navcommunity-getproposals")
 				{
 					axios.post("http://navcommunity.net/api/getproposals.php", {},{})
@@ -237,7 +287,7 @@ server = http.createServer(function (req, res)
 				}
 				if (req.url=="/navcommunity-buystoreitems")
 				{
-					client.sendToAddress(post.store_item_payment_address,post.store_item_price,post.store_item_id,post.store_item_id).then((retval) => 
+					client.sendToAddress(post.store_item_payment_address,post.store_item_price,post.store_item_id+"/"+post.store_item_name,post.store_item_id+"/"+post.store_item_name).then((retval) => 
 					axios.post("http://navcommunity.net/api/buystoreitems.php", "store_item_id="+post.store_item_id+"&store_item_price="+post.store_item_price+"&store_item_payment_address="+post.store_item_payment_address+"&name="+post.name+"&surname="+post.surname+"&address="+post.address+"&country="+post.country+"&notes="+post.notes+"&city="+post.city+"&zipcode="+post.zipcode+"&state="+post.state+"&phone="+post.phone+"&email="+post.email+"&notes="+post.notes+"&txid="+retval,config)
 					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 					).catch((e) => {sendError(res, 200,e);});

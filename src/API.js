@@ -63,7 +63,7 @@ const getStoreItems = () => {
 }
 
 function buyStoreItems (obj) {
-  return axios.post(hostname + "navcommunity-buystoreitems", { token: token, rpcport: rpcport, store_item_id: obj["store_item_id"], store_item_price: obj["store_item_price"], store_item_payment_address: obj["store_item_payment_address"],name:obj["name"],surname:obj["surname"],country:obj["country"],address:obj["address"],city:obj["city"],state:obj["state"],zipcode:obj["zipcode"],phone:obj["phone"],email:obj["email"],notes:obj["notes"]}, config)
+  return axios.post(hostname + "navcommunity-buystoreitems", { token: token, rpcport: rpcport, store_item_id: obj["store_item_id"], store_item_name: obj["store_item_name"], store_item_price: obj["store_item_price"], store_item_payment_address: obj["store_item_payment_address"],name:obj["name"],surname:obj["surname"],country:obj["country"],address:obj["address"],city:obj["city"],state:obj["state"],zipcode:obj["zipcode"],phone:obj["phone"],email:obj["email"],notes:obj["notes"]}, config)
   .then(handleError)
   .then(response => response.data)
 }

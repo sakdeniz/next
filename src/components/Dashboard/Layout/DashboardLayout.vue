@@ -18,6 +18,10 @@
         <i class="ion-arrow-swap"></i>
         <p>Transactions</p>
       </sidebar-link>
+      <sidebar-link to="/admin/staking">
+        <i class="ion-leaf"></i>
+        <p>Staking</p>
+      </sidebar-link>
       <sidebar-link to="/admin/store">
         <i class="ion-bag"></i>
         <p>STORE</p>

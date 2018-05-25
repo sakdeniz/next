@@ -3,6 +3,7 @@ docs/
 next-win32-ia32/
 next-win32-x64/
 node_modules/
+electron-builder/
 resources/
 navcoind.exe
 *.zip
