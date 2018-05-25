@@ -80,11 +80,6 @@ else
 	console.log('Running in production');
 }
 StartDaemon();
-newProcess.on("exit", function ()
-{
-	console.log("Daemon stopped.");
-	setTimeout(CloseApp, 1000);
-});
 
 function RestartDaemon(network)
 {
@@ -239,6 +234,11 @@ function StartDaemon ()
 				}
 				bExit=true;
 				console.log("Daemon started. PID :" + newProcess.pid);
+				newProcess.on("exit", function ()
+				{
+					console.log("Daemon stopped.");
+					setTimeout(CloseApp, 1000);
+				});
 			}
 			else
 			{
@@ -269,6 +269,11 @@ function StartDaemon ()
 			}
 			bExit=true;
 			console.log("Daemon started. PID :" + newProcess.pid);
+			newProcess.on("exit", function ()
+			{
+				console.log("Daemon stopped.");
+				setTimeout(CloseApp, 1000);
+			});
 		}
 		else
 		{
