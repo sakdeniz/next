@@ -1,3 +1,4 @@
+//
 //os.type(); // Linux, Darwin or Window_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
