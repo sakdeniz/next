@@ -197,7 +197,7 @@ function StartDaemon ()
 	}
 	if (os.platform()=="darwin")
 	{
-		executablePath=app.getAppPath()+"/./navcoind";
+		executablePath="./navcoind";
 		bshell=true;
 	}
 	console.log("App Path : "+app.getAppPath());
