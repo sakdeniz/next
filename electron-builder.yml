@@ -26,6 +26,7 @@ files:
   - '!**/node_modules/.bin'
   - '!**/node_modules/search-index/si${/*}'
 mac:
+  icon: "src/assets/next.icns"
   category: public.app-category.reference
 dmg:
   background: "static/img/nav-logo-extended.png"
