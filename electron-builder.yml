@@ -28,7 +28,9 @@ files:
 mac:
   category: public.app-category.reference
 dmg:
-  background: static/img/nav-logo.png
+  title:"Next"
+  background: static/img/nav-logo-extended.png
+  icon: src/assets/next.icns
   iconSize: 128
   contents:
     - x: 532
@@ -43,7 +45,6 @@ linux:
     - deb
     - rpm
   maintainer: NavCommunity <admin@navcommunity.net>
-
 win:
   icon: src/assets/next.ico
   target:
