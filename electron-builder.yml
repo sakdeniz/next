@@ -28,8 +28,7 @@ files:
 mac:
   category: public.app-category.reference
 dmg:
-  background: build/appdmg.png
-  icon: build/icon.icns
+  background: static/img/nav-logo.png
   iconSize: 128
   contents:
     - x: 532
