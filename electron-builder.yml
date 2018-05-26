@@ -28,7 +28,6 @@ files:
 mac:
   category: public.app-category.reference
 dmg:
-  title:"Next"
   background: "static/img/nav-logo-extended.png"
   icon: "src/assets/next.icns"
   iconSize: 128
