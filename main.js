@@ -12,7 +12,6 @@ const url=require('url');
 const crypto=require('crypto');
 const appDataPath=app.getPath("appData")+"\\NavCoin4";
 const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-const defaults = {cwd:__dirname,env:process.env,shell:bshell,windowsVerbatimArguments:true};
 const randomBytes=crypto.randomBytes(256);
 const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
@@ -198,9 +197,10 @@ function StartDaemon ()
 	}
 	if (os.platform()=="darwin")
 	{
-		executablePath=app.getAppPath()+"/./navcoind";
+		executablePath="./navcoind";
 		bshell=true;
 	}
+	const defaults = {cwd:__dirname,env:process.env,shell:bshell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());
 	console.log("App Data Path : "+appDataPath);
 	console.log("Shell : "+bshell);
