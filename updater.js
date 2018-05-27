@@ -102,7 +102,9 @@
             // Send the current version along with the request
 			requestOptions.data.current = packageInfo.version;
 			requestOptions.data.platform = process.platform;
+			requestOptions.data.arch = process.arch;
             console.log("[Updater] Platform:"+process.platform);
+            console.log("[Updater] Arch:"+process.arch);
             console.log("[Updater] Version:"+packageInfo.version);
 
             // Check for updates
