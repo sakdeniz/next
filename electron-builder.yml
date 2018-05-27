@@ -29,7 +29,7 @@ mac:
   icon: "src/assets/next.icns"
   category: public.app-category.reference
 dmg:
-  background: "static/img/nav-logo-extended.png"
+  background: "static/img/dmg-background.png"
   icon: "src/assets/next.icns"
   iconSize: 128
   contents:
