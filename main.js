@@ -1,4 +1,4 @@
-//os.type(); // Linux, Darwin or Window_NT
+//os.type(); // Linux, Darwin or Windows_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
 var child=require('child_process').execFile;
@@ -32,7 +32,19 @@ var now=new Date();
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var warning;
 if (store.get('warning')) warning=store.get('warning'); else warning="1";
-if (os.type()=="Window_NT") appDataPath=app.getPath("appData")+"/NavCoin4"; else appDataPath=app.getPath("appData")+"\\NavCoin4";
+console.log("OS Type:"+os.type());
+if (os.type()==="Windows_NT")
+{
+	appDataPath=app.getPath("appData")+"\\NavCoin4";
+}
+else if (os.type()==="Darwin")
+{
+	appDataPath=app.getPath("appData")+"/NavCoin4";
+}
+else
+{
+	appDataPath=app.getPath("appData")+"/NavCoin4";
+}
 require('electron-context-menu')({
 	showInspectElement:false,
 	labels: {
