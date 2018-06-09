@@ -268,7 +268,7 @@ export default {
         allowOutsideClick: false,
         text: 'Changing network to ' + network + ' ...'
       });
-      console.log(network);
+      console.log("next:network:"+network);
     },
     proposalvote: function(proposal_hash, vote_type) {
       var config = {

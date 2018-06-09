@@ -324,7 +324,8 @@ function createMainWindow ()
 	win.webContents.on('console-message', function(level,message ,line ,sourceId)
 	{
 		//console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
-		if (line=="mainnet" || line=="testnet") RestartDaemon(line);
+		if (line=="next:network:mainnet") RestartDaemon("mainnet");
+		if (line=="next:network:testnet") RestartDaemon("testnet");
 		if (line=="next:open-data-folder")
 		{
 			var path=appDataPath;
