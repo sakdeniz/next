@@ -7,6 +7,11 @@ import Transactions from 'src/components/Dashboard/Views/Transactions.vue'
 import Staking from 'src/components/Dashboard/Views/Staking.vue'
 import Store from 'src/components/Dashboard/Views/Store.vue'
 import Settings from 'src/components/Dashboard/Views/Settings.vue'
+import Console from 'src/components/Dashboard/Views/Console.vue'
+import Logs from 'src/components/Dashboard/Views/Logs.vue'
+import SoftForks from 'src/components/Dashboard/Views/SoftForks.vue'
+import Merchants from 'src/components/Dashboard/Views/Merchants.vue'
+import PeerList from 'src/components/Dashboard/Views/PeerList.vue'
 import CommunityProposals from 'src/components/Dashboard/Views/CommunityProposals.vue'
 import MyProposals from 'src/components/Dashboard/Views/MyProposals.vue'
 import CreateProposal from 'src/components/Dashboard/Views/CreateProposal.vue'
@@ -60,6 +65,31 @@ const routes = [
         path: 'settings',
         name: 'Settings',
         component: Settings
+      },
+      {
+        path: 'console',
+        name: 'Console',
+        component: Console
+      },
+      {
+        path: 'logs',
+        name: 'Logs',
+        component: Logs
+      },
+      {
+        path: 'softforks',
+        name: 'SoftForks',
+        component: SoftForks
+      },
+      {
+        path: 'peer-list',
+        name: 'Peer List',
+        component: PeerList
+      },
+      {
+        path: 'merchants',
+        name: 'Merchants',
+        component: Merchants
       },
       {
         path: 'community-proposals',

@@ -10,13 +10,16 @@
 <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300' rel='stylesheet' type='text/css' />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.0/semantic.min.css" rel="stylesheet" type='text/css' />
 <link href="static/css/nucleo-icons.css" rel="stylesheet" type='text/css' />
+<link href="static/plugins/highlightjs/tomorrow.min.css" rel="stylesheet" type='text/css'>
 <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript" src="https://raw.githubusercontent.com/s-yadav/jsonQ/master/jsonQ.min.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sweetalert2@latest/dist/sweetalert2.all.min.js"></script>
-<script type="text/javascript" src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/10.0.1/classic/ckeditor.js"></script>
+<script src="static/plugins/jquery/jquery.min.js"></script>
+<script src="static/plugins/jsonq/jsonq.min.js"></script>
+<script src="static/plugins/moment/moment-with-locales.js"></script>
+<script src="static/plugins/clipboard/clipboard.min.js"></script>
+<script src="static/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="static/plugins/axios/axios.min.js"></script>
+<script src="static/plugins/highlightjs/highlight.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -37,3 +40,8 @@ function copy(selector)
 	$temp.remove();
 }
 </script>
+<style>
+.swal2-popup .swal2-select {
+    font-size: 11pt;
+}
+</style>

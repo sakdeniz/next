@@ -1,58 +1,68 @@
 <template>
+
 <div class="content">
-  <div class="container-fluid">
-    <h4 class="card-title"><i class="ion-social-rss"></i> News</h4>
-    <div id="news">
-      <ul></ul>
-    </div>
-  </div>
+	<div class="container-fluid">
+		<h4 class="card-title"><i class="ion-social-rss"></i> News</h4>
+			<div class="ui grid">
+				<div class="two column only row">
+					<div class="column ui" style="margin-bottom:20px" :key=item.id v-for="item of communitySiteNews" v-if="!filter || item.category==filter">
+						<div class="ui segment">
+							<div class="image">
+								<img v-bind:src="item.news_image">
+							</div>
+						<div class="content">
+							<h4 style='margin-top:5px;'>{{item.news_title}}</h4>
+							<div class="description">{{item.news_content}}</div>
+						</div>
+						<br>
+						<div class="extra content">
+							<span style="float:right">
+								<a class="ui violet label"><i class="ion-bookmark"></i>&nbsp;{{item.news_category_name}}</a>
+							</span>
+							<span style="float:right">
+								<a class="ui gray label"><i class="ion-person"></i>&nbsp;{{item.news_author}}</a>&nbsp;
+							</span>
+							<span>
+								<a style="color:#795BB6"><i class="ion-calendar"></i>&nbsp;{{item.news_dt}}</a>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 </template>
-
 <script>
-import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
-import Card from 'src/components/UIComponents/Cards/Card.vue'
-import LTable from 'src/components/UIComponents/Table.vue'
-import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
-import axios from 'axios';
-import moment from 'moment';
-
+import {
+  mapState,
+  mapActions
+} from 'vuex';
+import moment from "moment";
 export default {
-  components: {
-    Checkbox,
-    Card,
-    LTable,
-    ChartCard,
-    StatsCard
+  computed: {
+    ...mapState({
+      communitySiteNews: 'communitySiteNews'
+    })
   },
+  components: {},
   created: function() {
-    this.getnews();
+    this.getCommunitySiteNews();
+  },
+  beforeDestroy: function() {
+    //clearInterval(this.getitemInterval);
   },
   methods: {
-    getnews: function(event) {
-      $.ajax({
-        type: "GET",
-        url: "https://navcoin.org/feed",
-        dataType: "xml",
-        success: function(xml) {
-
-          var contain = $("#news ul");
-          var limit = 50;
-
-          $(xml).find('item').each(function(index) {
-            if (index < limit) {
-              var title = $(this).find('title').text();
-              var url = $(this).find('link').text();
-              var pubDate = $(this).find('pubDate').text();
-              $('<li></li>').html('<a target="_blank" href="' + url + '">' + title + '</a><br><small>' + pubDate + '</small>').appendTo(contain);
-              return;
-            }
-
-          }); //end each
-        }
-      });
-    }
-  },
-}
+    formatTime: function(time) {
+      return moment.unix(time).format("MM/DD/YYYY HH:MM:SS");
+    },
+    filterBy: function(f) {
+      this.filter = f;
+      this.getCommunitySiteNews();
+    },
+    ...mapActions({
+      getCommunitySiteNews: 'getCommunitySiteNews',
+    })
+  }
+};
 </script>

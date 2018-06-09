@@ -1,17 +1,11 @@
-
-    /**
-     * Hi there,
-     * Thanks for using this module, and good luck with your Electron app.
-     *
-     * ~ Zain
-     * */
-    const Application = require('electron').app;
+    const {app,BrowserWindow}=require('electron');
+	const Application = require('electron').app;
     const FileSystem = require('fs');
     const Utils = require('util');
     const Zip = require('adm-zip');
     const HTTP = require('restler');
     const AppPath = Application.getAppPath() + '/';
-
+    var splash;
     const errors = [
         'version_not_specified',
         'cannot_connect_to_api',
@@ -136,6 +130,9 @@
 
                         // Update available
                         if(response.source){
+							splash = new BrowserWindow({width: 640, height: 480});
+							splash.loadURL(`file://${__dirname}/dist/static/update.html`);
+							splash.webContents.on('did-finish-load', ()=>{splash.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Updating to ` + response.last + `...'});`);});
                             console.log('[Updater] Update available: ' + response.last);
 
                             // Store the response
@@ -208,6 +205,7 @@
          * Apply the update, it simply overwrites the current files!
          * */
         'apply': function(){
+			splash.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Extracting...'});`);
             try{
                 this.log('Extracting the new update files.');
 
@@ -216,13 +214,25 @@
 
                 this.log('New update files were extracted.');
                 this.log('End of update.');
-
+				splash.webContents.executeJavaScript(`swal({
+  title: 'Update completed',
+  text: "Please restart the application",
+  type: 'success',
+  showCancelButton: false,
+  confirmButtonColor: '#3085d6',
+  cancelButtonColor: '#d33',
+  confirmButtonText: 'OK'
+}).then((result) => {
+  if (result.value) {
+window.close();
+  }
+})`);
                 // Success
                 this.end();
 
             }catch(error){
                 this.log('Extraction error: ' + error);
-
+				splash.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Extraction error'});`);
                 // Failure
                 this.end(6);
             }

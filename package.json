@@ -1,6 +1,6 @@
 {
   "name": "next",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "main.js",
   "description": "NavCoin Next Wallet",
   "author": "sakdeniz",
@@ -37,8 +37,10 @@
     "clipboard": "^1.7.1",
     "dependencies": "0.0.1",
     "electron-builder-lib": "^20.14.7",
+    "electron-context-menu": "^0.9.1",
     "electron-is-dev": "^0.3.0",
     "electron-packager": "^11.0.1",
+    "electron-store": "^2.0.0",
     "electron-window": "^0.8.1",
     "es6-promise": "^4.1.1",
     "fs": "0.0.1-security",

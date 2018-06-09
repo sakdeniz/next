@@ -26,6 +26,11 @@
               id="navcoinaddress" name="navcoinaddress"></input>
             <br>Amount in NAV :<input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
             <br>Deadline : <input type="date" class="form-control" style="width:100%;" id="deadline" name="deadline"></input>
+            <br>Owner/Team Members :<textarea class="form-control editor" style="width:100%;min-height:100px;" id="owner" name="owner"></textarea>
+            <br>Web Site URL : <input type="text" class="form-control" style="width:100%;" id="website" name="website"></input>
+            <br>Contact E-mail : <input type="text" class="form-control" style="width:100%;" id="email" name="email"></input>
+            <br>Proposal Short Description :<textarea class="form-control editor" style="width:100%;min-height:150px;" id="short_desc" name="short_desc"></textarea>
+            <br>Proposal Long Description :<textarea class="form-control editor" style="width:100%;min-height:300px;" id="long_desc" name="long_desc"></textarea>
             <br><button class='btn btn-fill btn-info' v-on:click='createproposal'><i class="ion-paper-airplane"></i>&nbsp;Create</button>
           </div>
         </div>
@@ -41,7 +46,29 @@ import moment from 'moment';
 
 export default {
   components: {},
+    data: function() {
+    var editor_short_desc,editor_long_desc;
+    return {
+      editor_short_desc,editor_long_desc
+    }
+  },
   created: function() {},
+  mounted:function()
+  {
+	let vm=this;
+	ClassicEditor
+		.create(document.querySelector('#short_desc'), {
+			toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ],
+		}).then(editor =>{
+            vm.editor_short_desc=editor;
+        });
+	ClassicEditor
+		.create(document.querySelector('#long_desc'), {
+			toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ],
+		}).then(editor =>{
+            vm.editor_long_desc=editor;
+        });
+  },
   methods: {
     selectAddress: function(event) {
       var navAddressList = [];
@@ -83,6 +110,7 @@ export default {
       })
     },
     createproposal: function(event) {
+	  let vm=this;
       if ($("#desc").val() == "") {
         swal("Error", "Please enter a proposal description", "error");
         return;
@@ -118,7 +146,12 @@ export default {
               desc: $("#desc").val(),
               navcoinaddress: $("#navcoinaddress").val(),
               amount: $("#amount").val(),
-              deadline: epoch
+              deadline: epoch,
+              owner: $("#owner").val(),
+              website: $("#website").val(),
+              email: $("#email").val(),
+              short_desc: vm.editor_short_desc.getData(),
+              long_desc: vm.editor_long_desc.getData()
             }, window.config).then(function(res) {
               var hash = "";
               var strDZeel = "";
@@ -148,3 +181,8 @@ export default {
   },
 }
 </script>
+<style>
+.ck-editor__editable {
+    min-height: 200px;
+}
+</style>

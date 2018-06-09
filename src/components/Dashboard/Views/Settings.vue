@@ -5,6 +5,18 @@
     <div class="ui one column grid">
       <div class="column">
         <div class="ui segment">
+          <a class="ui purple ribbon label">Data Folder</a>
+          <br><br>
+          <div class="row">
+            <div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
+              	<button class="ui icon tiny button blue" v-on:click="openDataFolder"><i class="ion-folder"></i>&nbsp;Open Data Folder</button>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui one column grid">
+      <div class="column">
+        <div class="ui segment">
           <a class="ui purple ribbon label">Configuration</a>
           <br><br>
           <div class="row">
@@ -35,6 +47,7 @@
         </div>
       </div>
     </div>
+	</div>
     <div class="ui one column grid">
       <div class="column">
         <div class="ui segment">
@@ -128,6 +141,9 @@ export default {
     this.loadConfig();
   },
   methods: {
+    openDataFolder: function(event) {
+	console.log("next:open-data-folder");
+	},
     changeConfig: function(event) {
       let vm = this;
       if (vm.cStaking) vm.config = vm.config.replace("staking=0", "staking=1");

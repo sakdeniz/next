@@ -1,4 +1,3 @@
-//
 //os.type(); // Linux, Darwin or Window_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
@@ -10,33 +9,49 @@ const isDev=require('electron-is-dev');
 const path=require('path');
 const url=require('url');
 const crypto=require('crypto');
+const Store=require('electron-store');
+const store=new Store();
 const appDataPath=app.getPath("appData")+"\\NavCoin4";
 const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 const randomBytes=crypto.randomBytes(256);
 const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+var iniparser=require('iniparser');
 var executablePath;
 var daemonPath;
-var bshell=false;
-var breindexchainstate=false;
-var now=new Date(); 
-var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var rpcport;
 var testnet;
 var addnode;
 var reindexchainstate;
-var bTestnet=true;
-var iniparser=require('iniparser');
+var bshell=false;
+var breindexchainstate=false;
+var bTestnet=false;
 var bError=true;
-var newProcess;
 var bExit=true;
+var now=new Date(); 
+var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
+var warning;
+if (store.get('warning')) warning=store.get('warning'); else warning="1";
+require('electron-context-menu')({
+	showInspectElement:false,
+	labels: {
+	cut: 'Cut',
+	copy: 'Copy',
+	paste: 'Paste',
+	save: 'Save Image',
+	copyLink: 'Copy Link',
+	inspect: 'Inspect'
+	},
+	prepend: (params, browserWindow) => [{
+		visible: params.mediaType === 'image'
+	}]
+});
 let win;
-var server=require("./server");
 if (bTestnet)
 {
 	rpcport=44445;
 	testnet=" -testnet";
-	addnode=" -addnode=46.4.24.136";
+	addnode=" -addnode=37.148.210.7";
 }
 else
 {
@@ -44,52 +59,15 @@ else
 	testnet="";
 	addnode="";
 }
-if (!isDev)
-{
-	console.log('Running in development');
-	const EBU = require('./updater');
-	EBU.init({'api': 'https://next.navcommunity.net/update/'});
-	EBU.check(function(error)
-	{
-		if(error)
-		{
-			console.log('NEXT update error:'+error);
-			const dialogOpts = {
-				type: 'error',
-				buttons: ['OK'],
-				title: 'Application Update Failed',
-				message: "Update Failed",
-				detail: error
-			}
-			if (error!="no_update_available") dialog.showMessageBox(dialogOpts);
-			return false;
-		}
-		console.log('NEXT updated successfully!');
-		const dialogOpts = {
-			type: 'info',
-			buttons: ['OK'],
-			title: 'Application Update',
-			message: "Update Success",
-			detail: 'NEXT updated successfully!'
-		}
-		dialog.showMessageBox(dialogOpts);
-	});		
-}
-else
-{
-	console.log('Running in production');
-}
-StartDaemon();
-
 function RestartDaemon(network)
 {
 	bExit=false;
 	console.log("Restart Daemon:"+network);
 	try
 	{
-		var fs = require('fs');
-		var iniBuilder = require('ini-builder');
-		var data = iniBuilder.parse(fs.readFileSync(appDataPath+"\\navcoin.conf"));
+		var fs=require('fs');
+		var iniBuilder=require('ini-builder');
+		var data=iniBuilder.parse(fs.readFileSync(appDataPath+"\\navcoin.conf"));
 	}
 	catch (e)
 	{
@@ -156,8 +134,9 @@ function RestartDaemon(network)
 	})
 }
 
-function StartDaemon ()
+function StartDaemon()
 {
+	var newProcess;
 	try
 	{
 		var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
@@ -167,7 +146,7 @@ function StartDaemon ()
 		{
 			rpcport=44445;
 			testnet=" -testnet";
-			addnode=" -addnode=46.4.24.136";
+			addnode=" -addnode=37.148.210.7";
 			bTestnet=true;
 		}
 		else
@@ -183,7 +162,9 @@ function StartDaemon ()
 		console.log("navcoinf.conf file not found.");
 	}
 	if (breindexchainstate) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindexchainstate + " -server -rpcbind=127.0.0.1"+addnode];
+	var ntp="";
+	//ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindexchainstate + " -server -rpcbind=127.0.0.1 -debug -uacomment=NEXT"+addnode+ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	if (os.platform()=="win32")
 	{
@@ -220,7 +201,7 @@ function StartDaemon ()
 				{
 					bError=false;
 					console.log(err)
-					dialog.showMessageBox({ type: 'error', buttons: buttons, message: err.message }, function (buttonIndex)
+					dialog.showMessageBox({ type: 'error', title:"Daemon failed", buttons: ['OK'], message: err.message }, function (buttonIndex)
 					{
 						win=null;
 						app.exit();
@@ -231,12 +212,14 @@ function StartDaemon ()
 			{
 				if (bExit==false)
 				{
-					win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);
+					win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
 				}
 				bExit=true;
 				console.log("Daemon started. PID :" + newProcess.pid);
+				if (!win) createMainWindow();
 				newProcess.on("exit", function ()
 				{
+					newProcess=null;
 					console.log("Daemon stopped.");
 					setTimeout(CloseApp, 1000);
 				});
@@ -255,7 +238,7 @@ function StartDaemon ()
 			{
 				bError=false;
 				console.log(err)
-				dialog.showMessageBox({ type: 'error', buttons: buttons, message: err.message }, function (buttonIndex)
+				dialog.showMessageBox({ type: 'error', title:"Daemon failed",buttons: ['OK'], message: err.message }, function (buttonIndex)
 				{
 					win=null;
 					app.exit();
@@ -266,10 +249,11 @@ function StartDaemon ()
 		{
 			if (bExit==false)
 			{
-				win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);
+				win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
 			}
 			bExit=true;
 			console.log("Daemon started. PID :" + newProcess.pid);
+			if (!win) createMainWindow();
 			newProcess.on("exit", function ()
 			{
 				console.log("Daemon stopped.");
@@ -292,21 +276,18 @@ function CloseApp ()
 	else
 	{
 		StartDaemon();
-		newProcess.on("exit", function ()
-		{
-			console.log("Daemon stopped.");
-			setTimeout(CloseApp, 1000);
-		});
 	}
 }
 
-function createWindow ()
+function createMainWindow ()
 {
 	if (!bError) return false;
+	console.log('Main window created.');
+	var server=require("./server");
 	win=new BrowserWindow({width: 1275, height: 800});
 	//win.setFullScreen(true);
 	win.setMenu(null);
-	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}`);
+	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
    	var shell = require('electron').shell;
 	win.webContents.on('new-window', function(event, url)
 	{
@@ -331,6 +312,8 @@ function createWindow ()
 	{
 		//console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
 		if (line=="mainnet" || line=="testnet") RestartDaemon(line);
+		if (line=="next:open-data-folder") shell.openItem("file://"+appDataPath);
+		if (line=="next:disable-warning") store.set('warning', '0');
 	});
 	//win.webContents.openDevTools();
 	win.on('close', function (event)
@@ -355,7 +338,37 @@ function createWindow ()
 		}
     })
 }
-app.on('ready', createWindow)
+app.on('ready', () => {
+	if (!isDev)
+	{
+		console.log('Running in production');
+		const EBU=require('./updater');
+		EBU.init({'api': 'https://next.navcommunity.net/update/'});
+		EBU.check(function(error)
+		{
+			if(error)
+			{
+				if (error!="no_update_available")
+				{
+					const dialogOpts = {type: 'error',buttons: ['OK'],title: 'Application Update Failed',message: "Update Failed",detail: error}
+					console.log('NEXT update error:'+error);
+					dialog.showMessageBox(dialogOpts);
+				}
+				if (error=="no_update_available")
+				{
+					StartDaemon();
+				}
+				return false;
+			}
+			console.log('NEXT updated successfully!');
+		});
+	}
+	else
+	{
+		console.log('Running in development');
+		StartDaemon();
+	}
+});
 app.on('browser-window-created',function(e,window)
 {
 	window.setMenu(null);
@@ -372,6 +385,6 @@ app.on('activate', () => {
     if (win === null)
 	{
 		console.log("app.on -> activate");
-		createWindow();
+		createMainWindow();
     }
 })

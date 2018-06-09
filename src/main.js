@@ -20,21 +20,24 @@ const router=new VueRouter({
   linkActiveClass: 'nav-item active'
 })
 
-window.acceptTC=false;
 var rpcpassword=document.URL.match(/rpcpassword=([0-9A-Za-z]+)/)
 var rpcport=document.URL.match(/rpcport=([0-9]+)/)
+var warning=document.URL.match(/warning=([0-9]+)/)
+window.acceptTC=false;
 window.config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-if (rpcpassword && rpcport)
+if (rpcpassword && rpcport && warning)
 {
 	window.token=rpcpassword[1];
 	window.rpcport=rpcport[1];
 	window.hostname='http://localhost:3000/';
+	window.warning=warning[1];
 }
 else
 {
-	window.hostname='http://navcommunity.net:3000/';
+	window.hostname='http://localhost:3000/';
 	window.token="test";
 	window.rpcport="44445";
+	window.warning="0";
 }
 new Vue({
   el: '#app',

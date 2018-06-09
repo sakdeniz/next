@@ -8,16 +8,20 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     transactions: [],
+    peers: [],
     blockchainInfo: {},
     stakingInfo: {},
     stakeReport: {},
     info: {},
+	price: {},
+	version:'',
     proposals: [],
 	storeitems: [],
 	storeItems:[],
 	buystoreitems: [],
 	buyStoreItems:[],
     communitySiteProposals: [],
+    communitySiteNews: [],
     combinedProposals: [],
     errorMessage: '',
     error: {},
@@ -25,12 +29,16 @@ const store = new Vuex.Store({
   mutations: {
     error (state, error) { state.errorMessage = error.message; state.error = error },
     addInfo (state, info) { state.info = info, state.errorMessage = '' },
+    addVersion (state, version) { state.version = version, state.errorMessage = '' },
     addTransactions (state, transactions) { state.transactions = transactions },
+    addPrice (state, price) { state.price = price },
+    addPeers (state, peers) { state.peers = peers },
     addBlockchainInfo (state, blockchainInfo) { state.blockchainInfo = blockchainInfo },
     addStakingInfo (state, stakingInfo) { state.stakingInfo = stakingInfo },
     addStakeReport (state, stakeReport) { state.stakeReport = stakeReport },
     addProposals (state, proposals) { state.proposals = proposals || state.proposals },
     addCommunitySiteProposals (state, proposals) { state.communitySiteProposals = proposals },
+    addCommunitySiteNews (state, communitySiteNews) { state.communitySiteNews = communitySiteNews },
     addStoreItems (state, storeitems) { state.storeItems = storeitems },
     buyStoreItems (state, buystoreitems) { state.buyStoreItems = buystoreitems },
     addCombineProposals (state, combined) {
@@ -52,14 +60,29 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+    getVersion(context) {
+      API.getVersion()
+        .then(version => context.commit('addVersion', version))
+        .catch(err => context.commit('error', err))
+    },
     getInfo(context) {
       API.getInfo()
         .then(info => context.commit('addInfo', info))
         .catch(err => context.commit('error', err))
     },
+	getPrice(context) {
+      API.getPrice()
+        .then(price => context.commit('addPrice', price))
+        .catch(err => context.commit('error', err))
+    },
     getTransactions (context) {
       API.getTransactions()
         .then(transactions => context.commit('addTransactions', transactions))
+        .catch(err => context.commit('error', err))
+    },
+    getPeerInfo (context) {
+      API.getPeerInfo()
+        .then(peers => context.commit('addPeers', peers))
         .catch(err => context.commit('error', err))
     },
     getBlockchainInfo (context) {
@@ -85,6 +108,11 @@ const store = new Vuex.Store({
     getCommunitySiteProposals(context) {
       API.getCommunitySiteProposals()
         .then(proposals => context.commit('addCommunitySiteProposals', proposals))
+        .catch(err => context.commit('error', err))
+    },
+    getCommunitySiteNews(context) {
+      API.getCommunitySiteNews()
+        .then(communitySiteNews => context.commit('addCommunitySiteNews', communitySiteNews[1].news))
         .catch(err => context.commit('error', err))
     },
     getStoreItems(context) {

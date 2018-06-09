@@ -20,6 +20,12 @@ const getTransactions = () => {
   .then(response => response.data.reverse())
 }
 
+const getPeerInfo = () => {
+  return axios.post(hostname + "getpeerinfo", { token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 const getBlockchainInfo = () => {
   return axios.post(hostname + "getblockchaininfo", { token: token, rpcport: rpcport }, config)
   .then(handleError)
@@ -50,6 +56,12 @@ const getProposals = () => {
   .then(response => response.data)
 }
 
+const getCommunitySiteNews = () => {
+  return axios.post(hostname + "navcommunity-getnews", { token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 const getCommunitySiteProposals = () => {
   return axios.post(hostname + "navcommunity-getproposals", { token: token, rpcport: rpcport }, config)
   .then(handleError)
@@ -58,6 +70,18 @@ const getCommunitySiteProposals = () => {
 
 const getStoreItems = () => {
   return axios.post(hostname + "navcommunity-getstoreitems", { token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
+const getVersion = () => {
+  return axios.post(hostname + "getversion", { token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
+const getPrice = () => {
+  return axios.get("https://api.coinmarketcap.com/v1/ticker/nav-coin/?convert=EUR", {}, config)
   .then(handleError)
   .then(response => response.data)
 }
@@ -74,8 +98,12 @@ export {
   getStakingInfo,
   getStakeReport,
   getInfo,
+  getVersion,
   getProposals,
   getCommunitySiteProposals,
+  getCommunitySiteNews,
   getStoreItems,
-  buyStoreItems
+  buyStoreItems,
+  getPeerInfo,
+  getPrice
 }

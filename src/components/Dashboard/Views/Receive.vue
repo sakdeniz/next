@@ -20,7 +20,7 @@
           </tr>
         </thead>
         <tbody v-if="addresslist">
-          <tr :key=addresslist.address v-for="item of addresslist" v-if="(!checked && item.balance=='0') || checked && item.balance!='0'">
+          <tr :key=addresslist.address v-for="item of addresslist" v-if="(!checked) || checked && item.balance!='0'">
             <td><button role="button" title='Copy to clipboard' class='ui icon button' v-on:click='copytoclipboard(item.address)'><i class='ion-android-clipboard'></i></button></td>
             <td>
               <div v-bind:id="item.address">{{item.address}}</div>

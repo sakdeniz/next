@@ -5,8 +5,8 @@ var http = require('http');
 var argv = require('minimist')(process.argv.slice(2));
 var qs = require('querystring');
 var axios = require('axios');
-const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 var server;
+const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
 const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support/Navcoin4/' : '/var/local/NavCoin4/');
@@ -30,6 +30,10 @@ function sendError(res, statusCode, body)
 	res.end();
 }
 
+function isJSON(v) {
+    str = v.toString();
+	if (str.charAt(0)=="{" || str.charAt(0)=="[") return true; else return false;
+	}
 server = http.createServer(function (req, res)
 {
 	res.setHeader('Access-Control-Allow-Origin', "*");
@@ -65,6 +69,36 @@ server = http.createServer(function (req, res)
 			}
 			else
 			{
+				if (req.url=="/command")
+				{
+					var strcmd=post.command;
+					var methodname="";
+					var params=[];
+					strcmd=strcmd.split(" ");
+					for(var i =0; i < strcmd.length; i++)
+					{
+						if (i==0) methodname=strcmd[i];
+						if (i!=0) params.push(strcmd[i]);
+					}
+					console.log("method="+methodname);
+					console.log("params="+params);
+					const batch = [
+						{ method: methodname, parameters: params }
+					]
+					client.command(batch).then((retval) => {
+						if (isJSON(retval))
+						{
+							console.log("json");
+							sendResponse(res, 200,JSON.stringify(retval,null,4));
+						}
+						else
+						{
+							console.log("not json");
+							sendResponse(res, 200,String(retval));
+						}
+						console.log(retval);
+						}).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/setpassword")
 				{
 					var fs=require('fs');
@@ -140,6 +174,13 @@ server = http.createServer(function (req, res)
 						}
 					});
 				}
+				if (req.url=="/getversion")
+				{
+					var packageInfo = require(__dirname+'/package.json');
+					var version="";
+					if (packageInfo.version) version=packageInfo.version; else version="Unknown";
+					sendResponse(res, 200,version);
+				}
 				if (req.url=="/getaddressbook")
 				{
 					var fs=require('fs');
@@ -152,6 +193,14 @@ server = http.createServer(function (req, res)
 					var fs=require('fs');
 					var data=fs.readFileSync(fileConfig,'utf8');
 					console.log(data);
+					sendResponse(res, 200,data);
+				}
+				if (req.url=="/getlogs")
+				{
+					var fileLog;
+					if (post.rpcport=="44444") fileLog=appDataPath+"debug.log"; else fileLog=appDataPath+"testnet3/debug.log";
+					var fs=require('fs');
+					var data=fs.readFileSync(fileLog,'utf8');
 					sendResponse(res, 200,data);
 				}
 				if (req.url=="/saveconfig")
@@ -189,15 +238,41 @@ server = http.createServer(function (req, res)
 						client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 					}
 				}
+				if (req.url=="/proposaldonate")
+				{
+					console.log("Proposal donate. Hash:"+post.proposal_hash+",Payment Address:"+post.proposal_paymentaddress+",Amount:"+post.donate_amount);
+					client.sendToAddress(post.proposal_paymentaddress,post.donate_amount,"Proposal Donate (" + post.donator_name + ") (" + post.proposal_hash + ")","").then((retval) => {
+						sendResponse(res, 200,JSON.stringify(retval));
+						axios.post("https://navcommunity.net/api/proposaldonate.php", "hash="+post.proposal_hash+"&amount="+post.donate_amount+"&address="+post.proposal_paymentaddress+"&donator_name="+post.donator_name+"&txid="+retval,config)
+						.then((retval) => console.log(JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+					}
+					).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/createproposal")
 				{
-					console.log("Address :"+post.navcoinaddress+"\r\nAmount:"+post.amount+"\r\nDeadline:"+post.deadline+"\r\nDesc:"+post.desc);
-					client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					console.log("Address :"+post.navcoinaddress+"\r\nAmount:"+post.amount+"\r\nDeadline:"+post.deadline+"\r\nDesc:"+post.desc+"\r\nOwner:"+post.owner+"\r\nWeb Site URL:"+post.website+"\r\nE-Mail:"+post.email+"\r\nShort Description:"+post.short_desc+"\r\nLong Description:"+post.long_desc);
+					client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) =>	{
+						var t=JSON.parse(JSON.stringify(retval));
+						axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.deadline+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
+						.then((retval) => console.log(JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+						sendResponse(res, 200,JSON.stringify(retval));
+					}
+					).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/proposalvote")
 				{
 					console.log("Hash:"+post.proposal_hash+"\r\nVote:"+post.vote_type);
 					client.proposalvote(post.proposal_hash.toString(),post.vote_type.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/paymentrequestvote")
+				{
+					console.log("Hash:"+post.paymentrequest_hash+"\r\nVote:"+post.vote_type);
+					client.paymentrequestvote(post.paymentrequest_hash.toString(),post.vote_type.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/createpaymentrequest")
+				{
+					console.log("Hash:"+post.proposal_hash);
+					client.createpaymentrequest(post.proposal_hash.toString(),post.amount.toString(),post.id.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/getnewaddress")
 				{
@@ -214,6 +289,10 @@ server = http.createServer(function (req, res)
 				if (req.url=="/getinfo")
 				{
 					client.getInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/getpeerinfo")
+				{
+					client.getPeerInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/cfundstats")
 				{
@@ -277,18 +356,28 @@ server = http.createServer(function (req, res)
 				}
 				if (req.url=="/navcommunity-getproposals")
 				{
-					axios.post("http://navcommunity.net/api/getproposals.php", {},{})
+					axios.post("https://navcommunity.net/api/getproposals.php", {},{})
+					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+				}
+				if (req.url=="/navcommunity-getnews")
+				{
+					axios.post("https://navcommunity.net/api/getnews.php", {},{})
+					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+				}
+				if (req.url=="/navcommunity-getmerchantlist")
+				{
+					axios.post("https://navcommunity.net/api/getmerchantlist.php", {},{})
 					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 				}
 				if (req.url=="/navcommunity-getstoreitems")
 				{
-					axios.post("http://navcommunity.net/api/getstoreitems.php", {},{})
+					axios.post("https://navcommunity.net/api/getstoreitems.php", {},{})
 					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 				}
 				if (req.url=="/navcommunity-buystoreitems")
 				{
 					client.sendToAddress(post.store_item_payment_address,post.store_item_price,post.store_item_id+"/"+post.store_item_name,post.store_item_id+"/"+post.store_item_name).then((retval) => 
-					axios.post("http://navcommunity.net/api/buystoreitems.php", "store_item_id="+post.store_item_id+"&store_item_price="+post.store_item_price+"&store_item_payment_address="+post.store_item_payment_address+"&name="+post.name+"&surname="+post.surname+"&address="+post.address+"&country="+post.country+"&notes="+post.notes+"&city="+post.city+"&zipcode="+post.zipcode+"&state="+post.state+"&phone="+post.phone+"&email="+post.email+"&notes="+post.notes+"&txid="+retval,config)
+					axios.post("https://navcommunity.net/api/buystoreitems.php", "store_item_id="+post.store_item_id+"&store_item_price="+post.store_item_price+"&store_item_payment_address="+post.store_item_payment_address+"&name="+post.name+"&surname="+post.surname+"&address="+post.address+"&country="+post.country+"&notes="+post.notes+"&city="+post.city+"&zipcode="+post.zipcode+"&state="+post.state+"&phone="+post.phone+"&email="+post.email+"&notes="+post.notes+"&txid="+retval,config)
 					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 					).catch((e) => {sendError(res, 200,e);});
 					

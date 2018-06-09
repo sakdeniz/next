@@ -13,60 +13,24 @@
         <span class="navbar-toggler-bar burger-lines"></span>
         <span class="navbar-toggler-bar burger-lines"></span>
       </button>
-      <div class="collapse navbar-collapse justify-content-end">
-        <span style="font-size:24px;color:#bbbbbb;">
+      <div class="collapse navbar-nav navbar-collapse justify-content-end">
+        <sui-dropdown icon="ion-navicon-round" class="icon tiny gray" text="" button floating>
+          <sui-dropdown-menu>
+            <router-link to="/admin/console" tag="sui-dropdown-item"><i class="ion-code"></i>&nbsp;Console</router-link>
+            <router-link to="/admin/logs" tag="sui-dropdown-item"><i class="ion-ios-paper-outline"></i>&nbsp;Logs</router-link>
+            <router-link to="/admin/peer-list" tag="sui-dropdown-item"><i class="ion-radio-waves"></i>&nbsp;Peer List</router-link>
+            <router-link to="/admin/softforks" tag="sui-dropdown-item"><i class="ion-fork-repo"></i>&nbsp;Soft Forks</router-link>
+            <router-link to="/admin/merchants" tag="sui-dropdown-item"><i class="ion-earth"></i>&nbsp;Merchants</router-link>
+          </sui-dropdown-menu>
+        </sui-dropdown>&nbsp;&nbsp;&nbsp;
+		<span style="font-size:24px;color:#bbbbbb;">
 		<a class="external" style="color:#bbbbbb;" title="Facebook" target="_blank" href="https://www.facebook.com/navcoin"><i class="ion-social-facebook"></i></a>&nbsp;&nbsp;&nbsp;
 		<a class="external" style="color:#bbbbbb;" title="Twitter" target="_blank" href="https://www.twitter.com/navcoin"><i class="ion-social-twitter"></i></a>&nbsp;&nbsp;&nbsp;
 		<a style="color:#bbbbbb;" title="Github" target="_blank" href="https://www.github.com/navcoin"><i class="ion-social-github"></i></a>&nbsp;&nbsp;&nbsp;
 		<a style="color:#bbbbbb;" title="Reddit" target="_blank" href="https://www.reddit.com/r/NavCoin/"><i class="ion-social-reddit"></i></a>&nbsp;&nbsp;&nbsp;
 		<a class="external" style="color:#bbbbbb;" title="Instagram" target="_blank" href="https://www.instagram.com/navcore"><i class="ion-social-instagram"></i></a>&nbsp;&nbsp;&nbsp;
 		</span>
-		<ul class="nav navbar-nav mr-auto" style="display:none">
-          <li class="nav-item">
-            <a class="nav-link" href="#" data-toggle="dropdown">
-              <i class="nc-icon nc-palette"></i>
-            </a>
-          </li>
-          <drop-down tag="li">
-            <template slot="title">
-              <i class="nc-icon nc-planet"></i>
-              <b class="caret"></b>
-              <span class="notification">5</span>
-            </template>
-            <a class="dropdown-item" href="#">Notification 1</a>
-            <a class="dropdown-item" href="#">Notification 2</a>
-            <a class="dropdown-item" href="#">Notification 3</a>
-            <a class="dropdown-item" href="#">Notification 4</a>
-            <a class="dropdown-item" href="#">Another notification</a>
-          </drop-down>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nc-icon nc-zoom-split"></i>
-              <span class="d-lg-block">&nbsp;Search</span>
-            </a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ml-auto" style="display:none">
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              Account
-            </a>
-          </li>
-          <drop-down title="Dropdown">
-            <a class="dropdown-item" href="#">Action</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something</a>
-            <div class="divider"></div>
-            <a class="dropdown-item" href="#">Separated link</a>
-          </drop-down>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              Log out
-            </a>
-          </li>
-        </ul>
+
       </div>
     </div>
   </nav>
