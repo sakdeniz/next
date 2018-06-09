@@ -11,12 +11,12 @@ const url=require('url');
 const crypto=require('crypto');
 const Store=require('electron-store');
 const store=new Store();
-const appDataPath=app.getPath("appData")+"\\NavCoin4";
 const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 const randomBytes=crypto.randomBytes(256);
 const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 var iniparser=require('iniparser');
+var appDataPath;
 var executablePath;
 var daemonPath;
 var rpcport;
@@ -32,6 +32,7 @@ var now=new Date();
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var warning;
 if (store.get('warning')) warning=store.get('warning'); else warning="1";
+if (os.type()=="Window_NT") appDataPath=app.getPath("appData")+"/NavCoin4"; else appDataPath=app.getPath("appData")+"\\NavCoin4";
 require('electron-context-menu')({
 	showInspectElement:false,
 	labels: {
