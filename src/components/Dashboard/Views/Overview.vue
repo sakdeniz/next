@@ -147,6 +147,14 @@ function numberWithCommas(n) {
   );
 }
 
+function errorhandler(data) {
+  if (data) {
+    if (data["error"]) {
+      swal("Error!", data["error"]["message"], "error");
+    }
+  }
+}
+
 export default {
   name: "Overview",
   components: {
@@ -355,7 +363,7 @@ export default {
 			{
 				if (!res.data["error"])
 				{
-					swal("Success!", "You have successfully donated.", "success");
+					swal("Thanks!", "You have successfully donated.", "success");
 				}
 			}
 			})

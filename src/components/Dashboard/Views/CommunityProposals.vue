@@ -485,7 +485,7 @@ export default {
           console.log("Status:" + res.status);
           console.log("Return:" + res.data);
           if (res.data == null) {
-            swal("Success!", "You have successfully voted.", "success");
+            swal("Thanks!", "You have successfully voted.", "success");
           }
         })
         .catch(function(err) {
