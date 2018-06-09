@@ -82,21 +82,16 @@ server = http.createServer(function (req, res)
 					}
 					console.log("method="+methodname);
 					console.log("params="+params);
-					const batch = [
-						{ method: methodname, parameters: params }
-					]
+					const batch = [{ method: methodname, parameters: params }]
 					client.command(batch).then((retval) => {
 						if (isJSON(retval))
 						{
-							console.log("json");
 							sendResponse(res, 200,JSON.stringify(retval,null,4));
 						}
 						else
 						{
-							console.log("not json");
 							sendResponse(res, 200,String(retval));
 						}
-						console.log(retval);
 						}).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/setpassword")
@@ -348,9 +343,13 @@ server = http.createServer(function (req, res)
 					var fs=require('fs');
 					var data=fs.readFileSync(fileConfig,'utf8');
 					var arr=[];
-					data.split("\r\n").map(function (val)
+					data.split("\n").map(function (val)
 					{
-						if (val.indexOf("addanonserver")!=-1) arr.push(val.split("=")[1]);
+						if (val.indexOf("addanonserver")!=-1)
+						{
+							arr.push(val.split("=")[1]);
+							console.log("Anon server -> " + val.split("=")[1])
+						}
 					});
 					sendResponse(res, 200,JSON.stringify(arr));
 				}
