@@ -317,7 +317,7 @@ function createMainWindow ()
 			var path=appDataPath;
 			path=path.replace(' ', '\ ');
 			console.log("Open data folder:"+path);
-			shell.openItem(appDataPath);
+			shell.openItem(path);
 		}
 		if (line=="next:disable-warning") store.set('warning', '0');
 	});
