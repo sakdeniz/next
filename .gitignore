@@ -5,6 +5,5 @@ next-win32-x64/
 node_modules/
 electron-builder/
 resources/
-navcoin-cli.exe
-navcoind.exe
+*.exe
 *.zip
