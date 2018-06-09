@@ -315,7 +315,7 @@ function createMainWindow ()
 		if (line=="next:open-data-folder")
 		{
 			var path=appDataPath;
-			path=path.replace(' ', '\ ');
+			path=path.replace(/ /g, '\\ ');
 			console.log("Open data folder:"+path);
 			shell.openItem(path);
 		}
