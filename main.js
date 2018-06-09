@@ -407,3 +407,7 @@ app.on('activate', () => {
 		createMainWindow();
     }
 })
+
+process.on('uncaughtException', function (error) {
+    console.log(error);
+});
