@@ -330,7 +330,7 @@ function createMainWindow ()
 			var path=appDataPath;
 			path=path.replace(/ /g, '\\ ');
 			console.log("Open data folder:"+path);
-			shell.openItem(path);
+			shell.openItem(`${path}`);
 		}
 		if (line=="next:disable-warning") store.set('warning', '0');
 	});
