@@ -314,7 +314,9 @@ function createMainWindow ()
 		if (line=="mainnet" || line=="testnet") RestartDaemon(line);
 		if (line=="next:open-data-folder")
 		{
-			console.log("Open data folder:"+appDataPath);
+			var path=appDataPath;
+			path=path.replace(' ', '\ ');
+			console.log("Open data folder:"+path);
 			shell.openItem(appDataPath);
 		}
 		if (line=="next:disable-warning") store.set('warning', '0');
