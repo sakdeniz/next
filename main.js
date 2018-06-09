@@ -312,7 +312,11 @@ function createMainWindow ()
 	{
 		//console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
 		if (line=="mainnet" || line=="testnet") RestartDaemon(line);
-		if (line=="next:open-data-folder") shell.openItem("file://"+appDataPath);
+		if (line=="next:open-data-folder")
+		{
+			console.log("Open data folder:"+appDataPath);
+			shell.openItem(appDataPath);
+		}
 		if (line=="next:disable-warning") store.set('warning', '0');
 	});
 	//win.webContents.openDevTools();
