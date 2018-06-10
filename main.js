@@ -43,7 +43,7 @@ else if (os.type()==="Darwin")
 }
 else
 {
-	appDataPath=app.getPath("appData")+"/NavCoin4";
+	appDataPath=process.env.HOME+"/.navcoin4";
 }
 require('electron-context-menu')({
 	showInspectElement:false,
