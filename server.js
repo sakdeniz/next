@@ -9,7 +9,7 @@ var server;
 const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
-const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/Navcoin4/' : process.env.HOME+'/.navcoin4');
+const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/Navcoin4/' : process.env.HOME+'/.navcoin4/');
 const fileConfig=appDataPath+"navcoin.conf";
 const fileAddressBook=appDataPath+"addressbook.dat";
 const fileWalletPassword=appDataPath+"walletpass.dat";
