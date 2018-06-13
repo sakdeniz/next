@@ -361,24 +361,6 @@ function createMainWindow ()
     })
 }
 app.on('ready', () => {
-	  if (process.platform === 'darwin') {
-    Menu.setApplicationMenu(Menu.buildFromTemplate([
-      {
-        label: 'Edit',
-        submenu: [
-          { role: 'undo' },
-          { role: 'redo' },
-          { type: 'separator' },
-          { role: 'cut' },
-          { role: 'copy' },
-          { role: 'paste' },
-          { role: 'pasteandmatchstyle' },
-          { role: 'delete' },
-          { role: 'selectall' }
-        ]
-      }
-    ]));
-	  }
 	if (!isDev)
 	{
 		console.log('Running in production');
@@ -425,6 +407,23 @@ app.on('activate', () => {
 	{
 		console.log("app.on -> activate");
 		createMainWindow();
+   	  if (process.platform === 'darwin') {
+    Menu.setApplicationMenu(Menu.buildFromTemplate([
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'pasteandmatchstyle' },
+          { role: 'delete' },
+          { role: 'selectall' }
+        ]
+      }
+	  ]));}
     }
 })
 
