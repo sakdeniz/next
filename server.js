@@ -58,7 +58,9 @@ server = http.createServer(function (req, res)
 		}).catch((e) =>
 		{
 			//console.log("ERROR CODE:"+e.code+" ERROR MESSAGE:"+e.message+" ERROR TYPE:"+e.name);
-			console.log(req.url);
+			var now=new Date(); 
+			var datetime=now.getHours()+':'+now.getMinutes()+':'+now.getSeconds(); 
+			console.log(datetime + " " + req.url);
 			if(e.code==401)
 			{
 				console.log(e.message);

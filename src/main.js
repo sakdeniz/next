@@ -48,7 +48,7 @@ new Vue({
   router
 })
 
-if (!rpcpassword || !rpcport)
+/*if (!rpcpassword || !rpcport)
 {
 	vm = new Vue({
 	el: '#app',
@@ -57,15 +57,4 @@ if (!rpcpassword || !rpcport)
 	render: h => h(NotFound),
 	router
 	})
-}
-else
-{
-	vm = new Vue({
-    store: store,
-	el: '#app',
-	data:{},
-	methods:{},
-	render: h => h(App),
-	router
-	})
-}
+}*/

@@ -4,7 +4,7 @@ var os=require("os");
 var child=require('child_process').execFile;
 const dialog=require('electron').dialog;
 const axios=require('axios');
-const {app,Menu,BrowserWindow}=require('electron');
+const {app,BrowserWindow}=require('electron');
 const isDev=require('electron-is-dev');
 const path=require('path');
 const url=require('url');
@@ -31,21 +31,6 @@ var bExit=true;
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var warning;
-const menuTemplate = [
-    {
-        label: "File",
-        submenu: [{role: 'TODO'}]
-    },
-    {
-        label: "Menu1",
-        submenu: [{role: 'TODO'}]
-    },
-    {
-        label: "Menu2",
-        submenu: [{role: 'TODO'}]
-    }
-];
-
 if (store.get('warning')) warning=store.get('warning'); else warning="1";
 console.log("OS Type:"+os.type());
 if (os.type()==="Windows_NT")
@@ -314,13 +299,8 @@ function createMainWindow ()
 	var server=require("./server");
 	win=new BrowserWindow({width: 1275, height: 800});
 	//win.setFullScreen(true);
-	if (process.platform !== 'darwin')
-	{
-		//win.setMenu(null);
-	}
+	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
-    const menu = Menu.buildFromTemplate(menuTemplate);
-    Menu.setApplicationMenu(menu);
    	var shell = require('electron').shell;
 	win.webContents.on('new-window', function(event, url)
 	{
@@ -410,6 +390,7 @@ app.on('ready', () => {
 });
 app.on('browser-window-created',function(e,window)
 {
+	window.setMenu(null);
 	console.log("app.on -> browser-window-created");
 });
 app.on('window-all-closed', () => {
