@@ -299,28 +299,10 @@ function createMainWindow ()
 	var server=require("./server");
 	win=new BrowserWindow({width: 1275, height: 800});
 	//win.setFullScreen(true);
-	  if (process.platform === 'darwin') {
-    Menu.setApplicationMenu(Menu.buildFromTemplate([
-      {
-        label: 'Edit',
-        submenu: [
-          { role: 'undo' },
-          { role: 'redo' },
-          { type: 'separator' },
-          { role: 'cut' },
-          { role: 'copy' },
-          { role: 'paste' },
-          { role: 'pasteandmatchstyle' },
-          { role: 'delete' },
-          { role: 'selectall' }
-        ]
-      }
-    ]));
-  }
-  else
-  {
-	win.setMenu(null);
-  }
+	if (process.platform !== 'darwin')
+	{
+		win.setMenu(null);
+	}
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
    	var shell = require('electron').shell;
 	win.webContents.on('new-window', function(event, url)
@@ -379,6 +361,24 @@ function createMainWindow ()
     })
 }
 app.on('ready', () => {
+	  if (process.platform === 'darwin') {
+    Menu.setApplicationMenu(Menu.buildFromTemplate([
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'pasteandmatchstyle' },
+          { role: 'delete' },
+          { role: 'selectall' }
+        ]
+      }
+    ]));
+	  }
 	if (!isDev)
 	{
 		console.log('Running in production');
