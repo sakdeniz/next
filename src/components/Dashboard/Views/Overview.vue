@@ -1,7 +1,6 @@
 <template>
 <div class="content">
   <div class="container-fluid">
-
   <div v-if="errorMessage" class="ui tiny button gray" style="margin-bottom:25px">
       <div class="row">
         <div class="col-md-12"><i class="asterisk loading icon"></i>&nbsp;{{errorMessage}}</div>
@@ -109,14 +108,12 @@
 					</tr>
 					<tr v-for="paymentRequest in proposal.paymentRequests">
 					<td colspan='6'>
+						<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
 						<button title="Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
 						<button title="No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
 						<button title="Remove" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
 						<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
 					</td>
-					</tr>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
-						<td colspan='6'><pre>Payment Request Hash : </pre><code><small>{{paymentRequest.hash}}</small></code></td>
 					</tr>
 					</tbody>
 					</table>
@@ -240,6 +237,13 @@ export default {
     calculateBlockchainVerification: verificationprogress => {
       return verificationprogress ? parseFloat(verificationprogress * 100).toFixed(2) : "";
     },
+	showinfo: (title,html,type) => {
+	swal({
+        title: title,
+        html: html,
+		allowOutsideClick: false,
+		type:type});
+	},
     getTime: () => {
       return moment().format("D MMM, YYYY HH:mm:ss");
     },
@@ -250,14 +254,18 @@ export default {
       return proposals.filter(item => item.featured === '1')
     },
     resync: function() {
-      this.getBlockchainInfo();
-      this.getInfo();
-      this.getStakingInfo();
-      this.getStakeReport();
-      this.getTransactions();
-      if (this.blockchainInfo.verificationprogress) {
-        if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0) == "100") this.getCombinedProposals();
-      }
+	  this.getBlockchainInfo();
+	  if (JSON.stringify(this.blockchainInfo)!="{}")
+	  {
+		this.getInfo();
+		this.getStakingInfo();
+		this.getStakeReport();
+		this.getTransactions();
+		if (this.blockchainInfo.verificationprogress)
+		{
+			if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0) == "100") this.getCombinedProposals();
+		}
+	  }
     },
     switchnetwork: function(network) {
 	  clearInterval(this.timer);

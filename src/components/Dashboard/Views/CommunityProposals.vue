@@ -162,9 +162,9 @@
               <div class="row" style="margin-top:5px">
 			  <div class="col-md-12">
 			  <div class="ui buttons tiny">
-                <button title="Yes" @click="proposalvote(proposal.hash,'yes')" class='ui button tiny green'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-                <button title="No" class="ui button tiny red" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-				<button title="Remove" @click="proposalvote(proposal.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
+                <button title="Vote Yes" @click="proposalvote(proposal.hash,'yes')" class='ui button tiny green'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
+                <button title="Vote No" class="ui button tiny red" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
+				<button title="Remove Vote" @click="proposalvote(proposal.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
 			</div>
 			<div v-show="proposal.status=='Accepted'" class="ui labeled button tiny right floated" tabindex="0">
 				<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
@@ -190,14 +190,12 @@
 					</tr>
 					<tr v-for="paymentRequest in proposal.paymentRequests">
 					<td colspan='6'>
-						<button title="Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-						<button title="No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-						<button title="Remove" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
+						<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
+						<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
+						<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
+						<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
 						<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
 					</td>
-					</tr>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
-						<td colspan='6'><pre>Payment Request Hash : </pre><code><small>{{paymentRequest.hash}}</small></code></td>
 					</tr>
 					</tbody>
 					</table>
@@ -299,6 +297,13 @@ export default {
       var parts = n.toString().split(".");
       return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
     },
+	showinfo: (title,html,type) => {
+	swal({
+        title: title,
+        html: html,
+		allowOutsideClick: false,
+		type:type});
+	},
     listproposals: function(filter, proposal_category_id) {
       var array_proposals_remote = [];
       var array_proposals = [];
@@ -485,7 +490,7 @@ export default {
           console.log("Status:" + res.status);
           console.log("Return:" + res.data);
           if (res.data == null) {
-            swal("Thanks!", "You have successfully voted.", "success");
+            swal("Success!", "You have successfully voted.", "success");
           }
         })
         .catch(function(err) {
@@ -558,7 +563,7 @@ export default {
 			{
 				if (!res.data["error"])
 				{
-					swal("Success!", "You have successfully donated.", "success");
+					swal("Thanks!", "You have successfully donated.", "success");
 				}
 			}
 			})

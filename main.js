@@ -4,7 +4,7 @@ var os=require("os");
 var child=require('child_process').execFile;
 const dialog=require('electron').dialog;
 const axios=require('axios');
-const {app,BrowserWindow}=require('electron');
+const {app,Menu,BrowserWindow}=require('electron');
 const isDev=require('electron-is-dev');
 const path=require('path');
 const url=require('url');
@@ -31,6 +31,20 @@ var bExit=true;
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var warning;
+var template = [{
+    label: "Edit",
+    submenu: [
+        { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
+        { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
+        { type: "separator" },
+        { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
+        { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
+        { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
+        { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+    ]}
+];
+const menu=Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu);
 if (store.get('warning')) warning=store.get('warning'); else warning="1";
 console.log("OS Type:"+os.type());
 if (os.type()==="Windows_NT")
@@ -297,9 +311,9 @@ function createMainWindow ()
 	if (!bError) return false;
 	console.log('Main window created.');
 	var server=require("./server");
-	win=new BrowserWindow({width: 1275, height: 800});
+	win=new BrowserWindow({width: 1275, height: 800,autoHideMenuBar:true,thickFrame:true});
 	//win.setFullScreen(true);
-	win.setMenu(null);
+	//win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
    	var shell = require('electron').shell;
 	win.webContents.on('new-window', function(event, url)
@@ -334,7 +348,7 @@ function createMainWindow ()
 		}
 		if (line=="next:disable-warning") store.set('warning', '0');
 	});
-	//win.webContents.openDevTools();
+	win.webContents.openDevTools();
 	win.on('close', function (event)
 	{
 		event.preventDefault();
@@ -390,7 +404,7 @@ app.on('ready', () => {
 });
 app.on('browser-window-created',function(e,window)
 {
-	window.setMenu(null);
+	//window.setMenu(null);
 	console.log("app.on -> browser-window-created");
 });
 app.on('window-all-closed', () => {

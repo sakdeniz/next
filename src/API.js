@@ -7,10 +7,9 @@ const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' 
 
 const handleError = (res) => {
   if (res.data && res.data.error) {
-    console.log(res.data.error)
+    console.log(res.data.error);
     throw res.data.error
   }
-
   return res
 }
 
