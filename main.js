@@ -311,7 +311,7 @@ function createMainWindow ()
 	if (!bError) return false;
 	console.log('Main window created.');
 	var server=require("./server");
-	win=new BrowserWindow({width: 1275, height: 800,autoHideMenuBar:true,thickFrame:true});
+	win=new BrowserWindow({width: 1275, height: 800,autoHideMenuBar:false,thickFrame:true});
 	//win.setFullScreen(true);
 	//win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
