@@ -385,7 +385,7 @@ export default {
 	  
 	  swal({
   title: 'Are you sure?',
-  html: "You won't be able to revert this!<br>When encryption complete NEXT wallet will be closed automatically.",
+  html: "You won't be able to revert this!<br>After encryption complete NEXT wallet will be closed automatically. You should manually start NEXT.",
   type: 'warning',
   showCancelButton: true,
   confirmButtonColor: '#3085d6',
@@ -418,6 +418,7 @@ export default {
     },
     walletPassphrase: function(bUnlockForStaking) {
 	  let vm = this;
+	  if (bUnlockForStaking) text="Wallet unlocked for staking only."; else text="Wallet unlocked.";
       if (!$("#walletpassphrase").val()) {
         swal({
           type: 'warning',
@@ -454,7 +455,7 @@ export default {
         }, window.config).then(function(res) {
 		  if (res.data==null)
 		  {
-              swal({type: 'success',title: 'Lock Wallet',text: "Wallet locked"});
+              swal({type: 'success',title: 'Lock Wallet',text: text});
           } else {
             swal({
               type: 'warning',
