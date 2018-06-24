@@ -393,7 +393,7 @@ export default {
   confirmButtonText: 'Yes, encrypt the wallet!'
 }).then((result) => {
   if (result.value) {
-		swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,html: 'Your wallet is being encrypted.<br><br>NEXT Wallet will automatically close itself after encrption complete.<br><br>Please wait...'});
+		swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,html: 'Your wallet is being encrypted.<br><br>NEXT Wallet will automatically close itself after encryption complete.<br><br>Please wait...'});
         axios.post(window.hostname + 'encryptwallet ', {
           token: window.token,
           rpcport: window.rpcport,
@@ -418,7 +418,8 @@ export default {
     },
     walletPassphrase: function(bUnlockForStaking) {
 	  let vm = this;
-	  if (bUnlockForStaking) text="Wallet unlocked for staking only."; else text="Wallet unlocked.";
+	  var unlockText;
+	  if (bUnlockForStaking) unlockText="Your wallet unlocked for staking only"; else unlockText="Your wallet unlocked";
       if (!$("#walletpassphrase").val()) {
         swal({
           type: 'warning',
@@ -435,7 +436,7 @@ export default {
 		vm.walletpassphrase="";
 		  if (res.data==null)
 		  {
-              swal({type: 'success',title: 'Unlock Wallet',text: "Wallet unlocked."});
+              swal({type: 'success',title: 'Unlock Wallet',text: unlockText});
           } else {
             swal({
               type: 'warning',
@@ -455,7 +456,7 @@ export default {
         }, window.config).then(function(res) {
 		  if (res.data==null)
 		  {
-              swal({type: 'success',title: 'Lock Wallet',text: text});
+              swal({type: 'success',title: 'Lock Wallet',text: "Your wallet locked"});
           } else {
             swal({
               type: 'warning',
