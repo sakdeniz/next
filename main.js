@@ -16,6 +16,7 @@ const randomBytes=crypto.randomBytes(256);
 const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 var iniparser=require('iniparser');
+//
 var appDataPath;
 var executablePath;
 var daemonPath;
@@ -23,16 +24,41 @@ var rpcport;
 var testnet;
 var addnode;
 var reindexchainstate;
-var bshell=false;
-var breindexchainstate=false;
+var reindex;
+var zapwallettxes;
+//
+var bShell=false;
+var bRepairWallet=false;
+var bReindexChainState=false;
+var bReindex=false;
 var bTestnet=false;
 var bError=true;
 var bExit=true;
+//
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var warning;
+var eWindow;
 if (store.get('warning')) warning=store.get('warning'); else warning="1";
-console.log("OS Type:"+os.type());
+if (store.get('repair_wallet')=="1")
+{
+	store.set('repair_wallet', '0');
+	bRepairWallet=true;
+}
+if (store.get('reindex')=="1")
+{
+	store.set('reindex', '0');
+	bReindex=true;
+}
+if (store.get('reindex-chainstate')=="1")
+{
+	store.set('reindex-chainstate', '0');
+	bReindexChainState=true;
+}
+console.log("OS Type : "+os.type());
+console.log("Repair : "+bRepairWallet);
+console.log("Reindex : "+bReindex);
+console.log("Reindex Chainstate : "+bReindexChainState);
 if (os.type()==="Windows_NT")
 {
 	appDataPath=app.getPath("appData")+"\\NavCoin4";
@@ -72,6 +98,55 @@ else
 	testnet="";
 	addnode="";
 }
+
+function deleteFile(dir, file) {
+	var fs=require('fs');
+    return new Promise(function (resolve, reject) {
+        var filePath = path.join(dir, file);
+        fs.lstat(filePath, function (err, stats) {
+            if (err) {
+                return reject(err);
+            }
+            if (stats.isDirectory()) {
+                resolve(deleteDirectory(filePath));
+            } else {
+                fs.unlink(filePath, function (err) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve();
+                });
+            }
+        });
+    });
+}
+
+function deleteDirectory(dir) {
+return new Promise(function (resolve, reject) {
+		var fs=require('fs');
+        fs.access(dir, function (err) {
+            if (err) {
+                return reject(err);
+            }
+            fs.readdir(dir, function (err, files) {
+                if (err) {
+                    return reject(err);
+                }
+                Promise.all(files.map(function (file) {
+                    return deleteFile(dir, file);
+                })).then(function () {
+                    fs.rmdir(dir, function (err) {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve();
+                    });
+                }).catch(reject);
+            });
+        });
+    });
+}
+
 function RestartDaemon(network)
 {
 	bExit=false;
@@ -150,11 +225,17 @@ function RestartDaemon(network)
 function StartDaemon()
 {
 	var newProcess;
+	var configFile=appDataPath;
+	if (os.type()==="Windows_NT") configFile+="\\";
+	if (os.type()==="Darwin") configFile+="/";
+	if (os.type()==="Linux") configFile+="/";
+	configFile+="navcoin.conf";
+	console.log("Checking navcoin.conf file : " + configFile);
 	try
 	{
-		var conf=iniparser.parseSync(appDataPath+"\\navcoin.conf");
+		var conf=iniparser.parseSync(configFile);
 		console.log("navcoin.conf file found.");
-		console.log("Config.testnet:"+conf.testnet);
+		console.log("Config file testnet variable :"+conf.testnet);
 		if (conf.testnet=="1")
 		{
 			rpcport=44445;
@@ -172,32 +253,45 @@ function StartDaemon()
 	}
 	catch (e)
 	{
-		console.log("navcoinf.conf file not found.");
+		console.log("navcoin.conf file not found, creating...");
+		var fs=require('fs');
+		var fileContent="testnet=0\r\nstaking=0\r\ntxindex=0\r\naddressindex=0";
+		try
+		{
+			fs.writeFileSync(configFile, fileContent);
+			console.log("navcoin.conf file created successfully.");
+		}
+		catch (e)
+		{
+			console.log("Cannot write file ", e);
+		}
 	}
-	if (breindexchainstate) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
+	if (bReindex) reindex=" -reindex"; else reindex="";
+	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
+	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
 	var ntp="";
 	//ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindexchainstate + " -server -rpcbind=127.0.0.1 -debug -uacomment=NEXT"+addnode+ntp];
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + " -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	if (os.platform()=="win32")
 	{
 		executablePath="navcoind.exe";
-		bshell=false;
+		bShell=false;
 	}
 	if (os.platform()=="linux")
 	{
 		executablePath="./navcoind";
-		bshell=true;
+		bShell=true;
 	}
 	if (os.platform()=="darwin")
 	{
 		executablePath="./navcoind";
-		bshell=true;
+		bShell=true;
 	}
-	const defaults = {cwd:__dirname,env:process.env,shell:bshell,windowsVerbatimArguments:true};
+	const defaults = {cwd:__dirname,env:process.env,shell:bShell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());
 	console.log("App Data Path : "+appDataPath);
-	console.log("Shell : "+bshell);
+	console.log("Shell : "+bShell);
 	console.log("Platform : "+os.platform());
 	console.log("Testnet : "+bTestnet);
 	console.log("RPC Port : "+rpcport);
@@ -213,12 +307,8 @@ function StartDaemon()
 				if (err)
 				{
 					bError=false;
-					console.log(err)
-					dialog.showMessageBox({ type: 'error', title:"Daemon failed", buttons: ['OK'], message: err.message }, function (buttonIndex)
-					{
-						win=null;
-						app.exit();
-					});
+					console.log(err);
+					displayError("Daemon start failed",err.message);
 				}
 			});
 			if (newProcess.pid!=undefined)
@@ -250,12 +340,8 @@ function StartDaemon()
 			if (err)
 			{
 				bError=false;
-				console.log(err)
-				dialog.showMessageBox({ type: 'error', title:"Daemon failed",buttons: ['OK'], message: err.message }, function (buttonIndex)
-				{
-					win=null;
-					app.exit();
-				});
+				console.log(err);
+				displayError("Daemon start failed",err.message);
 			}
 		});
 		if (newProcess.pid!=undefined)
@@ -280,16 +366,91 @@ function StartDaemon()
 	}
 }
 
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function replaceAll(str, find, rep) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), rep);
+}
+
+function displayError(title,message)
+{
+   	var shell=require('electron').shell;
+	message=replaceAll(message,"\r", "<br>");
+	message=replaceAll(message,"\n", "<br>");
+	eWindow=new BrowserWindow({width: 800, height: 600});
+	eWindow.webContents.on('console-message', function(level,message ,line ,sourceId)
+	{
+		if (line=="next:close")
+		{
+			app.exit();
+		}
+		if (line=="next:reindex")
+		{
+			store.set('reindex', '1');
+			app.exit();
+		}
+		if (line=="next:reindex-chainstate")
+		{
+			store.set('reindex-chainstate', '1');
+			app.exit();
+		}
+		if (line=="next:reset-data")
+		{
+			var Directory=appDataPath;
+			//
+			if (os.type()==="Windows_NT") Directory+="\\";
+			if (os.type()==="Darwin") Directory+="/";
+			if (os.type()==="Linux") Directory+="/";
+			//
+			if (bTestnet)
+			{
+				Directory+="testnet3";
+				if (os.type()==="Windows_NT") Directory+="\\";
+				if (os.type()==="Darwin") Directory+="/";
+				if (os.type()==="Linux") Directory+="/";
+			}
+			//
+			console.log("Removing blockchain data folder : " + Directory);
+			deleteDirectory(Directory+"database");
+			deleteDirectory(Directory+"chainstate");
+			deleteDirectory(Directory+"cfund");
+			deleteDirectory(Directory+"blocks");
+			eWindow.webContents.executeJavaScript(`swal({type: 'success',title: 'Reset Blockchain Data',text: "Your blockchain data successfully removed."});`);
+		}
+	});
+	eWindow.loadURL(`file://${__dirname}/dist/static/error.html`);
+	eWindow.webContents.on('did-finish-load', ()=>{eWindow.webContents.executeJavaScript(`document.getElementById('error').innerHTML='`+message+`';`);});
+	eWindow.webContents.on('new-window', function(event, url)
+	{
+		event.preventDefault();
+		shell.openExternal(url);
+	});
+}
+
 function CloseApp ()
 {
 	if(bError && bExit)
 	{
 		win.destroy();
 	}
-	else
+	else if (!bExit)
 	{
 		StartDaemon();
 	}
+}
+
+function closeDaemon()
+{
+	win.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Please wait...'});`);
+	axios.post('http://localhost:3000/stop',{token:rpcpassword,rpcport:rpcport},config).then(function(res)
+	{
+		console.log(res.data);
+	}).catch(function(err)
+	{
+		console.log(err);
+	})
 }
 
 function createMainWindow ()
@@ -332,21 +493,61 @@ function createMainWindow ()
 			console.log("Open data folder:"+path);
 			shell.openItem(`${path}`);
 		}
+		if (line=="next:repair-wallet")
+		{
+			store.set('repair_wallet', '1');
+			closeDaemon();
+		}
 		if (line=="next:disable-warning") store.set('warning', '0');
+		if (line=="next:backup-wallet")
+		{
+			var savepath=dialog.showSaveDialog({title:'Backup Wallet',defaultPath:'~/wallet.dat'});
+			if (savepath)
+			{
+				axios.post('http://localhost:3000/backupwallet',{token:rpcpassword,rpcport:rpcport,savepath:savepath},config).then(function(res)
+				{
+					if (res.data==null)
+					{
+						win.webContents.executeJavaScript(`swal({type: 'success',title: 'Backup Wallet',text: "Your wallet has been successfully backed up."});`);
+					}
+					else
+					{
+						win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + res.data["error"]["message"]+`'});`);
+					}
+				}).catch(function(err)
+				{
+					win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + err+`'});`);
+				})
+			}
+		}
+		if (line=="next:import-wallet")
+		{
+			var walletpath=dialog.showOpenDialog({properties: ['openFile']});
+			if (walletpath)
+			{
+				axios.post('http://localhost:3000/importwallet',{token:rpcpassword,rpcport:rpcport,walletpath:walletpath[0]},config).then(function(res)
+				{
+					if (res.data==null)
+					{
+						win.webContents.executeJavaScript(`swal({type: 'success',title: 'Backup Wallet',text: "Your wallet has been imported successfully."});`);
+					}
+					else
+					{
+						win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + res.data["error"]["message"]+`'});`);
+					}
+				}).catch(function(err)
+				{
+					win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + err+`'});`);
+				})
+			}
+		}
 	});
 	//win.webContents.openDevTools();
 	win.on('close', function (event)
 	{
 		event.preventDefault();
-		win.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Please wait...'});`);
 		console.log("win.on -> close");
-		axios.post('http://localhost:3000/stop',{token:rpcpassword,rpcport:rpcport},config).then(function(res)
-		{
-			console.log(res.data);
-		}).catch(function(err)
-		{
-			console.log(err);
-		})
+		closeDaemon();
 	});
     win.on('closed', () => {
 		console.log("win.on -> closed");
@@ -409,5 +610,5 @@ app.on('activate', () => {
 })
 
 process.on('uncaughtException', function (error) {
-    console.log(error);
+    //console.log(error);
 });

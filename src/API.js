@@ -1,16 +1,15 @@
-const urlParams = new URLSearchParams(window.location.search)
-
-const token = urlParams.get('rpcpassword')
-const rpcport = urlParams.get('rpcport')
-const host = 'http://localhost:3000/'
-const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
-
+const urlParams=new URLSearchParams(window.location.search);
+const token=urlParams.get('rpcpassword');
+const rpcport=urlParams.get('rpcport');
+const host='http://localhost:3000/';
+const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const handleError = (res) => {
-  if (res.data && res.data.error) {
-    console.log(res.data.error);
-    throw res.data.error
-  }
-  return res
+	if (res.data && res.data.error)
+	{
+		console.log(res.data.error);
+		throw res.data.error
+	}
+	return res
 }
 
 const getTransactions = () => {
@@ -27,6 +26,12 @@ const getPeerInfo = () => {
 
 const getBlockchainInfo = () => {
   return axios.post(hostname + "getblockchaininfo", { token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
+const getWalletInfo = () => {
+  return axios.post(hostname + "getwalletinfo", { token: token, rpcport: rpcport }, config)
   .then(handleError)
   .then(response => response.data)
 }
@@ -85,6 +90,12 @@ const getPrice = () => {
   .then(response => response.data)
 }
 
+const getCommunitySoftForks = () => {
+  return axios.get("https://navcommunity.net/api/softforks.php", {}, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 function buyStoreItems (obj) {
   return axios.post(hostname + "navcommunity-buystoreitems", { token: token, rpcport: rpcport, store_item_id: obj["store_item_id"], store_item_name: obj["store_item_name"], store_item_price: obj["store_item_price"], store_item_payment_address: obj["store_item_payment_address"],name:obj["name"],surname:obj["surname"],country:obj["country"],address:obj["address"],city:obj["city"],state:obj["state"],zipcode:obj["zipcode"],phone:obj["phone"],email:obj["email"],notes:obj["notes"]}, config)
   .then(handleError)
@@ -94,15 +105,17 @@ function buyStoreItems (obj) {
 export {
   getTransactions,
   getBlockchainInfo,
+  getWalletInfo,
   getStakingInfo,
   getStakeReport,
   getInfo,
   getVersion,
   getProposals,
-  getCommunitySiteProposals,
-  getCommunitySiteNews,
   getStoreItems,
   buyStoreItems,
   getPeerInfo,
-  getPrice
+  getPrice,
+  getCommunitySiteProposals,
+  getCommunitySiteNews,
+  getCommunitySoftForks
 }

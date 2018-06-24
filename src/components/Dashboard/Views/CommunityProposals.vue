@@ -4,7 +4,6 @@
     <!-- !-->
     <div class="row">
       <div class="col-md-12 col-sm-12">
-
         <sui-dropdown icon="ion-navicon-round" class="labeled icon large violet" text="Menu" button floating>
           <sui-dropdown-menu>
             <router-link to="/admin/create-proposal" tag="sui-dropdown-item"><i class="ion-plus-round"></i>&nbsp;Create Proposal</router-link>
@@ -31,10 +30,10 @@
             <sui-dropdown-item v-on:click="listproposals('rejected')">Rejected</sui-dropdown-item>
           </sui-dropdown-menu>
         </sui-dropdown>
-
+		<button class="ui google plus button large" v-on:click="donatefund()"><i class="heart icon"></i>Donate</button>
         <div class="ui left icon input large">
           <i class="search icon"></i>
-          <input placeholder="Search..." type="text" v-model="search">
+          <input placeholder="Search..." type="text" v-model="search" style="width:180px">
         </div>
         <div class="ui toggle checkbox" style="margin-left:10px">
           <input name="check1" type="checkbox" v-model="cTableView">
@@ -48,22 +47,65 @@
       <div class="column">
         <div class="ui segment">
           <a class="ui red ribbon label">Overview</a>
-          <p></p>
-          <div>Available : {{formatnumbers(cfund_available)}}
-            <div class="ui purple horizontal label">NAV</div>
-          </div>
-          <div>Locked : {{formatnumbers(cfund_locked)}}
-            <div class="ui purple horizontal label">NAV</div>
-          </div>
-          <p></p>
-          <a class="ui blue ribbon label">Current Period</a>
-          <p></p>
-          <div>Voting Period Start : {{cfund_starting}}</div>
-          <div>Voting Period End : {{cfund_ending}}</div>
-          <div>Voted Proposals : {{cfund_voted_proposals}}</div>
-          <div>Voted Payment Requests : {{cfund_voted_payment_requests}}</div>
-        </div>
-      </div>
+		            <table class="ui celled striped table">
+  <thead>
+    <tr><th colspan="2">
+      Current Period
+    </th>
+  </tr></thead>
+  <tbody>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Available
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(cfund_available)}} NAV</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Locked
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(cfund_locked)}} NAV</td>
+    </tr>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Voting Period Start
+      </td>
+      <td class="right aligned collapsing">{{cfund_starting}}</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Voting Period End 
+      </td>
+      <td class="right aligned">{{cfund_ending}}</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Voted Proposals
+      </td>
+      <td class="right aligned">{{cfund_voted_proposals}}</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Voted Payment Requests
+      </td>
+      <td class="right aligned">{{cfund_voted_payment_requests}}</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Total Payment Requests
+      </td>
+      <td class="right aligned">{{total_payment_requests}}</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Total Payment Requests Amount
+      </td>
+      <td class="right aligned">{{total_payment_requests_amount}} NAV</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
       <div class="column">
         <div class="ui segment">
           <a class="ui orange right ribbon label">Status</a>
@@ -219,7 +261,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr v-for="proposal in array_proposals " v-if="!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1 ">
+		<tr v-for="proposal in array_proposals" v-if="!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1 ">
 		<td><a target="_blank " class="ui button tiny purple " v-bind:href=" 'http://navcommunity.net/view-proposal/'+proposal.hash ">View</a></td>
 		<td>{{proposal.desc}}<div><span v-show="proposal.bAuthor " class="ui purple button pull-right ">&nbsp;<i class="ion-person text-default "></i>&nbsp;{{proposal.author}}</span><span style="margin-right:5px; " v-bind:class="proposal.classfeatured ">&nbsp;{{proposal.textfeatured}}</span></div></td>
 		<td>
@@ -281,12 +323,16 @@ export default {
   data: function() {
     var array_proposals = [];
     var array_categories = [];
+	var total_payment_requests=0;
+	var total_payment_requests_amount=0;
     var search = "";
     return {
       array_proposals,
       array_categories,
       search,
-      cTableView: false
+      cTableView: false,
+	  total_payment_requests,
+	  total_payment_requests_amount
     }
   },
   created: function() {
@@ -303,6 +349,50 @@ export default {
         html: html,
 		allowOutsideClick: false,
 		type:type});
+	},
+	donatefund: function()
+	{
+	  const {
+        value: accept
+      } = swal({
+        title: 'Donate to Community Fund',
+        html: "<div style='text-align:left'><small><ul><li>The Community Fund is decentralized and open-source.</li><li>All donations you make are at your own risk.</li><li>When you make a donation, it is your responsibility to understand how your NAV will be used.</li><li>Before donating NAV, we encourage you to do your due diligence.</li></ul><input type='textbox' id='donate_amount' name='donate_amount' placeholder='Amount' class='form-control'></input></div>",
+        allowOutsideClick: false,
+        input: 'checkbox',
+        inputValue: 1,
+	    onOpen: () => {$("#donate_amount").focus();},
+        inputPlaceholder: 'I understand and accept responsibility.',
+        confirmButtonColor: '#cc0000',
+		confirmButtonText: '<i class="ion-heart"></i>&nbsp;Donate <i class="fa fa-arrow-right></i>',
+        cancelButtonText: 'Cancel <i class="fa fa-close></i>',
+  	    showCancelButton: true,
+        inputValidator: (result) => {
+          return !result && 'You need to agree with T&C'
+        }
+      }).then(function(res) {
+	    if (res.value)
+		{
+			axios.post(window.hostname + 'donatefund', {
+			token: window.token,
+			rpcport: window.rpcport,
+			donate_amount: $("#donate_amount").val(),
+			}, config).then(function(res) {
+			errorhandler(res.data);
+			console.log("Status:" + res.status);
+			console.log("Return:" + res.data);
+			if (res.data)
+			{
+				if (!res.data["error"])
+				{
+					swal("Thanks!", "You have successfully donated.", "success");
+				}
+			}
+			})
+			.catch(function(err) {
+			console.log(err);
+			})
+		}
+      });
 	},
     listproposals: function(filter, proposal_category_id) {
       var array_proposals_remote = [];
@@ -381,6 +471,14 @@ export default {
             var bFeatured = false;
             var bCategory = false;
 			paymentRequests = res.data[key]["paymentRequests"];
+			if(paymentRequests!=undefined)
+			{
+				vm.total_payment_requests=paymentRequests.length;
+				jQuery.each(paymentRequests[0], function(k, v)
+				{
+					if (k=="requestedAmount") vm.total_payment_requests_amount+=parseFloat(v);
+				});
+			}
             jQuery.each(value, function(key2, value2) {
               if (key2 == "hash") {
                 hash = value2;
@@ -528,7 +626,7 @@ export default {
         },
         responseType: 'text'
       };
-	        const {
+	  const {
         value: accept
       } = swal({
         title: 'Donate to proposal',

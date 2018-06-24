@@ -2,39 +2,40 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 import SuiVue from 'semantic-ui-vue'
-
 import App from './App.vue'
 import NotFound from './NotFound.vue'
 import store from './store'
 import routes from './routes/routes'
 import LightBootstrap from './light-bootstrap-main'
-
 var vm;
 var jsonQ=require("jsonq");
 Vue.use(VueRouter);
 Vue.use(LightBootstrap);
 Vue.use(SuiVue);
-
 const router=new VueRouter({
   routes,
   linkActiveClass: 'nav-item active'
 })
-
-var rpcpassword=document.URL.match(/rpcpassword=([0-9A-Za-z]+)/)
-var rpcport=document.URL.match(/rpcport=([0-9]+)/)
-var warning=document.URL.match(/warning=([0-9]+)/)
+//
+const urlParams=new URLSearchParams(window.location.search);
+const token=urlParams.get('rpcpassword');
+const rpcport=urlParams.get('rpcport');
+const warning=urlParams.get('warning');
+//
+window.isDemo=false;
 window.acceptTC=false;
 window.config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-if (rpcpassword && rpcport && warning)
+//
+if (token && rpcport && warning)
 {
-	window.token=rpcpassword[1];
-	window.rpcport=rpcport[1];
 	window.hostname='http://localhost:3000/';
-	window.warning=warning[1];
+	window.token=token;
+	window.rpcport=rpcport;
+	window.warning=warning;
 }
 else
 {
-	window.hostname='http://localhost:3000/';
+	if (window.isDemo) window.hostname='http://navcommunity.net:3000/'; else window.hostname='http://localhost:3000/';
 	window.token="test";
 	window.rpcport="44445";
 	window.warning="0";

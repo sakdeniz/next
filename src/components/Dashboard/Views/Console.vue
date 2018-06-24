@@ -1,7 +1,8 @@
 <template>
 <div class="content">
   <div class="container-fluid">
-    <h4 class="card-title"><i class="ion-code"></i> Console</h4>
+	<h4 class="card-title"><i class="ion-code"></i> Console</h4>
+    <div v-if="!isDemo">
 		<div class="ui form">
 			<div class="field">
 				<div id="Console" class="ui segment log" v-model="sConsole" v-html="sConsole"></div>
@@ -11,6 +12,8 @@
 			</div>
 		</div>
 	</div>
+	<div v-else>Console disabled on demo.</div>
+</div>
 </div>
 </template>
 <script>
@@ -23,8 +26,9 @@ export default {
     data: function() {
     var sCommand;
 	var sConsole="<p>Welcome to the RPC console.<br/>Type help for an overview of available commands.<br/><br/></p>";
+	var isDemo=window.isDemo;
     return {
-      sCommand,sConsole
+      isDemo,sCommand,sConsole
     }
   },
 

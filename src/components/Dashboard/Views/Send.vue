@@ -1,14 +1,14 @@
 <template>
 <div class="content">
   <div class="container-fluid">
+  <h4 class="card-title"><i class="ion-paper-airplane"></i> Send</h4>
     <div class="row">
       <div class="col-md-12">
-        <button title="Set Wallet Password" class="btn btn-xs btn-fill btn-danger" v-on:click="setPassword"><i class="ion-android-lock"></i>&nbsp;Set Password</button><br><br>
+	  <span v-if="info.unlocked_until==0" title="Unlock Wallet" class="ui visible message yellow"><i class="ion-unlocked"></i>&nbsp;Your wallet is locked. You will be asked for your wallet password when you send NAV.</span>
+      <button title="Set Wallet Password" class="btn btn-xs btn-fill btn-danger" v-on:click="setPassword"><i class="ion-android-lock"></i>&nbsp;Set Password</button><br><br>
       </div>
       <div class="col-md-12">
         <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">Send</h4></div>
           <div class="card-body">
             Send to this address : <input type="text" class="form-control" style="width:100%;" id="to" name="to"></input>
             <br>Amount (NAV) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
@@ -83,6 +83,12 @@
 import axios from 'axios';
 import moment from 'moment';
 
+import Vue from "vue";
+import {
+  mapState,
+  mapActions
+} from "vuex";
+
 function isOkPass(p) {
   var anUpperCase = /[A-Z]/;
   var aLowerCase = /[a-z]/;
@@ -121,6 +127,14 @@ function isOkPass(p) {
 }
 export default {
   components: {},
+    computed: {
+    ...mapState({
+      info: "info",
+    })
+  },
+  created: function() {
+	this.getInfo();
+},
   data: function() {
     var i = 0;
     var ni = 0;
@@ -170,6 +184,9 @@ export default {
     }
   },
   methods: {
+      ...mapActions({
+      getInfo: "getInfo",
+    }),
     setPassword: function() {
       axios.post(window.hostname + 'ispasswordset', {
         token: window.token,
@@ -349,6 +366,13 @@ export default {
     },
     send: function(event) {
       let vm = this;
+	  var htmlEncryptionPassword="";
+	  var bWalletEncrypted=false;
+	  if (vm.info.unlocked_until!=null)
+	  {
+		bWalletEncrypted=true;
+		htmlEncryptionPassword='<input id="swal-input2" type="password" placeholder="Encryption Password" class="swal2-input">'
+	  }
       axios.post(window.hostname + 'ispasswordset', {
         token: window.token,
         rpcport: window.rpcport
@@ -358,21 +382,27 @@ export default {
             value: formValues
           } = swal({
             html: 'Please enter your wallet password' +
-              '<input id="swal-input1" type="password" placeholder="Password" class="swal2-input">',
+              '<input id="swal-input1" type="password" placeholder="Password" class="swal2-input">'+htmlEncryptionPassword,
             focusConfirm: false,
             preConfirm: () => {
-              return [document.getElementById('swal-input1').value]
+				if (bWalletEncrypted)
+				{
+					return [document.getElementById('swal-input1').value,document.getElementById('swal-input2').value]
+				}
+				else
+				{
+					return [document.getElementById('swal-input1').value]
+				}
             }
           }).then(formValues => {
             var password = formValues["value"][0];
+			var encryption_password = formValues["value"][1];
             axios.post(window.hostname + 'checkpassword', {
               token: window.token,
               rpcport: window.rpcport,
               password: password
             }, window.config).then(function(res) {
               if (res.data == true) {
-                //alert($("#to").val());
-                //alert($("#amount").val());
                 axios.post(window.hostname + 'validateaddress', {
                   token: window.token,
                   rpcport: window.rpcport,
@@ -403,7 +433,8 @@ export default {
                         amount: $("#amount").val(),
                         comment: $("#comment").val(),
                         commentto: $("#commentto").val(),
-                        isprivate: vm.cPrivateSend
+                        isprivate: vm.cPrivateSend,
+					    encryption_password: encryption_password
                       }, window.config).then(function(res) {
                         console.log("Status:" + res.status)
                         console.log("Return:" + res.data)
@@ -415,7 +446,7 @@ export default {
                           swal({
                             type: 'success',
                             title: 'Success!',
-                            text: "Sending successful.\r\n\r\nTransaction ID : " + res.data
+                            html: "Sending successful.<br><br>Transaction ID<br><code>" + res.data + "</code>"
                           });
                         } else {
                           swal({
@@ -438,7 +469,9 @@ export default {
                 }).catch(function(err) {
                   console.log(err)
                 })
-              } else {
+              }
+			  else
+			  {
                 swal({
                   type: 'warning',
                   title: 'Oops...',
@@ -447,7 +480,9 @@ export default {
               }
             });
           });
-        } else {
+        }
+		else
+		{
           swal({
             type: 'warning',
             title: 'Oops...',

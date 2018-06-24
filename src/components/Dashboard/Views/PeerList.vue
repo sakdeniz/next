@@ -47,7 +47,7 @@ export default {
   components: {},
   created: function() {
     this.getPeerInfo();
-	this.getPeerInfoInterval = setInterval(this.getPeerInfo, 5000);
+	this.getPeerInfoInterval = setInterval(this.getPeerInfo, 1000);
   },
   beforeDestroy: function() {
 	clearInterval(this.getPeerInfoInterval);

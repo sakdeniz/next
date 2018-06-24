@@ -30,6 +30,15 @@ function sendError(res, statusCode, body)
 	res.end();
 }
 
+function stringToBoolean(string)
+{
+    switch(string.toLowerCase().trim()){
+        case "true": case "yes": case "1": return true;
+        case "false": case "no": case "0": case null: return false;
+        default: return Boolean(string);
+    }
+}
+
 function isJSON(v) {
     str = v.toString();
 	if (str.charAt(0)=="{" || str.charAt(0)=="[") return true; else return false;
@@ -80,10 +89,28 @@ server = http.createServer(function (req, res)
 					for(var i =0; i < strcmd.length; i++)
 					{
 						if (i==0) methodname=strcmd[i];
-						if (i!=0) params.push(strcmd[i]);
+						if (strcmd[i]=="true" || strcmd[i]=="false")
+						{
+							console.log(strcmd[i]+ " bool");
+							if (i!=0)
+							{
+								if (strcmd[i]=="true") params.push(true);
+								if (strcmd[i]=="false") params.push(false);
+							}
+						}
+						else if (isNaN(strcmd[i]))
+						{
+							console.log(strcmd[i]+ " not number");
+							if (i!=0) params.push(strcmd[i]);
+						}
+						else
+						{
+							console.log(strcmd[i]+ " is number");
+							if (i!=0) params.push(parseInt(strcmd[i]));
+						}
 					}
 					console.log("method="+methodname);
-					console.log("params="+params);
+					console.log("params="+JSON.stringify(params));
 					const batch = [{ method: methodname, parameters: params }]
 					client.command(batch).then((retval) => {
 						if (isJSON(retval))
@@ -217,23 +244,68 @@ server = http.createServer(function (req, res)
 						}
 					});
 				}
+				if (req.url=="/backupwallet")
+				{
+					console.log(post.savepath);
+					client.backupWallet(post.savepath).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/importwallet")
+				{
+					console.log(post.walletpath);
+					client.importWallet(post.walletpath).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/validateaddress")
 				{
 					console.log(post.address);
 					client.validateAddress(post.address).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/encryptwallet")
+				{
+					client.encryptWallet(post.passphrase).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/walletpassphrase")
+				{
+					client.walletPassphrase(post.passphrase,1073741824,post.bunlockforstaking).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/walletlock")
+				{
+					client.walletLock().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/sendtoaddress")
 				{
-					if (post.isprivate)
+					if (post.encryption_password)
 					{
-						console.log("Private Send");
-						client.anonSend(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+						console.log("Unlocking wallet...");
+						client.walletPassphrase(post.encryption_password,5,false).then((retval) => 
+						{
+							if (post.isprivate)
+							{
+								console.log("Private Send");
+								client.anonSend(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							}
+							else
+							{
+								console.log("Send");
+								client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							}
+							console.log("Locking wallet...");
+							client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
 					}
 					else
 					{
-						console.log("Send");
-						client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+						if (post.isprivate)
+						{
+							console.log("Private Send");
+							client.anonSend(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+						}
+						else
+						{
+							console.log("Send");
+							client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+						}
 					}
+
 				}
 				if (req.url=="/proposaldonate")
 				{
@@ -283,6 +355,10 @@ server = http.createServer(function (req, res)
 				{
 					client.getBlockchainInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);console.log(e);});
 				}
+				if (req.url=="/getwalletinfo")
+				{
+					client.getWalletInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);console.log(e);});
+				}
 				if (req.url=="/getinfo")
 				{
 					client.getInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
@@ -298,6 +374,10 @@ server = http.createServer(function (req, res)
 				if (req.url=="/listproposals")
 				{
 					client.listproposals().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/donatefund")
+				{
+					client.donatefund(post.donate_amount).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/proposalvotelist")
 				{
@@ -326,6 +406,11 @@ server = http.createServer(function (req, res)
 				if (req.url=="/dumpmasterprivkey")
 				{
 					client.command('dumpmasterprivkey').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/importprivkey")
+				{
+					console.log(post.privkey);
+					client.importPrivKey(post.privkey).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/signmessage")
 				{

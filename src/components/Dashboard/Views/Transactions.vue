@@ -1,6 +1,7 @@
 <template>
 <div class="content">
-  <div class="container-fluid">Transactions (<span id='transaction-count'>{{transactions.length}})</span><br><br>
+  <div class="container-fluid">
+  <h4 class="card-title"><i class="ion-arrow-swap"></i> Transactions ({{transactions.length}})</h4>
     <sui-dropdown icon="ion-funnel" class="labeled icon teal large" text="Filter" button floating>
       <sui-dropdown-menu>
         <sui-dropdown-item v-on:click="filterBy('')">All</sui-dropdown-item>

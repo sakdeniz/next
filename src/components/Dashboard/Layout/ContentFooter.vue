@@ -8,18 +8,34 @@
           </li>
         </ul>
       </nav>
-      <div class="copyright text-center">
-        Coded with
-        <i class="fa fa-heart heart text-danger"></i> by
-        sakdeniz
-      </div>
+  	  <div class="copyright text-center">Build {{version}}</div>
     </div>
   </footer>
 </template>
 <script>
-  export default {}
+import StatsCard from "src/components/UIComponents/Cards/StatsCard.vue";
+import axios from "axios";
+import moment from "moment";
+import Vue from "vue";
+import {
+  mapState,
+  mapActions
+} from "vuex";
 
+export default {
+  name: "Footer",
+  computed: {
+    ...mapState({
+      version: "version",
+    })
+  },
+  created: function() {
+	this.getVersion();
+  },
+  methods: {
+    ...mapActions({
+      getVersion: "getVersion",
+    }),
+	}
+}
 </script>
-<style>
-
-</style>

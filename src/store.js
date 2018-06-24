@@ -11,9 +11,11 @@ const store = new Vuex.Store({
     peers: [],
     blockchainInfo: {},
     stakingInfo: {},
+    walletInfo: {},
     stakeReport: {},
     info: {},
 	price: {},
+	softForks: {},
 	version:'',
     proposals: [],
 	storeitems: [],
@@ -32,8 +34,10 @@ const store = new Vuex.Store({
     addVersion (state, version) { state.version = version, state.errorMessage = '' },
     addTransactions (state, transactions) { state.transactions = transactions },
     addPrice (state, price) { state.price = price },
+    addSoftForks (state, softForks) { state.softForks = softForks },
     addPeers (state, peers) { state.peers = peers },
     addBlockchainInfo (state, blockchainInfo) { state.blockchainInfo = blockchainInfo },
+    addWalletInfo (state, walletInfo) { state.walletInfo = walletInfo },
     addStakingInfo (state, stakingInfo) { state.stakingInfo = stakingInfo },
     addStakeReport (state, stakeReport) { state.stakeReport = stakeReport },
     addProposals (state, proposals) { state.proposals = proposals || state.proposals },
@@ -75,6 +79,11 @@ const store = new Vuex.Store({
         .then(price => context.commit('addPrice', price))
         .catch(err => context.commit('error', err))
     },
+	getCommunitySoftForks(context) {
+      API.getCommunitySoftForks()
+        .then(softForks => context.commit('addSoftForks', softForks))
+        .catch(err => context.commit('error', err))
+    },
     getTransactions (context) {
       API.getTransactions()
         .then(transactions => context.commit('addTransactions', transactions))
@@ -88,6 +97,11 @@ const store = new Vuex.Store({
     getBlockchainInfo (context) {
       API.getBlockchainInfo()
         .then(blockchainInfo => context.commit('addBlockchainInfo', blockchainInfo))
+        .catch(err => context.commit('error', err))
+    },
+    getWalletInfo (context) {
+      API.getWalletInfo()
+        .then(walletInfo => context.commit('addWalletInfo', walletInfo))
         .catch(err => context.commit('error', err))
     },
     getStakingInfo(context) {

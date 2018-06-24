@@ -12,8 +12,8 @@
 	      <div class="ui column grid">
       <div>
         <div class="ui segment">
-          <a class="ui blue ribbon label">Network</a>
-			<sui-dropdown icon="ion-network" class="labeled icon gray tiny button floating">
+          <a class="ui red ribbon label">Network</a>
+			<sui-dropdown icon="ion-network" class="labeled icon twitter tiny button floating">
 				{{info.testnet === true ? 'Test' : 'Main'}}
 				<sui-dropdown-menu>
 					<sui-dropdown-item icon="ion-home" v-on:click="switchnetwork('mainnet')">Main</sui-dropdown-item>
@@ -21,29 +21,30 @@
 					<sui-dropdown-item icon="ion-wrench" v-on:click="switchnetwork('devet')">Dev</sui-dropdown-item>
 				</sui-dropdown-menu>
 			</sui-dropdown>
-			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-code icon"></i>{{version}}</button>
 			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-code icon"></i>Core v{{info.version}}</button>
 			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-cube icon"></i>{{formatNumber(info.blocks)}}/{{formatNumber(blockchainInfo.headers)}}</button>
 			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-android-checkmark-circle icon"></i>{{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}%</button>
 			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
+			<router-link to="/admin/peer-list"><button role="button" class="ui icon labeled tiny button gray" title="Connections"><i class="ion-earth icon"></i>{{info.connections}}</button></router-link>
+			<!--<button role="button" class="ui icon labeled tiny button gray" title="TX Count"><i class="ion-arrow-swap icon"></i>{{walletInfo.txcount}}</button>!-->
 		  </div>
       </div>
     </div>
     <div class="ui column grid" style="margin-top:22px">
       <div>
         <div class="ui segment">
-          <a class="ui purple ribbon label">Overview</a>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing gray label tiny">{{numberWithCommas(info.balance)}} NAV</a></div>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-leaf"></i> Staking</div><a class="ui basic left pointing gray label tiny">{{numberWithCommas(stakeReport['Last 7 Days'])}} NAV</a></div>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-arrow-swap"></i> Transactions</div><a class="ui basic left pointing gray label tiny">{{transactions.length}}</a></div>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-earth"></i> Connections</div><a class="ui basic left pointing gray label tiny">{{info.connections}}</a></div>
+          <a class="ui green ribbon label">Wallet</a>
+			<div class="ui labeled button" tabindex="0"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing violet label tiny">{{numberWithCommas(info.balance)}} NAV&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
+			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-help-circled"></i> Unconfirmed</div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} NAV</a></div>
+			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-egg"></i> Immature</div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} NAV</a></div>
+			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-leaf"></i> Staking</div><a class="ui basic left pointing gray label tiny">{{info.stake}} NAV</a></div>
         </div>
       </div>
     </div>
     <div class="ui column grid" v-if="price" style="margin-top:22px">
       <div>
         <div class="ui segment">
-			<a class="ui violet ribbon label">Market</a>
+			<a class="ui blue ribbon label">Market</a>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i></div><a class="ui basic label">{{parseFloat(price[0].price_usd).toFixed(2)}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-bitcoin"></i></div><a class="ui basic label">{{price[0].price_btc}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-arrow-graph-up-right"></i> Rank</div><a class="ui basic label">{{price[0].rank}}</a></div>
@@ -162,17 +163,16 @@ export default {
       errorMessage: "errorMessage",
       transactions: "transactions",
       blockchainInfo: "blockchainInfo",
+      walletInfo: "walletInfo",
       stakingInfo: "stakingInfo",
       stakeReport: "stakeReport",
       info: "info",
-      version: "version",
       price: "price",
       proposals: "combinedProposals",
     })
   },
   created: function() {
 	this.getPrice();
-	this.getVersion();
 	this.resync();
     this.timer=setInterval(this.resync, 5000);
 	if (!window.acceptTC && window.warning!="0") {
@@ -210,12 +210,12 @@ export default {
   },
   methods: {
     ...mapActions({
-      getVersion: "getVersion",
       getPrice: "getPrice",
       getInfo: "getInfo",
       getStakingInfo: "getStakingInfo",
       getTransactions: "getTransactions",
       getBlockchainInfo: "getBlockchainInfo",
+      getWalletInfo: "getWalletInfo",
       getStakeReport: "getStakeReport",
       getCombinedProposals: "getCombinedProposals",
     }),
@@ -258,6 +258,7 @@ export default {
 	  if (JSON.stringify(this.blockchainInfo)!="{}")
 	  {
 		this.getInfo();
+		this.getWalletInfo();
 		this.getStakingInfo();
 		this.getStakeReport();
 		this.getTransactions();
