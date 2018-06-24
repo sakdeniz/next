@@ -147,6 +147,16 @@ return new Promise(function (resolve, reject) {
     });
 }
 
+function getConfigFileFullPath()
+{
+	var configFile=appDataPath;
+	if (os.type()==="Windows_NT") configFile+="\\";
+	if (os.type()==="Darwin") configFile+="/";
+	if (os.type()==="Linux") configFile+="/";
+	configFile+="navcoin.conf";
+	return configFile;
+}
+
 function RestartDaemon(network)
 {
 	bExit=false;
@@ -155,7 +165,7 @@ function RestartDaemon(network)
 	{
 		var fs=require('fs');
 		var iniBuilder=require('ini-builder');
-		var data=iniBuilder.parse(fs.readFileSync(appDataPath+"\\navcoin.conf"));
+		var data=iniBuilder.parse(fs.readFileSync(getConfigFileFullPath()));
 	}
 	catch (e)
 	{
@@ -215,7 +225,7 @@ function RestartDaemon(network)
 			{
 			}
 		}
-		fs.writeFileSync(appDataPath+"\\navcoin.conf", iniBuilder.serialize(data));
+		fs.writeFileSync(getConfigFileFullPath(), iniBuilder.serialize(data));
 	}).catch(function(err)
 	{
 		console.log(err);
@@ -225,16 +235,11 @@ function RestartDaemon(network)
 function StartDaemon()
 {
 	var newProcess;
-	var configFile=appDataPath;
-	if (os.type()==="Windows_NT") configFile+="\\";
-	if (os.type()==="Darwin") configFile+="/";
-	if (os.type()==="Linux") configFile+="/";
-	configFile+="navcoin.conf";
-	console.log("Checking navcoin.conf file : " + configFile);
+	console.log("Checking config file : " + getConfigFileFullPath());
 	try
 	{
-		var conf=iniparser.parseSync(configFile);
-		console.log("navcoin.conf file found.");
+		var conf=iniparser.parseSync(getConfigFileFullPath());
+		console.log("Config file found.");
 		console.log("Config file testnet variable :"+conf.testnet);
 		if (conf.testnet=="1")
 		{
@@ -253,13 +258,13 @@ function StartDaemon()
 	}
 	catch (e)
 	{
-		console.log("navcoin.conf file not found, creating...");
+		console.log("Config file not found, creating...");
 		var fs=require('fs');
 		var fileContent="testnet=0\r\nstaking=0\r\ntxindex=0\r\naddressindex=0";
 		try
 		{
-			fs.writeFileSync(configFile, fileContent);
-			console.log("navcoin.conf file created successfully.");
+			fs.writeFileSync(getConfigFileFullPath(), fileContent);
+			console.log("Config file created successfully.");
 		}
 		catch (e)
 		{
