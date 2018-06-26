@@ -27,6 +27,7 @@ var addnode;
 var reindexchainstate;
 var reindex;
 var zapwallettxes;
+var printtoconsole;
 //
 var bShell=false;
 var bRepairWallet=false;
@@ -272,28 +273,31 @@ function StartDaemon()
 			console.log("Cannot write file ", e);
 		}
 	}
-	if (bReindex) reindex=" -reindex"; else reindex="";
-	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
-	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
-	var ntp="";
-	//ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + " -printtoconsole -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
-	console.log("Daemon Parameters : [" + parameters + "]");
 	if (os.platform()=="win32")
 	{
 		executablePath="navcoind.exe";
 		bShell=false;
+		printtoconsole=" -printtoconsole";
 	}
 	if (os.platform()=="linux")
 	{
 		executablePath="./navcoind";
 		bShell=true;
+		printtoconsole="";
 	}
 	if (os.platform()=="darwin")
 	{
 		executablePath="./navcoind";
 		bShell=true;
+		printtoconsole="";
 	}
+	if (bReindex) reindex=" -reindex"; else reindex="";
+	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
+	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
+	var ntp="";
+	//ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + " -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
+	console.log("Daemon Parameters : [" + parameters + "]");
 	const defaults = {cwd:__dirname,env:process.env,shell:bShell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());
 	console.log("App Data Path : "+appDataPath);
@@ -324,7 +328,7 @@ function StartDaemon()
 					win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
 				}
 				bExit=true;
-				console.log("Daemon started. PID :" + newProcess.pid);
+				console.log("Daemon started . PID :" + newProcess.pid);
 				if (!win) createMainWindow();
 				newProcess.on("exit", function ()
 				{
@@ -357,7 +361,7 @@ function StartDaemon()
 				win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
 			}
 			bExit=true;
-			console.log("Daemon started. PID :" + newProcess.pid);
+			console.log("Daemon started [win32]. PID :" + newProcess.pid);
 			if (!win) createMainWindow();
 			newProcess.on("exit", function ()
 			{
