@@ -1,7 +1,7 @@
 //os.type(); // Linux, Darwin or Windows_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
-var child=require('child_process').spawn;
+if (os.type==="Windows_NT") var child=require('child_process').spawn; else var child=require('child_process').execFile;
 var child_ef=require('child_process').execFile;
 const dialog=require('electron').dialog;
 const axios=require('axios');
