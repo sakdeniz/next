@@ -2,6 +2,7 @@
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
 var child=require('child_process').spawn;
+var child_ef=require('child_process').execFile;
 const dialog=require('electron').dialog;
 const axios=require('axios');
 const {app,BrowserWindow}=require('electron');
@@ -305,7 +306,7 @@ function StartDaemon()
 		daemonPath=app.getAppPath()+"/navcoind";
 		console.log("Setting daemon file as executable " + daemonPath);
 		var buttons = ['OK', 'Cancel'];
-		var chmodProcess=child("chmod +x " + daemonPath, null, defaults, function(err, data)
+		var chmodProcess=child_ef("chmod +x " + daemonPath, null, defaults, function(err, data)
 		{
 			newProcess=child(executablePath, parameters, defaults, function(err, data)
 			{
