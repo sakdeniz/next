@@ -21,6 +21,7 @@
           <div class="card-header">
             <h4 class="card-title">Create Proposal</h4></div>
           <div class="card-body">
+		    <span v-if="info.unlocked_until==0" title="Unlock Wallet" class="ui visible message yellow"><i class="ion-unlocked"></i>&nbsp;Your wallet is locked. You will be asked for your wallet password to confirm.</span>
             <br>Proposal Title : <input type="text" class="form-control" style="width:100%;" id="desc" name="desc"></input>
             <br>Payment Address : <button title="Select" class="btn btn-xs btn-fill btn-success" v-on:click="selectAddress" style="margin-bottom:5px;"><i class="ion-arrow-down-b"></i> Select</button><input type="text" class="form-control" style="width:100%;"
               id="navcoinaddress" name="navcoinaddress"></input>
@@ -44,6 +45,12 @@
 import axios from 'axios';
 import moment from 'moment';
 
+import Vue from "vue";
+import {
+  mapState,
+  mapActions
+} from "vuex";
+
 export default {
   components: {},
     data: function() {
@@ -52,7 +59,15 @@ export default {
       editor_short_desc,editor_long_desc
     }
   },
-  created: function() {},
+  computed: {
+    ...mapState({
+      info: "info",
+    })
+  },
+  created: function()
+  {
+	this.getInfo();
+  },
   mounted:function()
   {
 	let vm=this;
@@ -70,6 +85,56 @@ export default {
         });
   },
   methods: {
+      ...mapActions({
+      getInfo: "getInfo",
+    }),
+	fCreateProposal:function(bWalletLocked,WalletPassword)
+	{
+		let vm=this;
+		var epoch=moment($("#deadline").val()).unix();
+		axios.post(window.hostname + 'createproposal', {
+		token: window.token,
+		rpcport: window.rpcport,
+		b_wallet_locked: bWalletLocked,
+		wallet_password: WalletPassword,
+		desc: $("#desc").val(),
+		navcoinaddress: $("#navcoinaddress").val(),
+		amount: $("#amount").val(),
+		deadline: epoch,
+		owner: $("#owner").val(),
+		website: $("#website").val(),
+		email: $("#email").val(),
+		short_desc: vm.editor_short_desc.getData(),
+		long_desc: vm.editor_long_desc.getData()
+		}, window.config).then(function(res)
+		{
+			var hash = "";
+			var strDZeel = "";
+			console.log("Status:" + res.status)
+			console.log("Return:" + JSON.stringify(res.data))
+			jsonQ.each(res.data, function(key, value)
+			{
+				if (key == "hash") hash = value;
+				if (key == "strDZeel") strDZeel = value;
+			});
+			if (!res.data["error"])
+			{
+				$("#desc").val("");
+				$("#navcoinaddress").val("");
+				$("#amount").val("");
+				$("#deadline").val("");
+				swal("Success!", "Your proposal successfully created.", "success");
+				//swal("Success!", "Proposal created.\r\n\r\nHash:" + hash + "\r\n\r\n" + strDZeel, "success");
+			}
+			else
+			{
+				swal("Oops...", res.data["error"]["message"], "error");
+			}
+		}).catch(function(err)
+		{
+              console.log(err);
+        })
+	},
     selectAddress: function(event) {
       var navAddressList = [];
       axios.post(window.hostname + 'listaddressgroupings', {
@@ -130,45 +195,30 @@ export default {
       }, window.config).then(function(res) {
         var isAdressValid = false;
         jsonQ.each(res.data, function(key, value) {
-          console.log(key + "=" + value);
-          if (key == "isvalid" && value == true) {
+          //console.log(key + "=" + value);
+          if (key == "isvalid" && value == true)
+		  {
             isAdressValid = true;
           }
         });
         if (isAdressValid) {
-          if ($("#amount").val() == "") {
+          if ($("#amount").val() == "")
+		  {
             swal("Error", "Please enter amount", "error");
-          } else {
-            var epoch = moment($("#deadline").val()).unix();
-            axios.post(window.hostname + 'createproposal', {
-              token: window.token,
-              rpcport: window.rpcport,
-              desc: $("#desc").val(),
-              navcoinaddress: $("#navcoinaddress").val(),
-              amount: $("#amount").val(),
-              deadline: epoch,
-              owner: $("#owner").val(),
-              website: $("#website").val(),
-              email: $("#email").val(),
-              short_desc: vm.editor_short_desc.getData(),
-              long_desc: vm.editor_long_desc.getData()
-            }, window.config).then(function(res) {
-              var hash = "";
-              var strDZeel = "";
-              console.log("Status:" + res.status)
-              console.log("Return:" + res.data)
-              $("#desc").val("");
-              $("#navcoinaddress").val("");
-              $("#amount").val("");
-              $("#deadline").val("");
-              jsonQ.each(res.data, function(key, value) {
-                if (key == "hash") hash = value;
-                if (key == "strDZeel") strDZeel = value;
-              });
-              swal("Success!", "Proposal created.\r\n\r\nHash:" + hash + "\r\n\r\n" + strDZeel, "success");
-            }).catch(function(err) {
-              console.log(err);
-            })
+          }
+		  else
+		  {
+			if (vm.info.unlocked_until==0)
+			{
+				swal({title:'Unlock Wallet',text:'Please enter your wallet password',input: 'password'}).then(function(result)
+				{
+					vm.fCreateProposal(true,result.value);
+				})
+			}
+			else
+			{
+				vm.fCreateProposal(false,null);
+			}
           }
         } else {
           console.log("Invalid address...");

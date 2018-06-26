@@ -54,6 +54,7 @@
     "net": "^1.0.2",
     "restler": "^3.4.0",
     "semantic-ui-vue": "^0.2.8",
+    "stringify-object": "^3.2.2",
     "tls": "0.0.1",
     "v-tooltip": "^2.0.0-rc.1",
     "vue": "^2.5.2",

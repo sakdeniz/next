@@ -298,6 +298,10 @@ import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
 import axios from 'axios';
 import moment from 'moment';
 import Vue from 'vue';
+import {
+  mapState,
+  mapActions
+} from "vuex";
 
 function numberWithCommas(n) {
   var parts = n.toString().split(".");
@@ -320,6 +324,11 @@ export default {
     ChartCard,
     StatsCard
   },
+  computed: {
+    ...mapState({
+      info: "info",
+    })
+  },
   data: function() {
     var array_proposals = [];
     var array_categories = [];
@@ -336,9 +345,13 @@ export default {
     }
   },
   created: function() {
-    this.listproposals("all");
+    this.getInfo();
+	this.listproposals("all");
   },
   methods: {
+    ...mapActions({
+      getInfo: "getInfo",
+    }),
     formatnumbers: function(n) {
       var parts = n.toString().split(".");
       return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
@@ -352,11 +365,19 @@ export default {
 	},
 	donatefund: function()
 	{
+      let vm=this;
+	  var htmlEncryptionPassword="";
+	  var bWalletLocked=false;
+	  if (vm.info.unlocked_until!=null)
+	  {
+		bWalletLocked=true;
+		htmlEncryptionPassword='<input id="wallet_password" name="wallet_password" type="password" placeholder="Encryption Password" class="swal2-input">'
+	  }
 	  const {
         value: accept
       } = swal({
         title: 'Donate to Community Fund',
-        html: "<div style='text-align:left'><small><ul><li>The Community Fund is decentralized and open-source.</li><li>All donations you make are at your own risk.</li><li>When you make a donation, it is your responsibility to understand how your NAV will be used.</li><li>Before donating NAV, we encourage you to do your due diligence.</li></ul><input type='textbox' id='donate_amount' name='donate_amount' placeholder='Amount' class='form-control'></input></div>",
+        html: "<div style='text-align:left'><small><ul><li>The Community Fund is decentralized and open-source.</li><li>All donations you make are at your own risk.</li><li>When you make a donation, it is your responsibility to understand how your NAV will be used.</li><li>Before donating NAV, we encourage you to do your due diligence.</li></ul><input type='textbox' id='donate_amount' name='donate_amount' placeholder='Amount' class='swal2-input'></input>"+htmlEncryptionPassword+"</div>",
         allowOutsideClick: false,
         input: 'checkbox',
         inputValue: 1,
@@ -375,6 +396,8 @@ export default {
 			axios.post(window.hostname + 'donatefund', {
 			token: window.token,
 			rpcport: window.rpcport,
+			b_wallet_locked: bWalletLocked,
+			wallet_password: $("#wallet_password").val(),
 			donate_amount: $("#donate_amount").val(),
 			}, config).then(function(res) {
 			errorhandler(res.data);

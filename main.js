@@ -1,7 +1,7 @@
 //os.type(); // Linux, Darwin or Windows_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
-var child=require('child_process').execFile;
+var child=require('child_process').spawn;
 const dialog=require('electron').dialog;
 const axios=require('axios');
 const {app,BrowserWindow}=require('electron');
@@ -276,7 +276,7 @@ function StartDaemon()
 	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
 	var ntp="";
 	//ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + " -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + " -printtoconsole -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	if (os.platform()=="win32")
 	{
@@ -362,6 +362,10 @@ function StartDaemon()
 			{
 				console.log("Daemon stopped.");
 				setTimeout(CloseApp, 1000);
+			});
+			newProcess.stdout.on('data', (data) =>
+			{
+				console.log(data.toString());
 			});
 		}
 		else

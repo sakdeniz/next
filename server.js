@@ -9,6 +9,7 @@ var server;
 const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const crypto=require('crypto');
 const Client = require('bitcoin-core');
+const stringifyObject = require('stringify-object');
 const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/Navcoin4/' : process.env.HOME+'/.navcoin4/');
 const fileConfig=appDataPath+"navcoin.conf";
 const fileAddressBook=appDataPath+"addressbook.dat";
@@ -86,7 +87,7 @@ server = http.createServer(function (req, res)
 					var methodname="";
 					var params=[];
 					strcmd=strcmd.split(" ");
-					for(var i =0; i < strcmd.length; i++)
+					for(var i=0; i<strcmd.length; i++)
 					{
 						if (i==0) methodname=strcmd[i];
 						if (strcmd[i]=="true" || strcmd[i]=="false")
@@ -113,15 +114,9 @@ server = http.createServer(function (req, res)
 					console.log("params="+JSON.stringify(params));
 					const batch = [{ method: methodname, parameters: params }]
 					client.command(batch).then((retval) => {
-						if (isJSON(retval))
-						{
-							sendResponse(res, 200,JSON.stringify(retval,null,4));
-						}
-						else
-						{
-							sendResponse(res, 200,String(retval));
-						}
-						}).catch((e) => {sendError(res, 200,e);});
+					const pretty=stringifyObject(retval, {indent: '  ',singleQuotes: false});
+					sendResponse(res, 200,pretty);
+					}).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/setpassword")
 				{
@@ -320,13 +315,34 @@ server = http.createServer(function (req, res)
 				if (req.url=="/createproposal")
 				{
 					console.log("Address :"+post.navcoinaddress+"\r\nAmount:"+post.amount+"\r\nDeadline:"+post.deadline+"\r\nDesc:"+post.desc+"\r\nOwner:"+post.owner+"\r\nWeb Site URL:"+post.website+"\r\nE-Mail:"+post.email+"\r\nShort Description:"+post.short_desc+"\r\nLong Description:"+post.long_desc);
-					client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) =>	{
+					if (post.b_wallet_locked)
+					{
+						console.log("Wallet locked.");
+						console.log("Wallet password : " + post.wallet_password);
+						console.log("Unlocking wallet...");
+						client.walletPassphrase(post.wallet_password,5,false).then((retval) => 
+						{
+							client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) =>	{
+							var t=JSON.parse(JSON.stringify(retval));
+							axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.deadline+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
+							.then((retval) => console.log(JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+							sendResponse(res, 200,JSON.stringify(retval));
+							}
+							).catch((e) => {sendError(res, 200,e);});
+							console.log("Locking wallet...");
+							client.walletLock().then((retval) => client.walletPassphrase(post.wallet_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+					}
+					else
+					{
+						client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) =>	{
 						var t=JSON.parse(JSON.stringify(retval));
 						axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.deadline+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
 						.then((retval) => console.log(JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 						sendResponse(res, 200,JSON.stringify(retval));
+						}
+						).catch((e) => {sendError(res, 200,e);});
 					}
-					).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/proposalvote")
 				{
@@ -377,7 +393,22 @@ server = http.createServer(function (req, res)
 				}
 				if (req.url=="/donatefund")
 				{
-					client.donatefund(post.donate_amount).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					if (post.b_wallet_locked)
+					{
+						console.log("Wallet locked.");
+						console.log("Wallet password : " + post.wallet_password);
+						console.log("Unlocking wallet...");
+						client.walletPassphrase(post.wallet_password,5,false).then((retval) => 
+						{
+							client.donatefund(post.donate_amount).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							console.log("Locking wallet...");
+							client.walletLock().then((retval) => client.walletPassphrase(post.wallet_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+					}
+					else
+					{
+						client.donatefund(post.donate_amount).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
 				}
 				if (req.url=="/proposalvotelist")
 				{
