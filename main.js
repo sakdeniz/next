@@ -339,6 +339,10 @@ function StartDaemon()
 					console.log("Daemon stopped.");
 					setTimeout(CloseApp, 1000);
 				});
+				newProcess.stdout.on('data', (data) =>
+				{
+					console.log(data.toString());
+				});
 			}
 			else
 			{
