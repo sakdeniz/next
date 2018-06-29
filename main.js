@@ -275,7 +275,6 @@ function StartDaemon()
 			console.log("Cannot write file ", e);
 		}
 	}
-	printtoconsole=" -printtoconsole";
 	if (os.platform()=="win32")
 	{
 		executablePath="navcoind.exe";
@@ -293,6 +292,7 @@ function StartDaemon()
 		bShell=true;
 		printtoconsole="";
 	}
+	printtoconsole=" -printtoconsole";
 	if (bReindex) reindex=" -reindex"; else reindex="";
 	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
 	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
