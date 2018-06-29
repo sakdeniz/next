@@ -2,7 +2,6 @@
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
 var child=require('child_process').spawn;
-//if (os.type()==="Windows_NT") var child=require('child_process').spawn; else var child=require('child_process').execFile;
 var child_ef=require('child_process').execFile;
 const dialog=require('electron').dialog;
 const axios=require('axios');
@@ -11,17 +10,19 @@ const isDev=require('electron-is-dev');
 const path=require('path');
 const url=require('url');
 const crypto=require('crypto');
+var iniparser=require('iniparser');
 const Store=require('electron-store');
 const store=new Store();
 const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
 const randomBytes=crypto.randomBytes(256);
 const rpcuser=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
 const rpcpassword = crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
-var iniparser=require('iniparser');
 //
 var appDataPath;
 var executablePath;
 var daemonPath;
+var warning;
+var eWindow;
 var rpcport;
 var testnet;
 var addnode;
@@ -29,7 +30,7 @@ var reindexchainstate;
 var reindex;
 var zapwallettxes;
 var bootstrap="";
-var printtoconsole;
+var	printtoconsole=" -printtoconsole";
 //
 var bShell=false;
 var bRepairWallet=false;
@@ -41,19 +42,21 @@ var bExit=true;
 //
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
-var warning;
-var eWindow;
+//
 if (store.get('warning')) warning=store.get('warning'); else warning="1";
+// Repair Wallet
 if (store.get('repair_wallet')=="1")
 {
 	store.set('repair_wallet', '0');
 	bRepairWallet=true;
 }
+// Reindex blockchain
 if (store.get('reindex')=="1")
 {
 	store.set('reindex', '0');
 	bReindex=true;
 }
+// Reindex chainstate
 if (store.get('reindex-chainstate')=="1")
 {
 	store.set('reindex-chainstate', '0');
@@ -272,7 +275,7 @@ function StartDaemon()
 		}
 		catch (e)
 		{
-			console.log("Cannot write file ", e);
+			console.log("Cannot write to file ", e);
 		}
 	}
 	if (os.platform()=="win32")
@@ -284,15 +287,12 @@ function StartDaemon()
 	{
 		executablePath="./navcoind";
 		bShell=true;
-		printtoconsole="";
 	}
 	if (os.platform()=="darwin")
 	{
 		executablePath="./navcoind";
 		bShell=true;
-		printtoconsole="";
 	}
-	printtoconsole=" -printtoconsole";
 	if (bReindex) reindex=" -reindex"; else reindex="";
 	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
 	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
@@ -324,6 +324,10 @@ function StartDaemon()
 					displayError("Daemon start failed",err.message);
 				}
 			});
+			newProcess.on('error', (err) => {
+				console.log('Failed to start daemon.'+err.message);
+				displayDaemonError(err);
+			});		
 			if (newProcess.pid!=undefined)
 			{
 				if (bExit==false)
@@ -331,7 +335,7 @@ function StartDaemon()
 					win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
 				}
 				bExit=true;
-				console.log("Daemon started . PID :" + newProcess.pid);
+				console.log("Daemon started. PID:" + newProcess.pid);
 				if (!win) createMainWindow();
 				newProcess.on("exit", function ()
 				{
@@ -352,6 +356,7 @@ function StartDaemon()
 	}
 	else
 	{
+
 		newProcess=child(executablePath, parameters, defaults, function(err, data)
 		{
 			if (err)
@@ -361,6 +366,10 @@ function StartDaemon()
 				displayError("Daemon start failed",err.message);
 			}
 		});
+		newProcess.on('error', (err) => {
+			console.log('Failed to start daemon.'+err.message);
+			displayDaemonError(err);
+		});		
 		if (newProcess.pid!=undefined)
 		{
 			if (bExit==false)
@@ -368,7 +377,7 @@ function StartDaemon()
 				win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
 			}
 			bExit=true;
-			console.log("Daemon started [win32]. PID :" + newProcess.pid);
+			console.log("Daemon started. PID:" + newProcess.pid);
 			if (!win) createMainWindow();
 			newProcess.on("exit", function ()
 			{
@@ -395,13 +404,27 @@ function replaceAll(str, find, rep) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), rep);
 }
 
+function displayDaemonError(err)
+{
+	var e="";
+	switch(err.code)
+	{
+		case "ENOENTx":
+			e="File <b>" + err.path + "</b> not found.";
+			break;
+		default:
+			e="Error No:"+err.errno+"<br/>Code:"+err.code+"<br/>Message:"+err.message+"<br/>Path:"+err.path+"<br/>Destination Path:"+err.dest;
+	} 
+	displayError("Daemon start failed",e);
+}
+
 function displayError(title,message)
 {
    	var shell=require('electron').shell;
 	message=replaceAll(message,"\r", "<br>");
 	message=replaceAll(message,"\n", "<br>");
 	eWindow=new BrowserWindow({width: 800, height: 600});
-	eWindow.webContents.on('console-message', function(level,message ,line ,sourceId)
+	eWindow.webContents.on('console-message', function(level,message,line,sourceId)
 	{
 		if (line=="next:close")
 		{
@@ -631,5 +654,5 @@ app.on('activate', () => {
 })
 
 process.on('uncaughtException', function (error) {
-    //console.log(error);
+    console.log(error);
 });
