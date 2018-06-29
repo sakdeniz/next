@@ -1,7 +1,8 @@
 //os.type(); // Linux, Darwin or Windows_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 var os=require("os");
-if (os.type==="Windows_NT") var child=require('child_process').spawn; else var child=require('child_process').execFile;
+var child=require('child_process').spawn;
+//if (os.type()==="Windows_NT") var child=require('child_process').spawn; else var child=require('child_process').execFile;
 var child_ef=require('child_process').execFile;
 const dialog=require('electron').dialog;
 const axios=require('axios');
@@ -27,6 +28,7 @@ var addnode;
 var reindexchainstate;
 var reindex;
 var zapwallettxes;
+var bootstrap="";
 var printtoconsole;
 //
 var bShell=false;
@@ -296,7 +298,8 @@ function StartDaemon()
 	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
 	var ntp="";
 	//ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + " -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
+	//bootstrap=" -bootstrap=https://nav.nyc3.digitaloceanspaces.com/bootstrap/mainnet/bootstrap-navcoin-4.2.1_mainnet.tar";
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + " -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	const defaults = {cwd:__dirname,env:process.env,shell:bShell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());

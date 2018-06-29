@@ -356,8 +356,23 @@ server = http.createServer(function (req, res)
 				}
 				if (req.url=="/createpaymentrequest")
 				{
-					console.log("Hash:"+post.proposal_hash);
-					client.createpaymentrequest(post.proposal_hash.toString(),post.amount.toString(),post.id.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					console.log("Proposal Hash:"+post.proposal_hash);
+					if (post.b_wallet_locked)
+					{
+						console.log("Wallet locked.");
+						console.log("Wallet password : " + post.wallet_password);
+						console.log("Unlocking wallet...");
+						client.walletPassphrase(post.wallet_password,5,false).then((retval) => 
+						{
+							client.createpaymentrequest(post.proposal_hash.toString(),post.amount.toString(),post.id.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							console.log("Locking wallet...");
+							client.walletLock().then((retval) => client.walletPassphrase(post.wallet_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+					}
+					else
+					{
+						client.createpaymentrequest(post.proposal_hash.toString(),post.amount.toString(),post.id.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
 				}
 				if (req.url=="/getnewaddress")
 				{

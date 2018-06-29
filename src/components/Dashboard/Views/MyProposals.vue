@@ -18,8 +18,8 @@
     </div>
     <!-- !-->
     <h4>My Proposals</h4>
-    <h5>{{proposal_info}}</h5>
-    <!--<div class="row"><div class="col-md-12"><textarea class="form-control" style="width:100%;height:200px;" id="debug"></textarea></div></div>!-->
+    <span v-if="info.unlocked_until==0" title="Unlock Wallet" class="ui visible message yellow"><i class="ion-unlocked"></i>&nbsp;Your wallet is locked. You will be asked for your wallet password to confirm.</span>
+	<h5>{{proposal_info}}</h5>
     <div class="row">
       <div v-for="proposal in array_proposals" class="col-md-12 col-sm-12">
         <div class="card">
@@ -43,7 +43,7 @@
 			<button v-if="proposal.status=='Accepted'" title="Create Payment Request" @click="paymentrequest(proposal.hash)" class='ui button tiny purple right floated'><i class='ion-plus' aria-hidden='true'></i> Create Payment Request</button>
 			<div class="ui segment" v-if="proposal.paymentRequests">
 				<a class="ui purple ribbon label">Payment Requests</a>
-				<table class="ui celled padded table">
+				<table class="ui striped table">
 				<thead>
 					<tr>
 						<th nowrap>Request ID</th>
@@ -52,25 +52,25 @@
 						</tr>
 					</thead>
 					<tbody>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
+					<template v-for="paymentRequest in proposal.paymentRequests">
+					<tr>
 						<td nowrap style="width:100%">{{paymentRequest.description}}</td>
 						<td nowrap>{{paymentRequest.requestedAmount}}</td>
 						<td nowrap>{{paymentRequest.status}}</td>
 					</tr>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
+					<tr>
 					<td colspan='6'>
-						<button title="Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-						<button title="No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-						<button title="Remove" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
+						<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
+						<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
+						<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
+						<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
 						<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
 					</td>
 					</tr>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
-						<td colspan='6'><pre>Payment Request Hash : </pre><code><small>{{paymentRequest.hash}}</small></code></td>
-					</tr>
+					</template>
 					</tbody>
 					</table>
-				</div>
+			</div>
 	  </div>
 	</div></div></div></div></div>
 	</div>
@@ -82,6 +82,10 @@ import Card from 'src/components/UIComponents/Cards/Card.vue'
 import axios from 'axios';
 import moment from 'moment';
 import Vue from 'vue';
+import {
+  mapState,
+  mapActions
+} from "vuex";
 
 function numberWithCommas(n) {
   var parts = n.toString().split(".");
@@ -100,6 +104,15 @@ var proposal_info = "";
 export default {
   components: {
     Card,
+  },
+  computed: {
+    ...mapState({
+      info: "info",
+    })
+  },
+  created: function()
+  {
+	this.getInfo();
   },
   data: function() {
     var array_proposals = [];
@@ -213,6 +226,42 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      getInfo: "getInfo",
+    }),
+	showinfo: (title,html,type) => {
+	swal({
+        title: title,
+        html: html,
+		allowOutsideClick: false,
+		type:type});
+	},
+	fCreatePaymentRequest:function(ProposalHash,bWalletLocked,WalletPassword)
+	{
+		axios.post(window.hostname + 'createpaymentrequest', {
+		token: window.token,
+		rpcport: window.rpcport,
+		b_wallet_locked: bWalletLocked,
+		wallet_password: WalletPassword,
+		proposal_hash: ProposalHash,
+		amount: $("#amount").val(),
+		id: $("#unique_id").val(),
+		}, config).then(function(res) {
+		errorhandler(res.data);
+		console.log("Status:" + res.status);
+		console.log("Return:" + res.data);
+		if (res.data)
+		{
+			if (!res.data["error"])
+			{
+				swal("Success!", "Your payment request successfully created.", "success");
+			}
+		}
+		})
+		.catch(function(err) {
+		console.log(err);
+		})
+	},
     proposalvote: function(proposal_hash, vote_type) {
       //swal(proposal_hash+"\r\n"+vote_type);
       axios.post(window.hostname + 'proposalvote', {
@@ -257,17 +306,25 @@ export default {
         })
     },
 	paymentrequest: function(proposal_hash) {
-      var config = {
-        headers: {
+      let vm=this;
+   	  var htmlEncryptionPassword="";
+	  var bWalletLocked=false;
+	  if (vm.info.unlocked_until==0)
+	  {
+		bWalletLocked=true;
+		htmlEncryptionPassword='<br><input id="wallet_password" name="wallet_password" type="password" placeholder="Wallet Encryption Password" class="form-control">'
+	  }
+	  var config = {
+		headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         responseType: 'text'
       };
-	        const {
+        const {
         value: accept
       } = swal({
         title: 'Create Payment Request',
-        html: "<div style='text-align:left'><input type='textbox' id='amount' name='amount' placeholder='Amount' class='form-control'></input><br/><input type='textbox' id='unique_id' name='unique_id' placeholder='Unique id to identify the payment request. Ex: March Invoice' class='form-control'></input></div>",
+        html: "<div style='text-align:left'><input type='textbox' id='amount' name='amount' placeholder='Amount' class='form-control'></input><br/><input type='textbox' id='unique_id' name='unique_id' placeholder='Unique id to identify the payment request. Ex: March Invoice' class='form-control'></input>"+htmlEncryptionPassword+"</div>",
         allowOutsideClick: false,
         input: 'checkbox',
         inputValue: 1,
@@ -283,27 +340,14 @@ export default {
       }).then(function(res) {
 	    if (res.value)
 		{
-			axios.post(window.hostname + 'createpaymentrequest', {
-			token: window.token,
-			rpcport: window.rpcport,
-			proposal_hash: proposal_hash,
-			amount: $("#amount").val(),
-			id: $("#unique_id").val(),
-			}, config).then(function(res) {
-			errorhandler(res.data);
-			console.log("Status:" + res.status);
-			console.log("Return:" + res.data);
-			if (res.data)
+			if (vm.info.unlocked_until==0)
 			{
-				if (!res.data["error"])
-				{
-					swal("Success!", "Your payment request successfully created."+JSON.stringify(res.data), "success");
-				}
+				vm.fCreatePaymentRequest(proposal_hash,true,$("#wallet_password").val());
 			}
-			})
-			.catch(function(err) {
-			console.log(err);
-			})
+			else
+			{
+				vm.fCreatePaymentRequest(proposal_hash,false,null);
+			}
 		}
       });
     }

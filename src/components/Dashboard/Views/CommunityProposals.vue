@@ -216,7 +216,7 @@
 			</div>
 			<div class="ui segment" v-if="proposal.paymentRequests">
 				<a class="ui purple ribbon label">Payment Requests</a>
-				<table class="ui celled padded table">
+				<table class="ui striped table">
 				<thead>
 					<tr>
 						<th nowrap>Request ID</th>
@@ -225,12 +225,13 @@
 						</tr>
 					</thead>
 					<tbody>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
+					<template v-for="paymentRequest in proposal.paymentRequests">
+					<tr>
 						<td nowrap style="width:100%">{{paymentRequest.description}}</td>
 						<td nowrap>{{paymentRequest.requestedAmount}}</td>
 						<td nowrap>{{paymentRequest.status}}</td>
 					</tr>
-					<tr v-for="paymentRequest in proposal.paymentRequests">
+					<tr>
 					<td colspan='6'>
 						<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
 						<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
@@ -239,9 +240,10 @@
 						<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
 					</td>
 					</tr>
+					</template>
 					</tbody>
 					</table>
-				</div>
+			</div>
 			</div>
 			</div>
 		</div></div></div></div></div>
@@ -371,7 +373,7 @@ export default {
 	  if (vm.info.unlocked_until!=null)
 	  {
 		bWalletLocked=true;
-		htmlEncryptionPassword='<input id="wallet_password" name="wallet_password" type="password" placeholder="Encryption Password" class="swal2-input">'
+		htmlEncryptionPassword='<input id="wallet_password" name="wallet_password" type="password" placeholder="Wallet Encryption Password" class="swal2-input">'
 	  }
 	  const {
         value: accept
