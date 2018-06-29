@@ -409,11 +409,11 @@ function displayDaemonError(err)
 	var e="";
 	switch(err.code)
 	{
-		case "ENOENTx":
+		case "ENOENT":
 			e="File <b>" + err.path + "</b> not found.";
 			break;
 		default:
-			e="Error No:"+err.errno+"<br/>Code:"+err.code+"<br/>Message:"+err.message+"<br/>Path:"+err.path+"<br/>Destination Path:"+err.dest;
+			e="Error No:"+err.errno+"<br/>Code:"+err.code+"<br/>Message:"+err.message+"<br/>Path:"+err.path;
 	} 
 	displayError("Daemon start failed",e);
 }
