@@ -275,11 +275,11 @@ function StartDaemon()
 			console.log("Cannot write file ", e);
 		}
 	}
+	printtoconsole=" -printtoconsole";
 	if (os.platform()=="win32")
 	{
 		executablePath="navcoind.exe";
 		bShell=false;
-		printtoconsole=" -printtoconsole";
 	}
 	if (os.platform()=="linux")
 	{
