@@ -39,6 +39,7 @@ var bReindex=false;
 var bTestnet=false;
 var bError=true;
 var bExit=true;
+var bDaemonError=false;
 //
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
@@ -326,7 +327,7 @@ function StartDaemon()
 			});
 			newProcess.on('error', (err) => {
 				console.log('Failed to start daemon.'+err.message);
-				displayDaemonError(err);
+				displayDaemonError(err,true);
 			});		
 			if (newProcess.pid!=undefined)
 			{
@@ -337,15 +338,22 @@ function StartDaemon()
 				bExit=true;
 				console.log("Daemon started. PID:" + newProcess.pid);
 				if (!win) createMainWindow();
-				newProcess.on("exit", function ()
-				{
-					newProcess=null;
-					console.log("Daemon stopped.");
-					setTimeout(CloseApp, 1000);
+				newProcess.on('exit', (code) => {
+  					newProcess=null;
+					console.log("Daemon stopped."+code);
+					if(!bDaemonError) setTimeout(CloseApp, 1000);
 				});
 				newProcess.stdout.on('data', (data) =>
 				{
 					console.log(data.toString());
+				});
+				newProcess.stderr.on("data", function (stderr) {
+					console.log("stderr : " + stderr);
+					if (!stderr.toString().startsWith("Warning"))
+					{
+						bDaemonError=true;
+						displayDaemonError(stderr,false);
+					}
 				});
 			}
 			else
@@ -368,8 +376,8 @@ function StartDaemon()
 		});
 		newProcess.on('error', (err) => {
 			console.log('Failed to start daemon.'+err.message);
-			displayDaemonError(err);
-		});		
+			displayDaemonError(err,true);
+		});
 		if (newProcess.pid!=undefined)
 		{
 			if (bExit==false)
@@ -379,14 +387,22 @@ function StartDaemon()
 			bExit=true;
 			console.log("Daemon started. PID:" + newProcess.pid);
 			if (!win) createMainWindow();
-			newProcess.on("exit", function ()
-			{
-				console.log("Daemon stopped.");
-				setTimeout(CloseApp, 1000);
-			});
+			newProcess.on('exit', (code) => {
+				newProcess=null;
+				console.log("Daemon stopped."+code);
+				if(!bDaemonError) setTimeout(CloseApp, 1000);
+				});
 			newProcess.stdout.on('data', (data) =>
 			{
 				console.log(data.toString());
+			});
+			newProcess.stderr.on("data", function (stderr) {
+				console.log("stderr : " + stderr);
+				if (!stderr.toString().startsWith("Warning"))
+				{
+					bDaemonError=true;
+					displayDaemonError(stderr,false);
+				}			
 			});
 		}
 		else
@@ -404,17 +420,24 @@ function replaceAll(str, find, rep) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), rep);
 }
 
-function displayDaemonError(err)
+function displayDaemonError(err,bObject)
 {
 	var e="";
-	switch(err.code)
+	if (bObject)
 	{
-		case "ENOENT":
-			e="File <b>" + err.path + "</b> not found.";
-			break;
-		default:
-			e="Error No:"+err.errno+"<br/>Code:"+err.code+"<br/>Message:"+err.message+"<br/>Path:"+err.path;
-	} 
+		switch(err.code)
+		{
+			case "ENOENT":
+				e="File <b>" + err.path + "</b> not found.";
+				break;
+			default:
+				e="Error No:"+err.errno+"<br/>Code:"+err.code+"<br/>Message:"+err.message+"<br/>Path:"+err.path;
+		}
+	}
+	else
+	{
+		e=err.toString();
+	}
 	displayError("Daemon start failed",e);
 }
 
@@ -604,7 +627,15 @@ function createMainWindow ()
 	{
 		event.preventDefault();
 		console.log("win.on -> close");
-		closeDaemon();
+		if (bDaemonError)
+		{
+			win=null;
+			app.exit();
+		}
+		else
+		{
+			closeDaemon();
+		}
 	});
     win.on('closed', () => {
 		console.log("win.on -> closed");
