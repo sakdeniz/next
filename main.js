@@ -502,7 +502,7 @@ function createMainWindow ()
 	if (!bError) return false;
 	console.log('Main window created.');
 	var server=require("./server");
-	win=new BrowserWindow({width: 1275, height: 800});
+	win=new BrowserWindow({width: 1275, height: 850});
 	//win.setFullScreen(true);
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcpassword=${rpcpassword}&rpcport=${rpcport}&warning=${warning}`);
@@ -510,9 +510,22 @@ function createMainWindow ()
 	win.webContents.on('new-window', function(event, url)
 	{
 		event.preventDefault();
-		shell.openExternal(url);
-		//const nwin = new BrowserWindow({width:800,height:600,show:true});
-		//nwin.loadURL(url);
+		if (url.startsWith('https://navcommunity.net'))
+		{
+			axios.post("http://localhost:3000/getnewaddress", {token: rpcpassword,rpcport: rpcport}, config).then(function(res)
+			{
+				url=url+"?"+res.data;
+				const nwin = new BrowserWindow({width:980,height:800,show:true});
+				nwin.loadURL(url);
+			}).catch(function(err) {
+				console.log(err);
+			})
+			//win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Link',text: '` +url+`'});`);
+		}
+		else
+		{
+			shell.openExternal(url);
+		}
 		//event.newGuest = nwin;
 	});
     /*

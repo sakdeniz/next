@@ -24,6 +24,7 @@ const store = new Vuex.Store({
 	buyStoreItems:[],
     communitySiteProposals: [],
     communitySiteNews: [],
+    communitySiteGames: [],
     combinedProposals: [],
     errorMessage: '',
     error: {},
@@ -43,6 +44,7 @@ const store = new Vuex.Store({
     addProposals (state, proposals) { state.proposals = proposals || state.proposals },
     addCommunitySiteProposals (state, proposals) { state.communitySiteProposals = proposals },
     addCommunitySiteNews (state, communitySiteNews) { state.communitySiteNews = communitySiteNews },
+	addCommunitySiteGames (state, communitySiteGames) { state.communitySiteGames = communitySiteGames },
     addStoreItems (state, storeitems) { state.storeItems = storeitems },
     buyStoreItems (state, buystoreitems) { state.buyStoreItems = buystoreitems },
     addCombineProposals (state, combined) {
@@ -127,6 +129,11 @@ const store = new Vuex.Store({
     getCommunitySiteNews(context) {
       API.getCommunitySiteNews()
         .then(communitySiteNews => context.commit('addCommunitySiteNews', communitySiteNews[1].news))
+        .catch(err => context.commit('error', err))
+    },
+    getCommunitySiteGames(context) {
+      API.getCommunitySiteGames()
+        .then(communitySiteGames => context.commit('addCommunitySiteGames', communitySiteGames[1].games))
         .catch(err => context.commit('error', err))
     },
     getStoreItems(context) {

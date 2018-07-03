@@ -496,6 +496,11 @@ server = http.createServer(function (req, res)
 					axios.post("https://navcommunity.net/api/getnews.php", {},{})
 					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 				}
+				if (req.url=="/navcommunity-getgames")
+				{
+					axios.post("https://navcommunity.net/api/getgames.php", {},{})
+					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+				}
 				if (req.url=="/navcommunity-getmerchantlist")
 				{
 					axios.post("https://navcommunity.net/api/getmerchantlist.php", {},{})

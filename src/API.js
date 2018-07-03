@@ -66,6 +66,12 @@ const getCommunitySiteNews = () => {
   .then(response => response.data)
 }
 
+const getCommunitySiteGames = () => {
+  return axios.post(hostname + "navcommunity-getgames", { token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 const getCommunitySiteProposals = () => {
   return axios.post(hostname + "navcommunity-getproposals", { token: token, rpcport: rpcport }, config)
   .then(handleError)
@@ -117,5 +123,6 @@ export {
   getPrice,
   getCommunitySiteProposals,
   getCommunitySiteNews,
+  getCommunitySiteGames,
   getCommunitySoftForks
 }

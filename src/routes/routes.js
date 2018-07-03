@@ -6,6 +6,7 @@ import Receive from 'src/components/Dashboard/Views/Receive.vue'
 import Transactions from 'src/components/Dashboard/Views/Transactions.vue'
 import Staking from 'src/components/Dashboard/Views/Staking.vue'
 import Store from 'src/components/Dashboard/Views/Store.vue'
+import Games from 'src/components/Dashboard/Views/Games.vue'
 import Settings from 'src/components/Dashboard/Views/Settings.vue'
 import Console from 'src/components/Dashboard/Views/Console.vue'
 import Logs from 'src/components/Dashboard/Views/Logs.vue'
@@ -60,6 +61,11 @@ const routes = [
         path: 'store',
         name: 'Store',
         component: Store
+      },
+	  {
+        path: 'games',
+        name: 'Games',
+        component: Games
       },
       {
         path: 'settings',

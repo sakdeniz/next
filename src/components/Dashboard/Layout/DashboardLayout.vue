@@ -26,6 +26,10 @@
         <i class="ion-bag"></i>
         <p>STORE</p>
       </sidebar-link>
+      <sidebar-link to="/admin/games">
+        <i class="ion-trophy"></i>
+        <p>GAMES</p>
+      </sidebar-link>
       <sidebar-link to="/admin/community-proposals">
         <i class="ion-erlenmeyer-flask"></i>
         <p>COMMUNITY FUND</p>

@@ -12,7 +12,7 @@
 	      <div class="ui column grid">
       <div>
         <div class="ui segment">
-          <a class="ui red ribbon label">Network</a>
+          <a class="ui red ribbon label"><i class="fa fa-2x ion-android-wifi"></i></a>
 			<sui-dropdown icon="ion-network" class="labeled icon twitter tiny button floating">
 				{{info.testnet === true ? 'Test' : 'Main'}}
 				<sui-dropdown-menu>
@@ -33,7 +33,7 @@
     <div class="ui column grid" style="margin-top:22px">
       <div>
         <div class="ui segment">
-          <a class="ui green ribbon label">Wallet</a>
+          <a class="ui green ribbon label"><i class="fa fa-2x ion-social-buffer"></i></a>
 			<div class="ui labeled button" tabindex="0"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing violet label tiny">{{numberWithCommas(info.balance)}} NAV&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
 			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-help-circled"></i> Unconfirmed</div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} NAV</a></div>
 			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-egg"></i> Immature</div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} NAV</a></div>
@@ -44,7 +44,7 @@
     <div class="ui column grid" v-if="price" style="margin-top:22px">
       <div>
         <div class="ui segment">
-			<a class="ui blue ribbon label">Market</a>
+			<a class="ui blue ribbon label"><i class="fa fa-2x ion-arrow-swap"></i></a>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i></div><a class="ui basic label">{{parseFloat(price[0].price_usd).toFixed(2)}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-bitcoin"></i></div><a class="ui basic label">{{price[0].price_btc}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-arrow-graph-up-right"></i> Rank</div><a class="ui basic label">{{price[0].rank}}</a></div>

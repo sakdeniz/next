@@ -24,6 +24,7 @@
           </sui-dropdown-menu>
         </sui-dropdown>&nbsp;&nbsp;&nbsp;
 		<span style="font-size:24px;color:#bbbbbb;">
+		<a class="external" style="color:#bbbbbb;" title="Youtube" target="_blank" href="https://www.youtube.com/channel/UCjDs4JceVSsaeCyvkA9cWCg"><i class="ion-social-youtube"></i></a>&nbsp;&nbsp;&nbsp;
 		<a class="external" style="color:#bbbbbb;" title="Facebook" target="_blank" href="https://www.facebook.com/navcoin"><i class="ion-social-facebook"></i></a>&nbsp;&nbsp;&nbsp;
 		<a class="external" style="color:#bbbbbb;" title="Twitter" target="_blank" href="https://www.twitter.com/navcoin"><i class="ion-social-twitter"></i></a>&nbsp;&nbsp;&nbsp;
 		<a style="color:#bbbbbb;" title="Github" target="_blank" href="https://www.github.com/navcoin"><i class="ion-social-github"></i></a>&nbsp;&nbsp;&nbsp;
