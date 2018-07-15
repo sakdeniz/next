@@ -420,13 +420,29 @@ function StartDaemon()
 				console.log("Daemon started. PID:" + newProcess.pid);
 				if (!win) createMainWindow();
 				newProcess.on('exit', (code) => {
-  					newProcess=null;
+					newProcess=null;
 					console.log("Daemon stopped."+code);
 					if(!bDaemonError) setTimeout(CloseApp, 1000);
 				});
 				newProcess.stdout.on('data', (data) =>
 				{
 					console.log(data.toString());
+					if (bBootstrap)
+					{
+						var m=data.toString().split("\r")[0];
+						var im=data.toString().split("\r")[3];
+						if (data.toString().indexOf("init message: Downloaded")!=-1)
+						{
+							bBootstrap=false;
+							bswin.webContents.executeJavaScript(`document.getElementById('info').innerHTML='Completed.';`);
+							bswin.hide();
+							createMainWindow();
+						}
+						else
+						{
+							bswin.webContents.executeJavaScript(`document.getElementById('info').innerHTML='`+m+`';`);
+						}
+					}
 				});
 				newProcess.stderr.on("data", function (stderr) {
 					console.log("stderr : " + stderr);
@@ -434,7 +450,7 @@ function StartDaemon()
 					{
 						bDaemonError=true;
 						displayDaemonError(stderr,false);
-					}
+					}			
 				});
 			}
 			else
@@ -470,9 +486,8 @@ function StartDaemon()
 			newProcess.on('exit', (code) => {
 				newProcess=null;
 				console.log("Daemon stopped."+code);
-				newProcess.kill('SIGHUP');
 				if(!bDaemonError) setTimeout(CloseApp, 1000);
-				});
+			});
 			newProcess.stdout.on('data', (data) =>
 			{
 				console.log(data.toString());
