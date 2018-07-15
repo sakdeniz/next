@@ -380,7 +380,7 @@ function StartDaemon()
 	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
 	var ntp="";
 	ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + " -debug=1 -daemon -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + " -debug=1 -server -rpcbind=127.0.0.1 -zmqpubrawblock=tcp://127.0.0.1:30000 -uacomment=NEXT"+addnode+ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	const defaults = {cwd:__dirname,env:process.env,shell:bShell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());
