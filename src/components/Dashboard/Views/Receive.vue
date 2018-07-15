@@ -3,7 +3,10 @@
 	<div class="container-fluid">
 		<h4 class="card-title"><i class="ion-archive"></i> Receive ({{total_address}} Addresses)</h4>
 		<div class="row">
-			<div class="col-md-12"><button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button></div>
+			<div class="col-md-12">
+			<button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button>&nbsp;
+			<router-link to="/admin/open-alias"><button class="btn btn-info btn-fill"><i class="ion-arrow-return-right"></i>&nbsp;Open Alias</button></router-link>
+			</div>
 			<div class="col-md-12"><br>
 			<div class="ui toggle checkbox">
 				<input name="check1" type="checkbox" v-model="checked">
@@ -57,7 +60,8 @@ export default {
     getnewaddress: function(event) {
       axios.post(window.hostname + 'getnewaddress', {token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 	  {
-		var qrcode=new QRCode(res.data);
+		var prefix="navcoin:";
+		var qrcode=new QRCode(prefix+res.data);
 		var svg=qrcode.svg();
         swal("Success!", "Address generated\r\n\r\n" + res.data + svg, "success");
       }).catch(function(err) {
@@ -68,8 +72,9 @@ export default {
       copy(selector);
     },
     getqrcode: function(address) {
-		var qrcode = new QRCode(address);
-		var svg = qrcode.svg();
+		var prefix="navcoin:";
+		var qrcode=new QRCode(prefix+address);
+		var svg=qrcode.svg();
 		swal("QR Code", address + svg, "info");
     },
     listaddressgroupings: function(event) {

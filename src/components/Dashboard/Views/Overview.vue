@@ -21,11 +21,11 @@
 					<sui-dropdown-item icon="ion-wrench" v-on:click="switchnetwork('devet')">Dev</sui-dropdown-item>
 				</sui-dropdown-menu>
 			</sui-dropdown>
-			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-code icon"></i>Core v{{info.version}}</button>
-			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-cube icon"></i>{{formatNumber(info.blocks)}}/{{formatNumber(blockchainInfo.headers)}}</button>
-			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-android-checkmark-circle icon"></i>{{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}%</button>
-			<button role="button" class="ui icon labeled tiny button gray"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
-			<router-link to="/admin/peer-list"><button role="button" class="ui icon labeled tiny button gray" title="Connections"><i class="ion-earth icon"></i>{{info.connections}}</button></router-link>
+			<button role="button" class="ui icon labeled tiny button gray" title="Core Version"><i class="ion-code icon"></i>Core v{{info.version}}</button>
+			<button role="button" class="ui icon labeled tiny button gray" title="Downloaded Block Number/Current Block Height"><i class="ion-cube icon"></i>{{formatNumber(info.blocks)}}/{{formatNumber(blockchainInfo.headers)}}</button>
+			<button role="button" class="ui icon labeled tiny button gray" title="Blockchain verification progress"><i class="ion-android-checkmark-circle icon"></i>{{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}%</button>
+			<button role="button" class="ui icon labeled tiny button gray" title="Staking Status"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
+			<router-link to="/admin/peer-list"><button role="button" class="ui icon labeled tiny button gray" title="Connection Count"><i class="ion-earth icon"></i>{{info.connections}}</button></router-link>
 			<!--<button role="button" class="ui icon labeled tiny button gray" title="TX Count"><i class="ion-arrow-swap icon"></i>{{walletInfo.txcount}}</button>!-->
 		  </div>
       </div>

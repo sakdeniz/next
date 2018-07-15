@@ -1,0 +1,21 @@
+{
+    "Coins":{
+        "NAV":
+		[
+            {
+				"name":"NAVCoin",
+				"symbol":"NAV",
+				"config_file":"navcoin.conf",
+				"data_dir_windows":"NavCoin4",
+				"data_dir_osx":"NavCoin4",
+				"data_dir_linux":".navcoin4",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"navcoind.exe",
+				"daemon_file_osx":"navcoind",
+				"daemon_file_linux":"navcoind",
+				"bootstrap_file_url_mainnet":"https://nav.nyc3.digitaloceanspaces.com/bootstrap/mainnet/bootstrap-navcoin-4.2.1_mainnet.tar",
+				"bootstrap_file_url_testnet":"https://navcommunity.net/bootstrap/testnet.tar"
+			}
+        ]
+    }
+}

@@ -258,6 +258,10 @@ server = http.createServer(function (req, res)
 				{
 					client.encryptWallet(post.passphrase).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/walletpassphrasechange")
+				{
+					client.walletPassphraseChange(post.old_password,post.new_password).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/walletpassphrase")
 				{
 					client.walletPassphrase(post.passphrase,1073741824,post.bunlockforstaking).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
@@ -271,7 +275,7 @@ server = http.createServer(function (req, res)
 					if (post.encryption_password)
 					{
 						console.log("Unlocking wallet...");
-						client.walletPassphrase(post.encryption_password,5,false).then((retval) => 
+						client.walletPassphrase(post.encryption_password,3,false).then((retval) => 
 						{
 							if (post.isprivate)
 							{
@@ -283,8 +287,8 @@ server = http.createServer(function (req, res)
 								console.log("Send");
 								client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 							}
-							console.log("Locking wallet...");
-							client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+							//console.log("Locking wallet...");
+							//client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
 						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
 					}
 					else

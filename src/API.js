@@ -90,6 +90,14 @@ const getVersion = () => {
   .then(response => response.data)
 }
 
+const signMessage = (navaddress,message) => {
+  console.log("nav address:"+navaddress);
+  console.log("message:"+message);
+  return axios.post(hostname + "signmessage", { token: token, rpcport: rpcport, navaddress: navaddress, message: message}, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 const getPrice = () => {
   return axios.get("https://api.coinmarketcap.com/v1/ticker/nav-coin/?convert=EUR", {}, config)
   .then(handleError)
@@ -121,6 +129,7 @@ export {
   buyStoreItems,
   getPeerInfo,
   getPrice,
+  signMessage,
   getCommunitySiteProposals,
   getCommunitySiteNews,
   getCommunitySiteGames,

@@ -66,6 +66,7 @@
 						<button v-if="info.unlocked_until==0" class="ui icon tiny button green" v-on:click="walletPassphrase(true)"><i class="ion-unlocked"></i>&nbsp;Unlock Wallet for Staking Only</button>
 						<button v-if="info.unlocked_until==0" class="ui icon tiny button green" v-on:click="walletPassphrase(false)"><i class="ion-unlocked"></i>&nbsp;Unlock Wallet</button>
 						<button v-if="info.unlocked_until!=0 && info.unlocked_until!=null" class="ui icon tiny button red" v-on:click="walletLock"><i class="ion-android-lock"></i>&nbsp;Lock Wallet</button>
+						<button v-if="info.unlocked_until!=null" class="ui icon tiny button green" v-on:click="walletPassPhraseChange"><i class="ion-edit"></i>&nbsp;Change Wallet Password</button>
 					</div>
 				</div>
 			</div>
@@ -173,6 +174,13 @@ import {
   mapState,
   mapActions
 } from "vuex";
+function errorhandler(data) {
+  if (data) {
+    if (data["error"]) {
+      swal("Error!", data["error"]["message"], "error");
+    }
+  }
+}
 export default {
   data: function() {
     var walletpassphrase;
@@ -373,6 +381,50 @@ export default {
         })
       }
     },
+	walletPassPhraseChange: function()
+	{
+      let vm=this;
+	  var htmlEncryptionPassword="";
+	  var bWalletLocked=false;
+	  if (vm.info.unlocked_until!=null)
+	  {
+		bWalletLocked=true;
+		htmlEncryptionPassword='<input id="wallet_password" name="wallet_password" type="password" placeholder="Wallet Encryption Password" class="swal2-input">'
+	  }
+	  const {
+        value: accept
+      } = swal({
+        title: 'Change Encryption Password',
+        html: "<div style='text-align:left'><div class='ui form'><div class='field'><input id='old_password' name='old_password' type='password' placeholder='Old Password' class='ui form-control'></input></div><div class='field'><input id='new_password' name='new_password' type='password' placeholder='New Password' class='ui form-control'></div></div></div>",
+        allowOutsideClick: false,
+	    onOpen: () => {$("#old_password").focus();},
+        confirmButtonColor: '#cc0000',
+		confirmButtonText: 'Change Password',
+        cancelButtonText: 'Cancel',
+  	    showCancelButton: true,
+      }).then(function(res) {
+	    if (res.value)
+		{
+			axios.post(window.hostname + 'walletpassphrasechange', {
+			token: window.token,
+			rpcport: window.rpcport,
+			old_password: $("#old_password").val(),
+			new_password: $("#new_password").val(),
+			}, config).then(function(res) {
+			errorhandler(res.data);
+			console.log("Status:" + res.status);
+			console.log("Return:" + res.data);
+			if (res.data==null)
+			{
+				swal("Change Wallet Password", "You have successfully changed your encryption password.", "success");
+			}
+			})
+			.catch(function(err) {
+			console.log(err);
+			})
+		}
+      });
+	},
 	encryptWallet: function(event) {
       let vm = this;
       if (!$("#walletpassphrase").val()) {

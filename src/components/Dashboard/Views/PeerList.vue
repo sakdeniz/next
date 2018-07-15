@@ -6,14 +6,14 @@
     <table class="ui celled padded table">
       <thead>
         <tr>
-          <th>Address</th>
+          <th>Peer Address</th>
           <th>Local Address</th>
+          <th>Protocol</th>
           <th>Version</th>
-          <th>Sub version</th>
-          <th>Ping</th>
-          <th>Connection Time</th>
-          <th>Bytes Received</th>
-          <th>Bytes Sent</th>
+          <th>Ping (ms)</th>
+          <th>Connected Since</th>
+          <th>Received</th>
+          <th>Sent</th>
         </tr>
       </thead>
       <tbody v-if="peers">
@@ -21,11 +21,11 @@
           <td>{{peer.addr}}</td>
 		  <td>{{peer.addrlocal}}</td>
 		  <td>{{peer.version}}</td>
-		  <td>{{peer.subver}}</td>
-		  <td>{{parseFloat(peer.pingtime).toFixed(2)}}</td>
+		  <td>{{formatVersion(peer.subver)}}</td>
+		  <td>{{getMS(peer.pingtime)}}</td>
 		  <td>{{getDate(peer.conntime)}}</td>
-		  <td>{{peer.bytesrecv}}</td>
-		  <td>{{peer.bytessent}}</td>
+		  <td>{{formatBytes(peer.bytesrecv,0)}}</td>
+		  <td>{{formatBytes(peer.bytessent,0)}}</td>
         </tr>
       </tbody>
     </table>
@@ -60,6 +60,21 @@ export default {
 	getDate: (v) => {
       return moment.unix(v).format("MM/DD/YYYY HH:mm:ss");
     },
+	getMS: (v) => {
+      return parseInt(moment.unix(v).format("sSSS",{ trim: false }));
+    },
+	formatVersion: (v) => {
+	  v=v.replace(new RegExp("/", 'g'), "");
+	  return v.split(":")[1];
+    },
+	formatBytes: (bytes,decimals)  => {
+		if(bytes == 0) return '0 Bytes';
+		var k = 1024,
+       dm = decimals || 2,
+       sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+       i = Math.floor(Math.log(bytes) / Math.log(k));
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+	}
   }
 };
 </script>

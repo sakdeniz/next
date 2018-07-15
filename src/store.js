@@ -1,9 +1,42 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
 import * as API from './API'
-
 Vue.use(Vuex)
+
+const aliasDomain="nav.community";
+const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
+const checkGoogleDNS = async (name) => {
+  console.log(name);
+  return new Promise(async function(resolve, reject) {
+    try {
+      const url = 'nav.community'
+      const randomPadding = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+      const finalUrl=`https://dns.google.com/resolve?name=${name}.${url}&type=16&cd=0&edns_client_subnet=0.0.0.0/0&random_padding=${randomPadding}`;
+	  console.log(finalUrl);
+	  const dnsResponse = await fetch(finalUrl);
+      const json = await dnsResponse.json()
+
+      // Get the previous address from DNS
+      console.log(json)
+      if (json.Status === 0) {
+        if (Array.isArray(json.Answer)) {
+          for (var i = 0; i < json.Answer.length; i++ ) {
+            const oaAddr = json.Answer[i].data
+            if (oaAddr.includes('oa1:nav')) {
+              console.log(oaAddr)
+              // Found a previous address. Use this to check signature
+              resolve(oaAddr.substring(oaAddr.indexOf('recipient_address=') + 18, oaAddr.indexOf(';')))
+            }
+          }
+        }
+      }
+
+      resolve('')
+    } catch (err) {
+      reject()
+    }
+  })
+}
 
 const store = new Vuex.Store({
   state: {
@@ -28,8 +61,30 @@ const store = new Vuex.Store({
     combinedProposals: [],
     errorMessage: '',
     error: {},
+	address: '',
+    alias: '',
+	signmessage: '',
+	registeraddress: '',
+    registeralias: '',
+	registersignmessage: '',
+	registerapimessage: '',
   },
   mutations: {
+	saveAlias (state, arr) {
+      state.address = arr["address"];
+      state.alias = arr["alias"];
+	  state.signmessage = arr["signmessage"];
+	  //
+	  state.registeraddress="";
+	  state.registeralias="";
+	  state.registersignmessage="";
+    },
+	saveRegisterAlias (state, arr) {
+      state.registeraddress = arr["registeraddress"];
+      state.registeralias = arr["registeralias"];
+	  state.registersignmessage = arr["registersignmessage"];
+	  state.registerapimessage = arr["registerapimessage"];
+    },
     error (state, error) { state.errorMessage = error.message; state.error = error },
     addInfo (state, info) { state.info = info, state.errorMessage = '' },
     addVersion (state, version) { state.version = version, state.errorMessage = '' },
@@ -66,6 +121,48 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+    async checkAlias (context, alias) {
+      var arr=[];
+	  const address=await checkGoogleDNS(alias)
+	  arr["address"]=address;
+	  arr["alias"]=alias;
+      const message=alias+"@"+aliasDomain;
+	  API.signMessage(address,message)
+        .then(msg=>{arr["signmessage"]="You are owner this alias!";context.commit('saveAlias',arr);})
+        .catch(err => {arr["signmessage"]="You don't owner of this address.";context.commit('saveAlias',arr);})
+    },
+	async registerAlias (context, arr) {
+		console.log("alias:"+arr["registeralias"]);
+		console.log("address:"+arr["registeraddress"]);
+		const message=arr["registeralias"]+"@"+aliasDomain;
+	    API.signMessage(arr["registeraddress"],message)
+        .then(msg=>{
+			arr["registersignmessage"]=msg;
+			const params = new URLSearchParams();
+			params.append('address', arr["registeraddress"]);
+			params.append('name', arr["registeralias"]);
+			params.append('addressSig', msg);
+			axios.post('https://openalias.nav.community/api',params)
+			.then(function (response)
+			{
+				console.log(response.data);
+				arr["registerapimessage"]=response.data;
+				context.commit('saveRegisterAlias',arr);
+			})
+			.catch(function (error)
+			{
+				console.log("Error:"+JSON.stringify(error.response.data));
+				arr["registerapimessage"]=error.response.data;
+				context.commit('saveRegisterAlias',arr);
+			    console.log(error.response.data);
+				console.log(error.response.status);
+				console.log(error.response.statusText);
+				console.log(error.response.headers);
+				console.log(error.response.config);
+			});
+			})
+        .catch(err => {arr["registersignmessage"]="You don't owner of this address";context.commit('saveAlias',arr);})
+	},
     getVersion(context) {
       API.getVersion()
         .then(version => context.commit('addVersion', version))

@@ -20,6 +20,7 @@ import ProposalVoteList from 'src/components/Dashboard/Views/ProposalVoteList.vu
 import PaymentRequestVoteList from 'src/components/Dashboard/Views/PaymentRequestVoteList.vue'
 import News from 'src/components/Dashboard/Views/News.vue'
 import BlockExplorer from 'src/components/Dashboard/Views/BlockExplorer.vue'
+import OpenAlias from 'src/components/Dashboard/Views/OpenAlias.vue'
 
 const routes = [
   {
@@ -131,6 +132,11 @@ const routes = [
         path: 'block-explorer',
         name: 'BlockExplorer',
         component: BlockExplorer
+      },
+      {
+        path: 'open-alias',
+        name: 'OpenAlias',
+        component: OpenAlias
       },
     ]
   },

@@ -367,42 +367,51 @@ export default {
     send: function(event) {
       let vm = this;
 	  var htmlEncryptionPassword="";
+	  var htmlWalletPassword="";
 	  var bWalletEncrypted=false;
+	  var sTitle="Please enter your wallet password";
 	  if (vm.info.unlocked_until!=null)
 	  {
 		bWalletEncrypted=true;
-		htmlEncryptionPassword='<input id="swal-input2" type="password" placeholder="Encryption Password" class="swal2-input">'
+		sTitle="Please enter your <b>encryption</b> password";
+		htmlEncryptionPassword='<input id="swal-input2" type="password" placeholder="Encryption Password" class="swal2-input">';
+	  }
+	  else
+	  {
+		sTitle="Please enter your <b>wallet</b> password.";
+		htmlWalletPassword='<input id="swal-input1" type="password" placeholder="Password" class="swal2-input">';
 	  }
       axios.post(window.hostname + 'ispasswordset', {
         token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
-        if (res.data == true) {
+        if (res.data == true)
+		{
           const {
             value: formValues
           } = swal({
-            html: 'Please enter your wallet password' +
-              '<input id="swal-input1" type="password" placeholder="Password" class="swal2-input">'+htmlEncryptionPassword,
+            html: sTitle+htmlWalletPassword+htmlEncryptionPassword,
             focusConfirm: false,
             preConfirm: () => {
 				if (bWalletEncrypted)
 				{
-					return [document.getElementById('swal-input1').value,document.getElementById('swal-input2').value]
+					return [document.getElementById('swal-input2').value]
 				}
 				else
 				{
-					return [document.getElementById('swal-input1').value]
+					return [document.getElementById('swal-input1').value];
 				}
             }
           }).then(formValues => {
             var password = formValues["value"][0];
-			var encryption_password = formValues["value"][1];
+			var encryption_password="";
+			if (bWalletEncrypted) encryption_password=formValues["value"][0];
             axios.post(window.hostname + 'checkpassword', {
               token: window.token,
               rpcport: window.rpcport,
               password: password
             }, window.config).then(function(res) {
-              if (res.data == true) {
+              if (res.data == true||bWalletEncrypted) {
                 axios.post(window.hostname + 'validateaddress', {
                   token: window.token,
                   rpcport: window.rpcport,
@@ -438,11 +447,12 @@ export default {
                       }, window.config).then(function(res) {
                         console.log("Status:" + res.status)
                         console.log("Return:" + res.data)
-                        $("#to").val("");
-                        $("#amount").val("");
-                        $("#comment").val("");
-                        $("#commentto").val("");
-                        if (!res.data["error"]) {
+                        if (!res.data["error"])
+						{
+                         $("#to").val("");
+                         $("#amount").val("");
+                         $("#comment").val("");
+                         $("#commentto").val("");
                           swal({
                             type: 'success',
                             title: 'Success!',
