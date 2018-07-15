@@ -470,6 +470,7 @@ function StartDaemon()
 			newProcess.on('exit', (code) => {
 				newProcess=null;
 				console.log("Daemon stopped."+code);
+				newProcess.kill('SIGHUP');
 				if(!bDaemonError) setTimeout(CloseApp, 1000);
 				});
 			newProcess.stdout.on('data', (data) =>
