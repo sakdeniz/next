@@ -41,7 +41,7 @@ export default {
 	getLogs: function()
 	{
 		let vm=this;
-		axios.post(window.hostname + 'getlogs', {token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+		axios.post(window.hostname + 'getlogs', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 		{
 			vm.Log+="<pre>"+res.data+"</pre>";
 		});

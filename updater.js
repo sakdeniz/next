@@ -5,6 +5,9 @@
     const Zip = require('adm-zip');
     const HTTP = require('restler');
     const AppPath = Application.getAppPath() + '/';
+	const Store=require('electron-store');
+	const store=new Store();
+	const dialog=require('electron').dialog;
     var splash;
     const errors = [
         'version_not_specified',
@@ -13,7 +16,8 @@
         'api_response_not_valid',
         'update_file_not_found',
         'failed_to_download_update',
-        'failed_to_apply_update'
+        'failed_to_apply_update',
+		'skip_update'
     ];
 
     /**
@@ -129,26 +133,44 @@
                         }
 
                         // Update available
-                        if(response.source){
-							splash = new BrowserWindow({width: 640, height: 480});
-							splash.loadURL(`file://${__dirname}/dist/static/update.html`);
-							splash.webContents.on('did-finish-load', ()=>{splash.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Updating to ` + response.last + `...'});`);});
-                            console.log('[Updater] Update available: ' + response.last);
-
-                            // Store the response
-                            Updater.update = response;
-
-                            // Download the update
-                            Updater.download();
-
-                        }else{
+                        if(response.source)
+						{
+							if (store.get('update_preference')=="1")
+							{
+								splash=new BrowserWindow({width: 640, height: 480});
+								splash.loadURL(`file://${__dirname}/dist/static/update.html`);
+								splash.webContents.on('did-finish-load', ()=>{splash.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Updating to ` + response.last + `...'});`);});
+								console.log('[Updater] Update available: ' + response.last);
+								Updater.update=response;
+								Updater.download();
+							}
+							if (store.get('update_preference')=="2")
+							{
+								const dialogOptions = {type: 'question', buttons: ['OK', 'Cancel'], title:"NEXT",message: 'An update available for NEXT.\r\n\r\nWould you like to download and update now?'}
+								dialog.showMessageBox(dialogOptions, i => {
+								if(i=="0")
+								{
+									splash=new BrowserWindow({width: 640, height: 480});
+									splash.loadURL(`file://${__dirname}/dist/static/update.html`);
+									splash.webContents.on('did-finish-load', ()=>{splash.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Updating to ` + response.last + `...'});`);});
+									console.log('[Updater] Update available: ' + response.last);
+									Updater.update=response;
+									Updater.download();
+								}
+								else
+								{
+									Updater.end(7);
+								}
+								});
+							}
+                        }
+						else
+						{
                             console.log('[Updater] No updates available');
                             Updater.end(2);
 
                             return false;
                         }
-
-
                     }catch(error){
                         console.log('[Updater] API response is not valid'+error);
                         Updater.end(3);

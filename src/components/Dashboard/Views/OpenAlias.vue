@@ -97,7 +97,8 @@ export default {
   	  let vm=this;
       var navAddressList = [];
       axios.post(window.hostname + 'listaddressgroupings', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         jsonQ.each(res.data, function(key, value) {
@@ -139,7 +140,7 @@ export default {
     },
     getnewaddress: function(event) {
       let vm=this;
-	  axios.post(window.hostname + 'getnewaddress', {token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+	  axios.post(window.hostname + 'getnewaddress', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 	  {
         vm.navcoinaddress=res.data;
       }).catch(function(err) {
@@ -151,7 +152,7 @@ export default {
     },
     listaddressgroupings: function(event) {
       let vm = this;
-      axios.post(window.hostname + 'listaddressgroupings', {token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+      axios.post(window.hostname + 'listaddressgroupings', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 	  {
 		if (!res.data["error"])
 		{

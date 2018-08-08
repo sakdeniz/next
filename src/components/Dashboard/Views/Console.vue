@@ -78,7 +78,7 @@ export default {
 		let vm=this;
 		var command=vm.sCommand;
 		vm.sCommand="";
-		axios.post(window.hostname + 'command', {token: window.token,rpcport: window.rpcport,command: command}, window.config).then(function(res)
+		axios.post(window.hostname + 'command', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport,command: command}, window.config).then(function(res)
 		{
 			if (!res.data["error"])
 			{

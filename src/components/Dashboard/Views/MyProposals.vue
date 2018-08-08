@@ -121,7 +121,8 @@ export default {
     var o = "";
     var i = 0;
     axios.post(window.hostname + 'listaddressgroupings', {
-      token: window.token,
+      rpcuser: window.rpcuser,
+	  token: window.token,
       rpcport: window.rpcport
     }, window.config).then(function(res) {
       jsonQ.each(res.data, function(key, value) {
@@ -133,7 +134,8 @@ export default {
         });
       });
       axios.post(window.hostname + 'listproposals', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res2) {
         var aLen = 0;
@@ -239,6 +241,7 @@ export default {
 	fCreatePaymentRequest:function(ProposalHash,bWalletLocked,WalletPassword)
 	{
 		axios.post(window.hostname + 'createpaymentrequest', {
+		rpcuser: window.rpcuser,
 		token: window.token,
 		rpcport: window.rpcport,
 		b_wallet_locked: bWalletLocked,
@@ -265,7 +268,8 @@ export default {
     proposalvote: function(proposal_hash, vote_type) {
       //swal(proposal_hash+"\r\n"+vote_type);
       axios.post(window.hostname + 'proposalvote', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           proposal_hash: proposal_hash,
           vote_type: vote_type
@@ -289,7 +293,8 @@ export default {
         responseType: 'text'
       };
       axios.post(window.hostname + 'paymentrequestvote', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           paymentrequest_hash: paymentrequest_hash,
           vote_type: vote_type

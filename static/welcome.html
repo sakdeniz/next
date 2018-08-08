@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>NEXT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link href="plugins/semantic/semantic.min.css" rel="stylesheet" type="text/css" />
+<link href="plugins/ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css"/>
+<script src="plugins/vuejs/vue.min.js"></script>
+</head>
+<body>
+<div id="app">
+<div class="row">
+<div v-if="step==0" style="height:100vh;background-image: linear-gradient( 135deg, #3B2667 10%, #BC78EC 100%);display: table; width:100%;">
+	<div style="display: table-cell; vertical-align: middle;">
+		<center><h1 class="logo-text-big">NEXT</h1></center>
+		<center><p class="info">NEXT is a secure, cross platform desktop wallet that supports many cryptocurrencies.<br/>Source codes is open to everyone.<br/>Everyone can contribute to the development of the wallet.</p></center>
+		<div style="margin-top:15px;text-align:center">
+		<div class="ui buttons">
+			<button class="ui right labeled icon button large blue" v-on:click="show_agreement()">Continue<i class="right chevron icon"></i></button>
+		</div>
+		</div>
+	</div>
+</div>
+
+<div class="top-header" v-else>
+  <div class="left">
+    <h2>Welcome</h2>
+	<p>
+	<span v-if="step==1">Please review and accept terms...</span>
+	<span v-if="step==2">Choose your update preference...</span>
+	<span v-if="step==3 && coin.name">{{coin.name}}</span>
+	<span v-if="step==3 && !coin.name">Please choose an asset...</span>
+	</p>
+  </div>
+  <div class="right">
+    <h1 class="logo-text">NEXT</h1>
+  </div>
+</div>
+</div>
+
+<div v-if="step==1" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<div id="terms" style="padding-left:20px;padding-top:20px;width: 100%;height: 430px; overflow-y: scroll;border:1px solid #dedede">
+  <p>
+    This is a binding Agreement between NEXT (or We ) and the person, persons, or entity (&ldquo;You&rdquo; or &ldquo;Your&rdquo;) using the service, Software, or application (&ldquo;Software&rdquo;).
+  </p>
+  <p class="terms_heading">
+    RIGHTS AND OBLIGATIONS
+  </p>
+  <p>
+    NEXT provides the Software solely on the terms and conditions set forth in this Agreement and on the condition that You accept and comply with them. By using the Software You (a) accept this Agreement and agree that You are legally bound by its terms; and (b) represent and warrant that: (i) You are of legal age to enter into a binding agreement; and (ii) if You are a corporation, governmental organization or other legal entity, You have the right, power and authority to enter into this Agreement on behalf of the corporation, governmental organization or other legal entity and bind them to these terms.
+  </p>
+  <p>
+    This Software functions as a free, open source, and multi-currency digital wallet. The Software does not constitute an account where We or other third parties serve as financial intermediaries or custodians of Your coins.
+  </p>
+  <p>
+    While the Software has undergone beta testing and continues to be improved by feedback from the open-source user and developer community, We cannot guarantee there will not be bugs in the Software. You acknowledge that Your use of this Software is at Your own discretion and in compliance with all applicable laws. You are responsible for safekeeping Your passwords, private key pairs, PINs, and any other codes You use to access the Software.
+  </p>
+  <p>
+    IF YOU LOSE ACCESS TO YOUR WALLET OR YOUR ENCRYPTED PRIVATE KEYS AND YOU HAVE NOT SEPARATELY STORED A BACKUP OF YOUR WALLET AND CORRESPONDING PASSWORD, YOU ACKNOWLEDGE AND AGREE THAT ANY COIN YOU HAVE ASSOCIATED WITH THAT WALLET WILL BECOME INACCESSIBLE. All transaction requests are irreversible. The authors of the Software, employees and affiliates of NEXT, copyright holders, and NEXT cannot retrieve Your private keys or passwords if You lose or forget them and cannot guarantee transaction confirmation as they do not have control over the coin networks.
+  </p>
+  <p class="terms_heading">
+    DISCLAIMER
+  </p>
+  <p>
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE, EMPLOYEES AND AFFILIATES OF NEXT, COPYRIGHT HOLDERS, OR NEXT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  </p>
+  <p>
+    IN NO EVENT WILL NEXT OR ITS AFFILIATES, OR ANY OF ITS OR THEIR RESPECTIVE SERVICE PROVIDERS, BE LIABLE TO YOU OR ANY THIRD PARTY FOR ANY USE, INTERRUPTION, DELAY OR INABILITY TO USE THE SOFTWARE, LOST REVENUES OR PROFITS, DELAYS, INTERRUPTION OR LOSS OF SERVICES, BUSINESS OR GOODWILL, LOSS OR CORRUPTION OF DATA, LOSS RESULTING FROM SYSTEM OR SYSTEM SERVICE FAILURE, MALFUNCTION OR SHUTDOWN, FAILURE TO ACCURATELY TRANSFER, READ OR TRANSMIT INFORMATION, FAILURE TO UPDATE OR PROVIDE CORRECT INFORMATION, SYSTEM INCOMPATIBILITY OR PROVISION OF INCORRECT COMPATIBILITY INFORMATION OR BREACHES IN SYSTEM SECURITY, OR FOR ANY CONSEQUENTIAL, INCIDENTAL, INDIRECT, EXEMPLARY, SPECIAL OR PUNITIVE DAMAGES, WHETHER ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, BREACH OF CONTRACT, TORT (INCLUDING NEGLIGENCE) OR OTHERWISE, REGARDLESS OF WHETHER SUCH DAMAGES WERE FORESEEABLE AND WHETHER OR NOT WE WERE ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+  </p>
+  <p class="terms_heading">
+    INTELLECTUAL PROPERTY
+  </p>
+  <p>
+    We retain all right, title, and interest in and to the Content and all of NEXT's brands, logos, and trademarks, including, but not limited to Secure NEXT Wallet and variations of the wording of the aforementioned brands, logos, and trademarks.
+  </p>
+  <p class="terms_heading">
+    CHOICE OF LAW
+  </p>
+  <p>
+    This Agreement, and its application and interpretation, shall be governed exclusively by the laws of the State of Georgia, without regard to its conflict of law rules. You consent to the exclusive jurisdiction of the federal and state courts located in or near Atlanta, Georgia for any dispute arising under this Agreement.
+  </p>
+  <p class="terms_heading">
+    SEVERABILITY
+  </p>
+  <p>
+    In the event any court shall declare any section or sections of this Agreement invalid or void, such declaration shall not invalidate the entire Agreement and all other paragraphs of the Agreement shall remain in full force and effect.
+  </p>
+  <p class="terms_heading">
+    BINDING AGREEMENT
+  </p>
+  <p>
+    The terms and provisions of this Agreement are binding upon Your heirs, successors, assigns, and other representatives. This Agreement may be executed in counterparts, each of which shall be considered to be an original, but both of which constitute the same Agreement.
+  </p>
+  <p>
+    You assume any and all risks associated with the use of the Software. We reserve the right to modify this Agreement from time to time.
+  </p>
+</div>
+<div style="margin-top:30px;text-align:center"><a class="ui button labeled violet icon big" v-on:click="accept()"><i class="ion-checkmark icon"></i>I accept the terms</a></div>
+</div>
+
+<div v-if="step==2" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<div class="ui form" style="padding-left:20px;padding-right:20px;padding-top:20px;width: 100%;height: 430px;">
+  <div class="grouped fields">
+    <div class="field">
+      <div class="ui radio checkbox large">
+        <input name="opt1" checked="checked" type="radio" value="1" v-model="update_preference">
+        <label>Auto Update</label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="ui radio checkbox">
+        <input name="opt1" type="radio" value="2" v-model="update_preference">
+        <label>Ask Me</label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="ui radio checkbox">
+        <input name="opt1" type="radio" value="3" v-model="update_preference">
+        <label>Never</label>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="margin-top:30px;text-align:center">
+<div class="ui buttons">
+	<button class="ui right labeled icon button large violet" v-on:click="select_update_pref()">Continue<i class="right chevron icon"></i></button>
+</div>
+</div>
+</div>
+
+<div v-if="step==3" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<div class="ui middle aligned selection list" style="padding-left:20px;padding-right:20px;padding-top:20px;width: 100%;height: 430px; overflow-y: scroll;border:1px solid #dedede">
+  <div class="item" v-for="(v, k, i) in coins['Coins']" v-on:click="select(v[0],k)">
+    <img class="ui avatar image" v-bind:src=getlogo(v[0].logo)>
+    <div class="content">
+      <div class="header">{{v[0].name}}</div>
+	  {{v[0].description}}
+    </div>
+  </div>
+</div>
+<div style="margin-top:25px;text-align:center" v-if="coin"><a class="ui button labeled violet icon big" v-on:click="start()"><i class="ion-arrow-right-c icon"></i>Start Wallet</a></div>
+</div>
+</div>
+</body>
+<script type="text/javascript">
+var app = new Vue({
+  el: '#app',
+  data: {
+    step:0,
+	update_preference:1,
+    coins:"",
+	coin:"",
+	coinkey:""
+  },
+  created: function() {
+	let vm=this;
+	const urlParams=new URLSearchParams(window.location.search);
+	this.coins=JSON.parse(urlParams.get('coins'));
+	/*this.coins={
+    "Coins":{
+        "NAVCOIN":
+		[
+            {
+				"name":"NAVCoin",
+				"symbol":"NAV",
+				"icon_class":"cc NAV-alt",
+				"logo":"static/img/coins/nav.png",
+				"url":"https://navcoin.org",
+				"description":"Proof of Stake, Private Payment, Staking, Community Fund",
+				"cmc_symbol":"nav-coin",
+				"qrcode_prefix":"navcoin",
+				"config_file":"navcoin.conf",
+				"data_dir_windows":"NavCoin4",
+				"data_dir_osx":"NavCoin4",
+				"data_dir_linux":".navcoin4",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"navcoind.exe",
+				"daemon_file_osx":"navcoind",
+				"daemon_file_linux":"navcoind",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"1",
+				"bool_support_staking":"1",
+				"bool_support_community_fund":"1",
+				"bool_support_open_alias":"1",
+				"bootstrap_file_url_mainnetx":"https://nav.nyc3.digitaloceanspaces.com/bootstrap/mainnet/bootstrap-navcoin-4.2.1_mainnet.tar",
+				"bootstrap_file_url_mainnet":"http://localhost/bootstrap/bootstrap-navcoin-4.2.1_mainnet.tar",
+				"bootstrap_file_url_testnet":"https://navcommunity.net/bootstrap/testnet.tar",
+				"social_youtube_url":"https://www.youtube.com/channel/UCjDs4JceVSsaeCyvkA9cWCg",
+				"social_facebook_url":"https://www.facebook.com/navcoin",
+				"social_twitter_url":"https://www.twitter.com/navcoin",
+				"social_github_url":"https://www.github.com/navcoin",
+				"social_reddit_url":"https://www.reddit.com/r/NavCoin/",
+				"social_instagram_url":"https://www.instagram.com/navcore",
+				"block_explorers":
+				{
+					"CryptoID":
+					{
+						"name":"CryptoID",
+						"url":"https://chainz.cryptoid.info/nav/"
+					},
+					"NavExplorer":
+					{
+						"name":"NavExplorer",
+						"url":"https://navexplorer.com"
+					}
+				}
+			}
+        ],
+		"PIVX":
+		[
+            {
+				"name":"PIVX",
+				"symbol":"PIVX",
+				"icon_class":"cc PIVX",
+				"cmc_symbol":"pivx",
+				"qrcode_prefix":"pivx",
+				"logo":"static/img/coins/pivx.png",
+				"url":"https://pivx.org",
+				"description":"Proof of Stake, Private Payment, Staking",
+				"config_file":"pivx.conf",
+				"data_dir_windows":"Pivx",
+				"data_dir_osx":"Pivx",
+				"data_dir_linux":".pivx",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"pivxd.exe",
+				"daemon_file_osx":"pivxd",
+				"daemon_file_linux":"pivxd",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"LITECOIN":
+		[
+            {
+				"name":"Litecoin",
+				"symbol":"LTC",
+				"icon_class":"cc LTC-alt",
+				"cmc_symbol":"litecoin",
+				"qrcode_prefix":"litecoin",
+				"logo":"static/img/coins/ltc.png",
+				"url":"https://litecoin.org",
+				"description":"Proof of Work, Mining Reward",
+				"config_file":"litecoin.conf",
+				"data_dir_windows":"Litecoin",
+				"data_dir_osx":"Litecoin",
+				"data_dir_linux":".litecoin",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"litecoind.exe",
+				"daemon_file_osx":"litecoind",
+				"daemon_file_linux":"litecoind",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"PARTICL":
+		[
+            {
+				"name":"PARTICL",
+				"symbol":"PART",
+				"icon_class":"cc PART",
+				"cmc_symbol":"PARTICL",
+				"qrcode_prefix":"PARTICL",
+				"logo":"static/img/coins/part.png",
+				"url":"https://particl.io",
+				"description":"Proof of Stake, Private Payment, Staking",
+				"config_file":"particl.conf",
+				"data_dir_windows":"Particl",
+				"data_dir_osx":"Particl",
+				"data_dir_linux":".particl",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"particld.exe",
+				"daemon_file_osx":"particld",
+				"daemon_file_linux":"particld",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ]
+    }
+}*/
+  },
+  methods: {
+  select:function(coin,coinkey)
+  {
+	let vm=this;
+	vm.coin=coin;
+	vm.coinkey=coinkey;
+  },
+  show_agreement:function()
+  {
+	let vm=this;
+	vm.step=1;
+  },
+  accept:function()
+  {
+	let vm=this;
+	vm.step=2;
+  },
+  select_update_pref:function()
+  {
+	let vm=this;
+	vm.step=3;
+  },
+  start:function()
+  {
+	let vm=this;
+	console.log("next:update_preference:"+vm.update_preference);
+	console.log("next:coin:"+vm.coinkey);
+  },
+  getlogo: function(logo) {
+  return "../"+logo;
+  }}
+})
+</script>
+</html>
+<style>
+  @font-face {
+  font-family: 'neo';
+  src: url('https://next.navcommunity.net/fonts/neo-latina.ttf');
+}
+
+
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.logo-text { font-family: 'neo';font-size:60pt;font-weight:normal;}
+.logo-text-big { font-family: 'neo';font-size:120pt;font-weight:normal;}
+body
+{
+	margin:0px;
+	background:#ffffff;
+	-webkit-user-select: none;
+}
+.info
+{
+	color:#ffffff;
+	font-size:12pt;
+	padding:20px;
+}
+.top-header
+{
+    padding: 20px;
+    height: 100px;
+	color:#ffffff;
+	background-image: linear-gradient( 135deg, #9F44D3 10%, #3B2667 100%);
+}
+
+.left
+{
+    float: left;
+    color:#ffffff;
+}
+
+.right
+{
+    float: right;
+	color:#ffffff;
+	margin-top:-17px;
+}
+
+h1
+{
+	color:#ffffff;
+}
+
+.terms_heading
+{
+	font-weight:bold;
+	font-size:12pt;
+}
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+</style>

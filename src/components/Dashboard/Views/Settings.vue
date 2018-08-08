@@ -55,7 +55,7 @@
 			<div class="column">
 				<div class="ui segment">
 					<a class="ui purple ribbon label">Lock Wallet</a>
-					<div class="ui ignored warning message"><ul><li>If you want Staking enabled, you need to keep your wallet unlocked.</li><li>If your wallet is encrypted, you will be prompted for a password while sending NAV.</li></ul></div>
+					<div class="ui ignored warning message"><ul><li>If you want Staking enabled, you need to keep your wallet unlocked.</li><li>If your wallet is encrypted, you will be prompted for a password while sending.</li></ul></div>
 					<div class="ui form">
 						<div class="ui visible message red" v-if="info.unlocked_until==0"><i class="ion-android-lock"></i>&nbsp;Wallet Locked</div>
 						<div class="ui visible message green" v-if="info.unlocked_until!=0"><i class="ion-unlocked"></i>&nbsp;Wallet Unlocked</div>
@@ -109,6 +109,56 @@
 		<div class="ui one column grid">
 			<div class="column">
 				<div class="ui segment">
+					<a class="ui purple ribbon label">Notifications</a>
+					<br><br>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
+								<input name="NotificationGeneral" type="checkbox" v-model="cNotificationGeneral" true-value="1" false-value="0" v-on:change="changeNotificationGeneral">
+								<label>General Notifications</label>
+							</div>
+							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
+								<input name="NotificationIncomingTransaction" type="checkbox" v-model="cNotificationIncomingTransaction" true-value="1" false-value="0" v-on:change="changeNotificationIncomingTransaction">
+								<label>Incoming Transactions</label>
+							</div>
+							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
+								<input name="NotificationNewStake" type="checkbox" v-model="cNotificationNewStake" true-value="1" false-value="0" v-on:change="changeNotificationNewStake">
+								<label>New Stakes</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui one column grid">
+			<div class="column">
+				<div class="ui segment">
+					<a class="ui purple ribbon label">Update Settings</a>
+					<br><br>
+					<div class="row">
+						<div class="col-md-12">
+							<sui-form>
+								<sui-form-fields grouped>
+									<label>Choose your update preference</label>
+									<sui-form-field>
+										<sui-checkbox label="Auto update" radio value="1" v-model="update_preference" v-on:change="updatePreference(1)"/>
+									</sui-form-field>
+									<sui-form-field>
+										<sui-checkbox label="Ask me" radio value="2" v-model="update_preference" v-on:change="updatePreference(2)"/>
+									</sui-form-field>
+									<sui-form-field>
+										<sui-checkbox label="Never update" radio value="3" v-model="update_preference" v-on:change="updatePreference(3)"/>
+									</sui-form-field>
+								</sui-form-fields>
+							</sui-form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui one column grid">
+			<div class="column">
+				<div class="ui segment">
 					<a class="ui purple ribbon label">Master Private Key</a>
 					<p></p>
 					<button class="ui icon tiny button green" v-on:click="dumpMasterPrivKey"><i class="ion-eye"></i>&nbsp;Show Master Private Key</button>
@@ -127,10 +177,10 @@
 			<div class="column">
 				<div class="ui segment">
 					<a class="ui purple ribbon label">Sign Message</a>
-					<div class="ui ignored warning message">You can sign messages/agreements with your addresses to prove you can receive navcoins sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</div>
+					<div class="ui ignored warning message">You can sign messages/agreements with your addresses to prove you can receive coins sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</div>
 					<div class="ui form">
 						<div class="field">
-							<input name="first-name" placeholder="NAV Address" type="text" id="navaddress" v-model="navaddress">
+							<input name="first-name" placeholder="Address" type="text" id="navaddress" v-model="navaddress">
 						</div>
 						<div class="field">
 							<input name="last-name" placeholder="Message" type="text" id="message" v-model="message">
@@ -148,7 +198,7 @@
 					<div class="ui ignored warning message">Enter the receiver's address, message (ensure you copy line breaks, spaces, tabs, etc. exactly) and signature below to verify the message. Be carefull not to read more into the signature than what is in the signed message itself, to avoid being tricked by a man-in-the-middle attack. Note that this only proves the signing party receives with the address, it cannot prove sendership of any transaction!</div>
 					<div class="ui form">
 						<div class="field">
-							<input name="first-name" placeholder="NAV Address" type="text" id="verify_navaddress" v-model="verify_navaddress">
+							<input name="first-name" placeholder="Address" type="text" id="verify_navaddress" v-model="verify_navaddress">
 						</div>
 						<div class="field">
 							<input name="last-name" placeholder="Signature" type="text" id="verify_signature" v-model="verify_signature">
@@ -194,11 +244,15 @@ export default {
     var verify_message;
     var config;
     var is_verify_success;
-    var cStaking = false;
-    var cTestnet = false;
-    var cTxindex = false;
-    var cAddressIndex = false;
+    var cStaking=false;
+    var cTestnet=false;
+    var cTxindex=false;
+    var cAddressIndex=false;
+	var cNotificationGeneral=0;
+	var cNotificationIncomingTransaction=0;
+	var cNotificationNewStake=0;
 	var isDemo=window.isDemo;
+	var update_preference=1;
     return {
 	 isDemo,
       walletpassphrase,
@@ -215,7 +269,11 @@ export default {
       cTestnet,
       cTxindex,
       cAddressIndex,
-      is_verify_success
+	  cNotificationGeneral,
+	  cNotificationIncomingTransaction,
+	  cNotificationNewStake,
+      is_verify_success,
+	  update_preference
     }
   },
   components: {},
@@ -223,6 +281,7 @@ export default {
 	this.getInfo();
     this.timer=setInterval(this.resync, 1000);
     this.loadConfig();
+	this.getSettings();
   },
       computed: {
     ...mapState({
@@ -236,8 +295,18 @@ export default {
      ...mapActions({
       getInfo: "getInfo",
     }),
+    updatePreference: function(up) {
+		console.log("next:update_preference:"+this.update_preference);
+	},
     openDataFolder: function(event) {
 		console.log("next:open-data-folder");
+	},
+    getSettings: function(event) {
+		let vm=this;
+		this.cNotificationGeneral=localStorage.getItem("cNotificationGeneral");
+		this.cNotificationIncomingTransaction=localStorage.getItem("cNotificationIncomingTransaction");
+		this.cNotificationNewStake=localStorage.getItem("cNotificationNewStake");
+		this.update_preference=localStorage.getItem("update_preference");
 	},
     repairWallet: function(event) {
 		console.log("next:repair-wallet");
@@ -262,10 +331,23 @@ export default {
       if (vm.cAddressIndex) vm.config = vm.config.replace("addressindex=0", "addressindex=1");
       else vm.config = vm.config.replace("addressindex=1", "addressindex=0");
     },
+	changeNotificationGeneral: function(event) {
+      let vm=this;
+	  if (vm.cNotificationGeneral=="1") console.log("next:setting:cNotificationGeneral:on"); else console.log("next:setting:cNotificationGeneral:off");
+	},
+	changeNotificationIncomingTransaction: function(event) {
+      let vm=this;
+      if (vm.cNotificationIncomingTransaction=="1") console.log("next:setting:cNotificationIncomingTransaction:on"); else console.log("next:setting:cNotificationIncomingTransaction:off");
+	},
+	changeNotificationNewStake: function(event) {
+      let vm=this;
+      if (vm.cNotificationNewStake=="1") console.log("next:setting:cNotificationNewStake:on"); else console.log("next:setting:cNotificationNewStake:off");
+	},
     loadConfig: function(event) {
       let vm = this;
       axios.post(window.hostname + 'loadconfig', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         if (res.data.toLowerCase().indexOf("staking=1") != -1) {
@@ -292,7 +374,8 @@ export default {
     saveConfig: function(event) {
       let vm = this;
       axios.post(window.hostname + 'saveconfig', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport,
         data: vm.config
       }, window.config).then(function(res) {
@@ -308,7 +391,8 @@ export default {
     dumpMasterPrivKey: function(event) {
       let vm = this;
       axios.post(window.hostname + 'dumpmasterprivkey', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
    		  if (!res.data["error"])
@@ -328,7 +412,8 @@ export default {
 	importPrivKey: function(event) {
       let vm = this;
       axios.post(window.hostname + 'importprivkey', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport,
 		privkey: vm.privkey
       }, window.config).then(function(res) {
@@ -352,7 +437,7 @@ export default {
         swal({
           type: 'warning',
           title: 'Oops...',
-          text: "Enter a valid NAV Address"
+          text: "Enter a valid Address"
         });
       } else if (!$("#message").val()) {
         swal({
@@ -362,7 +447,8 @@ export default {
         });
       } else {
         axios.post(window.hostname + 'signmessage', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           navaddress: vm.navaddress,
           message: vm.message
@@ -406,6 +492,7 @@ export default {
 	    if (res.value)
 		{
 			axios.post(window.hostname + 'walletpassphrasechange', {
+			rpcuser: window.rpcuser,
 			token: window.token,
 			rpcport: window.rpcport,
 			old_password: $("#old_password").val(),
@@ -447,7 +534,8 @@ export default {
   if (result.value) {
 		swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,html: 'Your wallet is being encrypted.<br><br>NEXT Wallet will automatically close itself after encryption complete.<br><br>Please wait...'});
         axios.post(window.hostname + 'encryptwallet ', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           passphrase: vm.walletpassphrase
         }, window.config).then(function(res) {
@@ -480,7 +568,8 @@ export default {
         });
       } else {
         axios.post(window.hostname + 'walletpassphrase ', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           passphrase: vm.walletpassphrase,
 		  bunlockforstaking:bUnlockForStaking
@@ -503,7 +592,8 @@ export default {
     },
 	walletLock: function(event) {
         axios.post(window.hostname + 'walletlock ', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
         }, window.config).then(function(res) {
 		  if (res.data==null)
@@ -526,7 +616,7 @@ export default {
         swal({
           type: 'warning',
           title: 'Oops...',
-          text: "Enter a valid NAV Address"
+          text: "Enter a valid Address"
         });
       } else if (!$("#verify_signature").val()) {
         swal({
@@ -542,7 +632,8 @@ export default {
         });
       } else {
         axios.post(window.hostname + 'verifymessage', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           navaddress: vm.verify_navaddress,
           signature: vm.verify_signature,

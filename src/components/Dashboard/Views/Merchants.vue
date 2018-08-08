@@ -1,7 +1,7 @@
 <template>
 <div class="content">
   <div class="container-fluid">
-  <h4 class="card-title"><i class="ion-earth"></i> NAVCoin Accepted Here</h4>
+  <h4 class="card-title"><i class="ion-earth"></i> Merchants</h4>
   <gmap-map
     id="map"
     :center="center"
@@ -98,7 +98,8 @@
     created: function() {
 		let vm = this;
 		axios.post(window.hostname + 'navcommunity-getmerchantlist', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
         }, window.config).then(function(res) {
 		var categoryObj = jsonQ(res.data).pathValue([0, "categories"]);

@@ -93,6 +93,7 @@ export default {
 		let vm=this;
 		var epoch=moment($("#deadline").val()).unix();
 		axios.post(window.hostname + 'createproposal', {
+		rpcuser: window.rpcuser,
 		token: window.token,
 		rpcport: window.rpcport,
 		b_wallet_locked: bWalletLocked,
@@ -138,7 +139,8 @@ export default {
     selectAddress: function(event) {
       var navAddressList = [];
       axios.post(window.hostname + 'listaddressgroupings', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         jsonQ.each(res.data, function(key, value) {
@@ -189,7 +191,8 @@ export default {
         return;
       }
       axios.post(window.hostname + 'validateaddress', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport,
         address: $("#navcoinaddress").val()
       }, window.config).then(function(res) {

@@ -18,7 +18,7 @@
         <i class="ion-arrow-swap"></i>
         <p>Transactions</p>
       </sidebar-link>
-      <sidebar-link to="/admin/staking">
+      <sidebar-link v-if="coin.bool_support_staking=='1'" to="/admin/staking">
         <i class="ion-leaf"></i>
         <p>Staking</p>
       </sidebar-link>
@@ -30,7 +30,7 @@
         <i class="ion-trophy"></i>
         <p>GAMES</p>
       </sidebar-link>
-      <sidebar-link to="/admin/community-proposals">
+      <sidebar-link v-if="coin.bool_support_community_fund=='1'" to="/admin/community-proposals">
         <i class="ion-erlenmeyer-flask"></i>
         <p>COMMUNITY FUND</p>
       </sidebar-link>
@@ -66,12 +66,21 @@
   import ContentFooter from './ContentFooter.vue'
   import DashboardContent from './Content.vue'
   import MobileMenu from './MobileMenu.vue'
+  import {
+  mapState,
+  mapActions
+ } from "vuex";
   export default {
     components: {
       TopNavbar,
       ContentFooter,
       DashboardContent,
       MobileMenu
+    },
+	computed: {
+    ...mapState({
+      coin: "coin",
+    })
     },
     methods: {
       toggleSidebar () {

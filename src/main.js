@@ -16,26 +16,31 @@ const router=new VueRouter({
   routes,
   linkActiveClass: 'nav-item active'
 })
-//
 const urlParams=new URLSearchParams(window.location.search);
+const rpcuser=urlParams.get('rpcuser');
 const token=urlParams.get('rpcpassword');
 const rpcport=urlParams.get('rpcport');
-const warning=urlParams.get('warning');
-//
 window.isDemo=false;
 window.acceptTC=false;
 window.config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'};
-//
-if (token && rpcport && warning)
+if (rpcuser && token && rpcport)
 {
 	window.hostname='http://localhost:3000/';
+	window.rpcuser=rpcuser;
 	window.token=token;
 	window.rpcport=rpcport;
-	window.warning=warning;
 }
 else
 {
-	if (window.isDemo) window.hostname='http://navcommunity.net:3000/'; else window.hostname='http://localhost:3000/';
+	if (window.isDemo)
+	{
+		window.hostname='http://navcommunity.net:3000/';
+	}
+	else
+	{
+		window.hostname='http://localhost:3000/';
+	}
+	window.rpcuser="test";
 	window.token="test";
 	window.rpcport="44445";
 	window.warning="0";

@@ -18,7 +18,7 @@
             </div>
           </div>
           <div class="extra content">
-            <span><i class="user icon"></i>{{item.store_item_seller_name}}</span>
+            <span><i class="ion-person"></i>&nbsp;{{item.store_item_seller_name}}</span>
           </div>
           <div class="extra content">
             <span class="right floated"><a class="ui purple tag label">{{item.store_item_price}} NAV</a></span>

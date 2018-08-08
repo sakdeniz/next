@@ -5,6 +5,7 @@ Vue.use(Vuex)
 
 const aliasDomain="nav.community";
 const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
+var coins=require('../coins.json');
 const checkGoogleDNS = async (name) => {
   console.log(name);
   return new Promise(async function(resolve, reject) {
@@ -43,6 +44,7 @@ const store = new Vuex.Store({
     transactions: [],
     peers: [],
     blockchainInfo: {},
+	networkInfo: {},
     stakingInfo: {},
     walletInfo: {},
     stakeReport: {},
@@ -68,6 +70,8 @@ const store = new Vuex.Store({
     registeralias: '',
 	registersignmessage: '',
 	registerapimessage: '',
+	coin:{},
+	coins:{},
   },
   mutations: {
 	saveAlias (state, arr) {
@@ -86,13 +90,16 @@ const store = new Vuex.Store({
 	  state.registerapimessage = arr["registerapimessage"];
     },
     error (state, error) { state.errorMessage = error.message; state.error = error },
-    addInfo (state, info) { state.info = info, state.errorMessage = '' },
+	addCoin (state, coin) { state.coin = coin, state.errorMessage = '' },
+	addCoins (state, coins) { state.coins = coins, state.errorMessage = '' },
+	addInfo (state, info) { state.info = info, state.errorMessage = '' },
     addVersion (state, version) { state.version = version, state.errorMessage = '' },
     addTransactions (state, transactions) { state.transactions = transactions },
     addPrice (state, price) { state.price = price },
     addSoftForks (state, softForks) { state.softForks = softForks },
     addPeers (state, peers) { state.peers = peers },
     addBlockchainInfo (state, blockchainInfo) { state.blockchainInfo = blockchainInfo },
+    addNetworkInfo (state, networkInfo) { state.networkInfo = networkInfo },
     addWalletInfo (state, walletInfo) { state.walletInfo = walletInfo },
     addStakingInfo (state, stakingInfo) { state.stakingInfo = stakingInfo },
     addStakeReport (state, stakeReport) { state.stakeReport = stakeReport },
@@ -163,77 +170,88 @@ const store = new Vuex.Store({
 			})
         .catch(err => {arr["registersignmessage"]="You don't owner of this address";context.commit('saveAlias',arr);})
 	},
-    getVersion(context) {
+	async getCoin(context) {
+		context.commit('addCoin', JSON.parse(API.getCoin()));
+    },
+	async getCoins(context) {
+		context.commit('addCoins', coins);
+    },
+    async getVersion(context) {
       API.getVersion()
         .then(version => context.commit('addVersion', version))
         .catch(err => context.commit('error', err))
     },
-    getInfo(context) {
+    async getInfo(context) {
       API.getInfo()
         .then(info => context.commit('addInfo', info))
         .catch(err => context.commit('error', err))
     },
-	getPrice(context) {
+	async getPrice(context) {
       API.getPrice()
         .then(price => context.commit('addPrice', price))
         .catch(err => context.commit('error', err))
     },
-	getCommunitySoftForks(context) {
+	async getCommunitySoftForks(context) {
       API.getCommunitySoftForks()
         .then(softForks => context.commit('addSoftForks', softForks))
         .catch(err => context.commit('error', err))
     },
-    getTransactions (context) {
+    async getTransactions (context) {
       API.getTransactions()
         .then(transactions => context.commit('addTransactions', transactions))
         .catch(err => context.commit('error', err))
     },
-    getPeerInfo (context) {
+    async getPeerInfo (context) {
       API.getPeerInfo()
         .then(peers => context.commit('addPeers', peers))
         .catch(err => context.commit('error', err))
     },
-    getBlockchainInfo (context) {
+    async getBlockchainInfo (context) {
       API.getBlockchainInfo()
         .then(blockchainInfo => context.commit('addBlockchainInfo', blockchainInfo))
         .catch(err => context.commit('error', err))
     },
-    getWalletInfo (context) {
+    async getNetworkInfo (context) {
+      API.getNetworkInfo()
+        .then(networkInfo => context.commit('addNetworkInfo', networkInfo))
+        .catch(err => context.commit('error', err))
+    },
+    async getWalletInfo (context) {
       API.getWalletInfo()
         .then(walletInfo => context.commit('addWalletInfo', walletInfo))
         .catch(err => context.commit('error', err))
     },
-    getStakingInfo(context) {
+    async getStakingInfo(context) {
       API.getStakingInfo()
         .then(stakingInfo => context.commit('addStakingInfo', stakingInfo))
         .catch(err => context.commit('error', err))
     },
-    getStakeReport(context) {
+    async getStakeReport(context) {
       API.getStakeReport()
         .then(stakeReport => context.commit('addStakeReport', stakeReport)    )
         .catch(err => context.commit('error', err))
     },
-    getProposals(context) {
+    async getProposals(context) {
       API.getProposals()
         .then(proposals => context.commit('addProposals', proposals))
         .catch(err => context.commit('error', err))
     },
-    getCommunitySiteProposals(context) {
+    async getCommunitySiteProposals(context) {
       API.getCommunitySiteProposals()
         .then(proposals => context.commit('addCommunitySiteProposals', proposals))
         .catch(err => context.commit('error', err))
     },
-    getCommunitySiteNews(context) {
+    async getCommunitySiteNews(context) {
       API.getCommunitySiteNews()
         .then(communitySiteNews => context.commit('addCommunitySiteNews', communitySiteNews[1].news))
         .catch(err => context.commit('error', err))
     },
-    getCommunitySiteGames(context) {
+    async getCommunitySiteGames(context) {
       API.getCommunitySiteGames()
         .then(communitySiteGames => context.commit('addCommunitySiteGames', communitySiteGames[1].games))
         .catch(err => context.commit('error', err))
     },
-    getStoreItems(context) {
+    async getStoreItems(context) {
       API.getStoreItems()
         .then(storeitems => context.commit('addStoreItems', storeitems[1].items))
         .catch(err => context.commit('error', err))

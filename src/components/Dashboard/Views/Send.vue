@@ -11,11 +11,10 @@
         <div class="card">
           <div class="card-body">
             Send to this address : <input type="text" class="form-control" style="width:100%;" id="to" name="to"></input>
-            <br>Amount (NAV) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
+            <br>Amount ({{coin.symbol}}) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
             <br>Comment (Optional) : <input type="text" class="form-control" style="width:100%;" id="comment" name="comment"></input><small>A comment used to store what the transaction is for. This is not part of the transaction, just kept in your wallet.</small>
             <br>Comment To (Optional) : <input type="text" class="form-control" style="width:100%;" id="commentto" name="commentto"></input><small>A comment to store the name of the person or organization to which you're sending the transaction. This is not part of the transaction, just kept in your wallet.</small>
-            <br><br>
-            <div class="ui toggle checkbox" style="margin-left:10px">
+            <div v-if="coin.bool_anon_send=='1'" class="ui toggle checkbox" style="margin-left:10px;margin-top:20px;">
               <input name="check1" type="checkbox" v-model="cPrivateSend">
               <label style="text-transform:capitalize">Private Payment</label>
             </div>
@@ -25,7 +24,7 @@
         </div>
       </div>
 
-      <div class="col-md-12">
+      <div class="col-md-12" v-if="coin.bool_anon_send=='1'">
         <div class="card">
           <div class="card-header">
             <h4 class="card-title"><i class='ion-ios-bookmarks-outline'></i>&nbsp;NavTech Servers</h4></div>
@@ -55,7 +54,7 @@
           <div class="card-body">
             <input type="text" class="form-control" style="width:100%;" name="name" id="name" value="" placeholder="Name"></input><br>
             <input type="text" class="form-control" style="width:100%;" name="email" id="email" value="" placeholder="E-Mail"></input><br>
-            <input type="text" class="form-control" style="width:100%;" name="address" id="address" value="" placeholder="NAV Address"></input>
+            <input type="text" class="form-control" style="width:100%;" name="address" id="address" value="" placeholder="Address"></input>
             <br><button class='btn btn-fill btn-success' v-on:click='addContact'><i class="ion-plus"></i>&nbsp;Add</button><br><br>
             <table>
               <tr>
@@ -129,7 +128,8 @@ export default {
   components: {},
     computed: {
     ...mapState({
-      info: "info",
+      coin: "coin",
+	  info: "info",
     })
   },
   created: function() {
@@ -142,7 +142,8 @@ export default {
     var node_arr = [];
     var cPrivateSend = false;
     axios.post(window.hostname + 'getaddressbook', {
-      token: window.token,
+      rpcuser: window.rpcuser,
+	  token: window.token,
       rpcport: window.rpcport
     }, window.config).then(function(res) {
       jsonQ.each(res.data, function(key, value) {
@@ -164,7 +165,8 @@ export default {
       });
     });
     axios.post(window.hostname + 'getanonservers', {
-      token: window.token,
+      rpcuser: window.rpcuser,
+	  token: window.token,
       rpcport: window.rpcport
     }, window.config).then(function(res) {
       jsonQ.each(res.data, function(key, value) {
@@ -189,7 +191,8 @@ export default {
     }),
     setPassword: function() {
       axios.post(window.hostname + 'ispasswordset', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         if (res.data == false) {
@@ -217,7 +220,8 @@ export default {
             } else {
               if (password == password_confirm) {
                 axios.post(window.hostname + 'setpassword', {
-                  token: window.token,
+                  rpcuser: window.rpcuser,
+				  token: window.token,
                   rpcport: window.rpcport,
                   password: password
                 }, window.config).then(function(res) {
@@ -247,7 +251,8 @@ export default {
       let vm = this;
       if ($("#node").val() != "") {
         axios.post(window.hostname + 'addanonserver', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           node: $("#node").val(),
           command: "add"
@@ -269,7 +274,8 @@ export default {
     },
     saveContacts: function() {
       axios.post(window.hostname + 'saveaddressbook', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport,
         data: JSON.stringify(this.arr)
       }, window.config).then(function(res) {
@@ -337,7 +343,8 @@ export default {
       }).then((result) => {
         if (result.value) {
           axios.post(window.hostname + 'addanonserver', {
-            token: window.token,
+            rpcuser: window.rpcuser,
+			token: window.token,
             rpcport: window.rpcport,
             node: node,
             command: "remove"
@@ -382,7 +389,8 @@ export default {
 		htmlWalletPassword='<input id="swal-input1" type="password" placeholder="Password" class="swal2-input">';
 	  }
       axios.post(window.hostname + 'ispasswordset', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         if (res.data == true)
@@ -407,13 +415,15 @@ export default {
 			var encryption_password="";
 			if (bWalletEncrypted) encryption_password=formValues["value"][0];
             axios.post(window.hostname + 'checkpassword', {
-              token: window.token,
+              rpcuser: window.rpcuser,
+			  token: window.token,
               rpcport: window.rpcport,
               password: password
             }, window.config).then(function(res) {
               if (res.data == true||bWalletEncrypted) {
                 axios.post(window.hostname + 'validateaddress', {
-                  token: window.token,
+                  rpcuser: window.rpcuser,
+				  token: window.token,
                   rpcport: window.rpcport,
                   address: $("#to").val()
                 }, window.config).then(function(res) {
@@ -436,7 +446,8 @@ export default {
                       });
                     } else {
                       axios.post(window.hostname + 'sendtoaddress', {
-                        token: window.token,
+                        rpcuser: window.rpcuser,
+						token: window.token,
                         rpcport: window.rpcport,
                         to: $("#to").val(),
                         amount: $("#amount").val(),

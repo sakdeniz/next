@@ -7,7 +7,7 @@
 			What are soft forks?
 		</div>
 		<ul class="list">
-		<li>Soft forks are changes to the protocols that govern the NavCoin blockchain.</li>
+		<li>Soft forks are changes to the protocols that govern the blockchain.</li>
 		<li>At the end of each 20,160 block cycle the number of blocks that signalled support for a soft fork are counted.</li>
 		<li>If the number of signalling blocks is greater than 75% the soft fork is locked in and will be activated at the end of the next block cycle.</li>
 		<li>If the block cycle fails to reach the required 75% a new attempt to lock in the soft fork is started in the next block cycle.</li>

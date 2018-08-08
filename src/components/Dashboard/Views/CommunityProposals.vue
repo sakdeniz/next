@@ -30,9 +30,8 @@
             <sui-dropdown-item v-on:click="listproposals('rejected')">Rejected</sui-dropdown-item>
           </sui-dropdown-menu>
         </sui-dropdown>
-		<button class="ui google plus button large" v-on:click="donatefund()"><i class="heart icon"></i>Donate</button>
-        <div class="ui left icon input large">
-          <i class="search icon"></i>
+		<button class="ui google plus button large" v-on:click="donatefund()"><i class="ion-heart"></i>&nbsp;Donate</button>
+        <div class="ui left input tiny">
           <input placeholder="Search..." type="text" v-model="search" style="width:180px">
         </div>
         <div class="ui toggle checkbox" style="margin-left:10px">
@@ -355,6 +354,7 @@ export default {
       getInfo: "getInfo",
     }),
     formatnumbers: function(n) {
+	  if (n==undefined) return;
       var parts = n.toString().split(".");
       return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
     },
@@ -396,6 +396,7 @@ export default {
 	    if (res.value)
 		{
 			axios.post(window.hostname + 'donatefund', {
+			rpcuser: window.rpcuser,
 			token: window.token,
 			rpcport: window.rpcport,
 			b_wallet_locked: bWalletLocked,
@@ -432,7 +433,8 @@ export default {
       vm.array_proposals = [];
       vm.array_categories = [];
       axios.post(window.hostname + 'cfundstats', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         vm.cfund_available = jsonQ(res.data).pathValue(["funds", "available"]);
@@ -443,7 +445,8 @@ export default {
         vm.cfund_voted_payment_requests = jsonQ(res.data).pathValue(["votingPeriod", "votedPaymentrequests"]).length;
       });
       axios.post(window.hostname + 'listproposals', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         var aLen = 0;
@@ -604,7 +607,8 @@ export default {
         responseType: 'text'
       };
       axios.post(window.hostname + 'proposalvote', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           proposal_hash: proposal_hash,
           vote_type: vote_type
@@ -628,7 +632,8 @@ export default {
         responseType: 'text'
       };
       axios.post(window.hostname + 'paymentrequestvote', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           paymentrequest_hash: paymentrequest_hash,
           vote_type: vote_type
@@ -672,6 +677,7 @@ export default {
 	    if (res.value)
 		{
 			axios.post(window.hostname + 'proposaldonate', {
+			rpcuser: window.rpcuser,
 			token: window.token,
 			rpcport: window.rpcport,
 			proposal_hash: proposal_hash,

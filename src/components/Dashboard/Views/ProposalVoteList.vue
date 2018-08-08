@@ -84,13 +84,15 @@ export default {
     var o = "";
     var i = 0;
     axios.post(window.hostname + 'proposalvotelist', {
-      token: window.token,
+      rpcuser: window.rpcuser,
+	  token: window.token,
       rpcport: window.rpcport
     }, window.config).then(function(res) {
       var hash, voteType, strDZeel, nAmount, nVotesYes, nVotesNo, fState = "";
       var sProposalTitle, Phash, PvoteType, PstrDZeel, PnAmount, PnVotesYes, PnVotesNo, PfState = "";
       axios.post(window.hostname + 'listaddressgroupings', {
-        token: window.token,
+        rpcuser: window.rpcuser,
+		token: window.token,
         rpcport: window.rpcport
       }, window.config).then(function(res) {
         jsonQ.each(res.data, function(key, value) {
@@ -188,7 +190,8 @@ export default {
     proposalvote: function(proposal_hash, vote_type) {
       swal(proposal_hash + "\r\n" + vote_type);
       axios.post(window.hostname + 'proposalvote', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           proposal_hash: proposal_hash,
           vote_type: vote_type

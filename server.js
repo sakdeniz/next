@@ -1,27 +1,25 @@
-var fs = require('fs');
-var url = require('url');
-var path = require('path');
-var http = require('http');
-var argv = require('minimist')(process.argv.slice(2));
-var qs = require('querystring');
-var axios = require('axios');
+var fs=require('fs');
+var url=require('url');
+var path=require('path');
+var http=require('http');
+var argv=require('minimist')(process.argv.slice(2));
+var qs=require('querystring');
+var axios=require('axios');
 var server;
-const config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
+const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const crypto=require('crypto');
-const Client = require('bitcoin-core');
-const stringifyObject = require('stringify-object');
-const appDataPath= process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/Navcoin4/' : process.env.HOME+'/.navcoin4/');
+const Client=require('bitcoin-core');
+const stringifyObject=require('stringify-object');
+const appDataPath=process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/Navcoin4/' : process.env.HOME+'/.navcoin4/');
 const fileConfig=appDataPath+"navcoin.conf";
 const fileAddressBook=appDataPath+"addressbook.dat";
 const fileWalletPassword=appDataPath+"walletpass.dat";
-
 function sendResponse(res, statusCode, body)
 {
 	res.writeHead(statusCode);
 	res.write(body);
 	res.end();
 }
-
 function sendError(res, statusCode, body)
 {
 	var obj={"error":body};
@@ -30,21 +28,7 @@ function sendError(res, statusCode, body)
 	res.write(JSON.stringify(obj))
 	res.end();
 }
-
-function stringToBoolean(string)
-{
-    switch(string.toLowerCase().trim()){
-        case "true": case "yes": case "1": return true;
-        case "false": case "no": case "0": case null: return false;
-        default: return Boolean(string);
-    }
-}
-
-function isJSON(v) {
-    str = v.toString();
-	if (str.charAt(0)=="{" || str.charAt(0)=="[") return true; else return false;
-	}
-server = http.createServer(function (req, res)
+server=http.createServer(function (req, res)
 {
 	res.setHeader('Access-Control-Allow-Origin', "*");
 	res.setHeader('Access-Control-Allow-Methods','GET,PUT,POST,DELETE');
@@ -59,10 +43,9 @@ server = http.createServer(function (req, res)
 	{
 		var post= body ? JSON.parse(body) : {}
 		if (post.rpcport) port=post.rpcport; else port=44445;
-		if (post.token) token=post.token; else token="test";
-		const client = new Client({host:"localhost", port:port,username:token,password:token});
-		/*console.log("Port:"+port);
-		console.log("Token:"+token);*/
+		if (post.rpcuser) rpcuser=post.rpcuser; else rpcuser="test";
+		if (post.token) rpcpassword=post.token; else rpcpassword="test";
+		const client = new Client({host:"localhost",port:port,username:rpcuser,password:rpcpassword});
 		client.command("foobar").then((retval) =>
 		{
 		}).catch((e) =>
@@ -270,6 +253,10 @@ server = http.createServer(function (req, res)
 				{
 					client.walletLock().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/decodescript")
+				{
+					client.decodeScript(post.script).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/sendtoaddress")
 				{
 					if (post.encryption_password)
@@ -397,6 +384,10 @@ server = http.createServer(function (req, res)
 				if (req.url=="/getinfo")
 				{
 					client.getInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/getnetworkinfo")
+				{
+					client.getNetworkInfo().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/getpeerinfo")
 				{
@@ -527,7 +518,7 @@ server = http.createServer(function (req, res)
 		});
 	});
 });
-console.log("Next NodeJS server started...");
+console.log("Next NodeJS Server started...");
 console.log("Adress book file :"+fileAddressBook);
 console.log("Wallet password file :"+fileWalletPassword);
 process.on('uncaughtException', function(err)
@@ -535,5 +526,4 @@ process.on('uncaughtException', function(err)
   console.log('Caught exception: ' + err);
 });
 server.listen(argv.p || 3000);
-
 console.log('Server running on port ' + (argv.p || 3000))

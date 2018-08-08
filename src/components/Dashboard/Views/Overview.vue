@@ -1,31 +1,25 @@
 <template>
 <div class="content">
   <div class="container-fluid">
-  <div v-if="errorMessage" class="ui tiny button gray" style="margin-bottom:25px">
-      <div class="row">
-        <div class="col-md-12"><i class="asterisk loading icon"></i>&nbsp;{{errorMessage}}</div>
-      </div>
-    </div>
-
-    <div class="row" v-else>
+    <div class="row" v-if="blockchainInfo.chain">
       <div class="col-md-12">
 	      <div class="ui column grid">
-      <div>
+	  <div>
         <div class="ui segment">
-          <a class="ui red ribbon label"><i class="fa fa-2x ion-android-wifi"></i></a>
+          <a class="ui red ribbon label"><i style="font-size:2em;" class="ion-android-wifi"></i></a>
 			<sui-dropdown icon="ion-network" class="labeled icon twitter tiny button floating">
-				{{info.testnet === true ? 'Test' : 'Main'}}
+				{{blockchainInfo.chain==="test" ? 'Test' : 'Main'}}
 				<sui-dropdown-menu>
 					<sui-dropdown-item icon="ion-home" v-on:click="switchnetwork('mainnet')">Main</sui-dropdown-item>
 					<sui-dropdown-item icon="ion-erlenmeyer-flask" v-on:click="switchnetwork('testnet')">Test</sui-dropdown-item>
-					<sui-dropdown-item icon="ion-wrench" v-on:click="switchnetwork('devet')">Dev</sui-dropdown-item>
+					<sui-dropdown-item icon="ion-wrench" v-on:click="switchnetwork('devnet')">Dev</sui-dropdown-item>
 				</sui-dropdown-menu>
 			</sui-dropdown>
-			<button role="button" class="ui icon labeled tiny button gray" title="Core Version"><i class="ion-code icon"></i>Core v{{info.version}}</button>
-			<button role="button" class="ui icon labeled tiny button gray" title="Downloaded Block Number/Current Block Height"><i class="ion-cube icon"></i>{{formatNumber(info.blocks)}}/{{formatNumber(blockchainInfo.headers)}}</button>
+			<button role="button" class="ui icon labeled tiny button gray" title="Core Version"><i class="ion-code icon"></i>Core v{{networkInfo.version}}</button>
+			<button role="button" class="ui icon labeled tiny button gray" title="Downloaded Block Number/Current Block Height"><i class="ion-cube icon"></i>{{formatNumber(blockchainInfo.blocks)}}/{{formatNumber(blockchainInfo.headers)}}</button>
 			<button role="button" class="ui icon labeled tiny button gray" title="Blockchain verification progress"><i class="ion-android-checkmark-circle icon"></i>{{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}%</button>
-			<button role="button" class="ui icon labeled tiny button gray" title="Staking Status"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
-			<router-link to="/admin/peer-list"><button role="button" class="ui icon labeled tiny button gray" title="Connection Count"><i class="ion-earth icon"></i>{{info.connections}}</button></router-link>
+			<button v-if="coin.bool_support_staking=='1'" role="button" class="ui icon labeled tiny button gray" title="Staking Status"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
+			<router-link to="/admin/peer-list"><button role="button" class="ui icon labeled tiny button gray" title="Connection Count"><i class="ion-earth icon"></i>{{networkInfo.connections}}</button></router-link>
 			<!--<button role="button" class="ui icon labeled tiny button gray" title="TX Count"><i class="ion-arrow-swap icon"></i>{{walletInfo.txcount}}</button>!-->
 		  </div>
       </div>
@@ -33,18 +27,18 @@
     <div class="ui column grid" style="margin-top:22px">
       <div>
         <div class="ui segment">
-          <a class="ui green ribbon label"><i class="fa fa-2x ion-social-buffer"></i></a>
-			<div class="ui labeled button" tabindex="0"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing violet label tiny">{{numberWithCommas(info.balance)}} NAV&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-help-circled"></i> Unconfirmed</div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} NAV</a></div>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-egg"></i> Immature</div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} NAV</a></div>
-			<div class="ui labeled button" tabindex="0"><div class="ui gray button tiny"><i class="ion-leaf"></i> Staking</div><a class="ui basic left pointing gray label tiny">{{info.stake}} NAV</a></div>
+          <a class="ui green ribbon label"><i style="font-size:2em;" class="ion-social-buffer"></i></a>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{numberWithCommas(walletInfo.balance)}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'"><div class="ui gray button tiny"><i class="ion-help-circled"></i> Unconfirmed</div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} {{coin.symbol}}</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.immature_balance!=='undefined'"><div class="ui gray button tiny"><i class="ion-egg"></i> Immature</div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} {{coin.symbol}}</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="coin.bool_support_staking=='1' && typeof info.stake!=='undefined'"><div class="ui gray button tiny"><i class="ion-leaf"></i> Staking</div><a class="ui basic left pointing gray label tiny">{{info.stake}} {{coin.symbol}}</a></div>
         </div>
       </div>
     </div>
     <div class="ui column grid" v-if="price" style="margin-top:22px">
       <div>
         <div class="ui segment">
-			<a class="ui blue ribbon label"><i class="fa fa-2x ion-arrow-swap"></i></a>
+			<a class="ui blue ribbon label"><i style="font-size:2em;" class="ion-arrow-swap"></i></a>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i></div><a class="ui basic label">{{parseFloat(price[0].price_usd).toFixed(2)}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-bitcoin"></i></div><a class="ui basic label">{{price[0].price_btc}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-arrow-graph-up-right"></i> Rank</div><a class="ui basic label">{{price[0].rank}}</a></div>
@@ -57,6 +51,13 @@
     </div>
 	</div>
 	
+	  <div v-else class="ui tiny button gray" style="margin-bottom:25px">
+      <div class="row">
+        <div class="col-md-12"><i class="ion-asterisk loading icon"></i>&nbsp;{{errorMessage}}</div>
+      </div>
+    </div>
+
+	
     <h4 v-if="proposals.length>0" class="card-title">Community Fund <button class="btn btn-fill btn-sm btn-info"> Featured Proposals</button></h4>
     <div class="row">
       <div v-for="proposal in getFeaturedProposals(proposals)" :key="proposal.hash" class="col-md-6 col-sm-12">
@@ -68,7 +69,7 @@
             <div class="card card-user"><img v-bind:src="proposal.image" /></div>
             <span v-show="proposal.author" class="ui purple button pull-right">&nbsp;
 			<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</span>
-            <div><i class="fa ion-trophy text-primary"></i>&nbsp;{{numberWithCommas(proposal.requestedAmount)}} NAV</div>
+            <div><i class="fa ion-trophy text-primary"></i>&nbsp;{{numberWithCommas(proposal.requestedAmount)}} {{coin.symbol}}</div>
             <div><i class="fa fa-clock-o text-danger"></i>&nbsp;{{getDate(proposal.deadline)}}</div>
             <div><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}</div>
             <div style="margin-top:10px;">
@@ -97,7 +98,7 @@
 				<thead>
 					<tr>
 						<th nowrap>Request ID</th>
-						<th nowrap>Amount (NAV)</th>
+						<th nowrap>Amount ({{coin.symbol}})</th>
 						<th nowrap>Status</th>
 						</tr>
 					</thead>
@@ -162,10 +163,13 @@ export default {
   },
   computed: {
     ...mapState({
-      errorMessage: "errorMessage",
+      coin: "coin",
+      coins: "coins",
+	  errorMessage: "errorMessage",
       transactions: "transactions",
       blockchainInfo: "blockchainInfo",
-      walletInfo: "walletInfo",
+      networkInfo: "networkInfo",
+	  walletInfo: "walletInfo",
       stakingInfo: "stakingInfo",
       stakeReport: "stakeReport",
       info: "info",
@@ -174,53 +178,50 @@ export default {
     })
   },
   created: function() {
+	let vm=this;
+	var interval=5000;
+	this.getCoin();
+	this.getCoins();
 	this.getPrice();
-	this.resync();
-    this.timer=setInterval(this.resync, 5000);
-	if (!window.acceptTC && window.warning!="0") {
-      const {
-        value: accept
-      } = swal({
-        title: 'Terms and conditions',
-        html: "<div style='text-align:left'><small>NEXT is a wallet that is in test phase.<br>NEXT uses common data with Core Wallet.<br>Using NEXT on mainnet is not recommended on beta phase.<br>The developer team can not be held responsible due to improper use.</small></div>",
-        allowOutsideClick: false,
-        input: 'checkbox',
-        inputValue: 1,
-        inputPlaceholder: 'I agree with the terms and conditions',
-        confirmButtonText: 'Continue <i class="fa fa-arrow-right></i>',
-        inputValidator: (result) => {
-          return !result && 'You need to agree with T&C'
-        }
-      }).then(function(res) {
-        window.acceptTC = true;
-		console.log("next:disable-warning");
-        const toast = swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000
-        });
-        toast({
-          type: 'success',
-          title: 'Welcome to NEXT'
-        })
-      });
-    }
+	if (vm.coin.name=="PIVX"||vm.coin.name=="PHORE")
+	{
+		interval=15000;
+	}
+	else
+	{
+		this.resync();
+	}
+	this.timer=setInterval(this.resync, interval);
+	toast({type:'success',title:'Welcome to NEXT'});
   },
   beforeDestroy() {
     clearInterval(this.timer);
   },
   methods: {
     ...mapActions({
+      getCoin: "getCoin",
+      getCoins: "getCoins",
       getPrice: "getPrice",
       getInfo: "getInfo",
       getStakingInfo: "getStakingInfo",
       getTransactions: "getTransactions",
       getBlockchainInfo: "getBlockchainInfo",
+      getNetworkInfo: "getNetworkInfo",
       getWalletInfo: "getWalletInfo",
       getStakeReport: "getStakeReport",
       getCombinedProposals: "getCombinedProposals",
     }),
+	getCoinKeys: (obj) => {
+      var r = []
+      for (var k in obj) {
+        if (!obj.hasOwnProperty(k))
+          continue
+        if (k.length > 18) {
+          r.push(k)
+        }
+      }
+      return r
+    },
     formatNumber: n => {
 		if (!n) return "0";
 		return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
@@ -256,17 +257,22 @@ export default {
       return proposals.filter(item => item.featured === '1')
     },
     resync: function() {
+	  let vm=this;
 	  this.getBlockchainInfo();
+ 	  this.getNetworkInfo();
+	  this.getWalletInfo();
+	  this.getTransactions();
 	  if (JSON.stringify(this.blockchainInfo)!="{}")
 	  {
-		this.getInfo();
-		this.getWalletInfo();
-		this.getStakingInfo();
-		this.getStakeReport();
-		this.getTransactions();
-		if (this.blockchainInfo.verificationprogress)
+		if (vm.coin.bool_support_staking=="1")
 		{
-			if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0) == "100") this.getCombinedProposals();
+			this.getInfo();
+			this.getStakingInfo();
+			this.getStakeReport();
+		}
+		if (this.blockchainInfo.verificationprogress && vm.coin.bool_support_community_fund=="1")
+		{
+			if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0)=="100") this.getCombinedProposals();
 		}
 	  }
     },
@@ -291,7 +297,8 @@ export default {
       axios
         .post(
           window.hostname + "proposalvote", {
-            token: window.token,
+            rpcuser: window.rpcuser,
+			token: window.token,
             rpcport: window.rpcport,
             proposal_hash: proposal_hash,
             vote_type: vote_type
@@ -317,7 +324,8 @@ export default {
         responseType: 'text'
       };
       axios.post(window.hostname + 'paymentrequestvote', {
-          token: window.token,
+          rpcuser: window.rpcuser,
+		  token: window.token,
           rpcport: window.rpcport,
           paymentrequest_hash: paymentrequest_hash,
           vote_type: vote_type
@@ -360,6 +368,7 @@ export default {
 	    if (res.value)
 		{
 			axios.post(window.hostname + 'proposaldonate', {
+			rpcuser: window.rpcuser,
 			token: window.token,
 			rpcport: window.rpcport,
 			proposal_hash: proposal_hash,

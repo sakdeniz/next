@@ -5,7 +5,7 @@
 		<div class="row">
 			<div class="col-md-12">
 			<button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button>&nbsp;
-			<router-link to="/admin/open-alias"><button class="btn btn-info btn-fill"><i class="ion-arrow-return-right"></i>&nbsp;Open Alias</button></router-link>
+			<router-link v-if="coin.bool_support_open_alias=='1'" to="/admin/open-alias"><button class="btn btn-info btn-fill"><i class="ion-arrow-return-right"></i>&nbsp;Open Alias</button></router-link>
 			</div>
 			<div class="col-md-12"><br>
 			<div class="ui toggle checkbox">
@@ -44,7 +44,23 @@
 </template>
 <script>
 import axios from 'axios';
+import {
+  mapState,
+  mapActions
+} from "vuex";
+function errorhandler(data) {
+  if (data) {
+    if (data["error"]) {
+      swal("Error!", data["error"]["message"], "error");
+    }
+  }
+}
 export default {
+ computed: {
+  ...mapState({
+     coin: "coin",
+   })
+  },
   data: function() {
     return {
       addresslist: [],
@@ -58,12 +74,23 @@ export default {
   },
   methods: {
     getnewaddress: function(event) {
-      axios.post(window.hostname + 'getnewaddress', {token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+      let vm=this;
+	  axios.post(window.hostname + 'getnewaddress', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 	  {
-		var prefix="navcoin:";
-		var qrcode=new QRCode(prefix+res.data);
-		var svg=qrcode.svg();
-        swal("Success!", "Address generated\r\n\r\n" + res.data + svg, "success");
+	    if (res.data)
+		{
+			if (res.data["error"])
+			{
+				swal("Error!", res.data["error"]["message"], "error");
+			}
+			else
+			{
+				var prefix=vm.coin.qrcode_prefix+":";
+				var qrcode=new QRCode(prefix+res.data);
+				var svg=qrcode.svg();
+				swal("Success!", "Address generated\r\n\r\n" + res.data + svg, "success");
+			}
+		}
       }).catch(function(err) {
         console.log(err);
       })
@@ -72,14 +99,15 @@ export default {
       copy(selector);
     },
     getqrcode: function(address) {
-		var prefix="navcoin:";
+		let vm=this;
+		var prefix=vm.coin.qrcode_prefix+":";
 		var qrcode=new QRCode(prefix+address);
 		var svg=qrcode.svg();
 		swal("QR Code", address + svg, "info");
     },
     listaddressgroupings: function(event) {
-      let vm = this;
-      axios.post(window.hostname + 'listaddressgroupings', {token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+      let vm=this;
+      axios.post(window.hostname + 'listaddressgroupings', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 	  {
 		if (!res.data["error"])
 		{

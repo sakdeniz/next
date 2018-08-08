@@ -1,14 +1,13 @@
+<!--blue', 'azure', 'green', 'orange', 'red', 'purple', 'black'!-->
 <template>
   <div class="sidebar"
        :style="sidebarStyle"
-       :data-color="backgroundColor"
+       :data-color="coin.bgcolor"
        :data-image="backgroundImage">
     <div class="sidebar-wrapper">
       <div class="logo">
-        <a href="#" class="simple-text">
-                <!--<img style="width:72px;height:auto;" src="static/img/nav-logo.png" alt="">!-->
-				<span class="logo-text">NEXT</span>
-          <!--{{title}}!-->
+		<a href="#" class="simple-text">
+			<span class="logo-text">NEXT</span>
         </a>
       </div>
 
@@ -30,28 +29,21 @@
   </div>
 </template>
 <script>
-  import SidebarLink from './SidebarLink.vue'
+import SidebarLink from './SidebarLink.vue'
+import Vue from "vue";
+import {
+  mapState,
+  mapActions
+} from "vuex";
 
   export default {
     components: {
       SidebarLink
     },
     props: {
-      title: {
-        type: String,
-        default: 'NAVCoin'
-      },
-      backgroundColor: {
-        type: String,
-        default: 'purple',
-        validator: (value) => {
-          let acceptedValues = ['', 'blue', 'azure', 'green', 'orange', 'red', 'purple', 'black']
-          return acceptedValues.indexOf(value) !== -1
-        }
-      },
       backgroundImage: {
         type: String,
-        default: 'static/img/sidebar-5.jpg'
+        default: 'static/img/sidebar/default.jpg'
       },
       activeColor: {
         type: String,
@@ -76,6 +68,10 @@
       }
     },
     computed: {
+	    ...mapState({
+      coin: "coin",
+      coins: "coins",
+    }),
       sidebarStyle () {
         return {
           backgroundImage: `url(${this.backgroundImage})`
@@ -85,6 +81,3 @@
   }
 
 </script>
-<style>
-
-</style>
