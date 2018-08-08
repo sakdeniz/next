@@ -753,6 +753,7 @@ function Bootstrap()
 		if (line=="next:sync-from-network")
 		{
 			console.log("Sync from network");
+			bootstrap="";
 			bBootstrap=false;
 			bShowBootstrapWindow=false;
 			bswin.hide();
