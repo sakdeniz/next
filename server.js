@@ -10,7 +10,7 @@ const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 const crypto=require('crypto');
 const Client=require('bitcoin-core');
 const stringifyObject=require('stringify-object');
-const appDataPath=process.env.APPDATA ? process.env.APPDATA+"\\next\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/next/' : process.env.HOME+'/.next/');
+const appDataPath=process.env.APPDATA ? process.env.APPDATA+"\\next\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/next/' : process.env.HOME+'/.config/next/');
 const fileWalletPassword=appDataPath+"walletpass.dat";
 function sendResponse(res, statusCode, body)
 {
