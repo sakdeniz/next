@@ -73,7 +73,7 @@ import {
           swal.showLoading()
         },
         allowOutsideClick: false,
-        text: 'Changing coin to ' + coin + ' ...'
+        text: 'Changing asset to ' + coin + ' ...'
       });
       console.log("next:coin:"+coin);
     },

@@ -179,18 +179,10 @@ export default {
   },
   created: function() {
 	let vm=this;
-	var interval=5000;
+	var interval=3000;
 	this.getCoin();
 	this.getCoins();
 	this.getPrice();
-	if (vm.coin.name=="PIVX"||vm.coin.name=="PHORE")
-	{
-		interval=15000;
-	}
-	else
-	{
-		this.resync();
-	}
 	this.timer=setInterval(this.resync, interval);
 	//const toast=swal.mixin({toast: true,position: 'top-end',showConfirmButton: false,timer: 3000});
 	//toast({type:'success',title:'Welcome to NEXT'});
@@ -259,12 +251,12 @@ export default {
     },
     resync: function() {
 	  let vm=this;
-	  this.getBlockchainInfo();
- 	  this.getNetworkInfo();
 	  this.getWalletInfo();
-	  this.getTransactions();
-	  if (JSON.stringify(this.blockchainInfo)!="{}")
+	  if (this.walletInfo.walletversion)
 	  {
+		this.getNetworkInfo();
+		this.getTransactions();
+		this.getBlockchainInfo();
 		if (vm.coin.bool_support_staking=="1")
 		{
 			this.getInfo();

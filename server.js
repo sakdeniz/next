@@ -279,12 +279,12 @@ server=http.createServer(function (req, res)
 							if (post.isprivate)
 							{
 								console.log("Private Send");
-								client.anonSend(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+								client.anonSend(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 							}
 							else
 							{
 								console.log("Send");
-								client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+								client.sendToAddress(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 							}
 							//console.log("Locking wallet...");
 							//client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
@@ -295,12 +295,12 @@ server=http.createServer(function (req, res)
 						if (post.isprivate)
 						{
 							console.log("Private Send");
-							client.anonSend(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							client.anonSend(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 						}
 						else
 						{
 							console.log("Send");
-							client.sendToAddress(post.to,post.amount,post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							client.sendToAddress(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 						}
 					}
 
@@ -446,7 +446,15 @@ server=http.createServer(function (req, res)
 				}
 				if (req.url=="/listtransactions")
 				{
-					client.listTransactions('*', 1000,0).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					if (global.coin.name=="PIVX")
+					{
+						console.log("Not supported");
+						return;
+					}
+					else
+					{
+						client.listTransactions('*', 1000,0).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
 				}
 				if (req.url=="/listaddressgroupings")
 				{
