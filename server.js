@@ -10,9 +10,7 @@ const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 const crypto=require('crypto');
 const Client=require('bitcoin-core');
 const stringifyObject=require('stringify-object');
-const appDataPath=process.env.APPDATA ? process.env.APPDATA+"\\NavCoin4\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/Navcoin4/' : process.env.HOME+'/.navcoin4/');
-const fileConfig=appDataPath+"navcoin.conf";
-const fileAddressBook=appDataPath+"addressbook.dat";
+const appDataPath=process.env.APPDATA ? process.env.APPDATA+"\\next\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/next/' : process.env.HOME+'/.next/');
 const fileWalletPassword=appDataPath+"walletpass.dat";
 function sendResponse(res, statusCode, body)
 {
@@ -109,12 +107,12 @@ server=http.createServer(function (req, res)
 					{
 						if (err)
 						{
-							console.log("An error occured while saving password.");
+							console.log("An error occured while saving password ("+fileWalletPassword+").");
 							sendResponse(res, 200,"Failed to write password file.");
 						}
 						else
 						{
-							console.log("Password saved.");
+							console.log("Password succesfully saved ("+fileWalletPassword+").");
 							sendResponse(res, 200,"Your password succesfully saved.");
 						}
 					});
@@ -162,17 +160,17 @@ server=http.createServer(function (req, res)
 				if (req.url=="/saveaddressbook")
 				{
 					var fs=require('fs');
-					fs.writeFile(fileAddressBook,post.data, function (err)
+					fs.writeFile(global.fileAddressBook,post.data, function (err)
 					{
 						if (err)
 						{
-							console.log("An error occured while saving address book.");
-							sendResponse(res, 200,"Failed to write addressbook.dat");
+							console.log("An error occured while saving address book ("+global.fileAddressBook+").");
+							sendResponse(res, 200,"Failed to write address book file.");
 						}
 						else
 						{
-							console.log("Address book saved");
-							sendResponse(res, 200,"Succesfully saved.");
+							console.log("Address book (" + global.fileAddressBook + ")saved.");
+							sendResponse(res, 200,"Address book succesfully saved.");
 						}
 					});
 				}
@@ -186,21 +184,35 @@ server=http.createServer(function (req, res)
 				if (req.url=="/getaddressbook")
 				{
 					var fs=require('fs');
-					var data=fs.readFileSync(fileAddressBook,'utf8');
-					console.log(data);
-					sendResponse(res, 200,data);
+					if (fs.existsSync(global.fileAddressBook))
+					{
+						var data=fs.readFileSync(global.fileAddressBook,'utf8');
+						console.log(data);
+						sendResponse(res, 200,data);
+					}
+					else
+					{
+						console.log("Address book file ("+ global.fileAddressBook+") not exist.")
+					}
 				}
 				if (req.url=="/loadconfig")
 				{
 					var fs=require('fs');
-					var data=fs.readFileSync(fileConfig,'utf8');
-					console.log(data);
-					sendResponse(res, 200,data);
+					if (fs.existsSync(global.fileConfig))
+					{
+						var data=fs.readFileSync(global.fileConfig,'utf8');
+						console.log(data);
+						sendResponse(res, 200,data);
+					}
+					else
+					{
+						console.log("Config file ("+ global.fileConfig+") not exist.")
+					}
 				}
 				if (req.url=="/getlogs")
 				{
 					var fileLog;
-					if (post.rpcport=="44444") fileLog=appDataPath+"debug.log"; else fileLog=appDataPath+"testnet3/debug.log";
+					if (post.rpcport=="44444") fileLog=assetDataPath+"debug.log"; else fileLog=assetDataPath+"testnet3/debug.log";
 					var fs=require('fs');
 					var data=fs.readFileSync(fileLog,'utf8');
 					sendResponse(res, 200,data);
@@ -208,16 +220,16 @@ server=http.createServer(function (req, res)
 				if (req.url=="/saveconfig")
 				{
 					var fs=require('fs');
-					fs.writeFile(fileConfig,post.data, function (err)
+					fs.writeFile(global.fileConfig,post.data, function (err)
 					{
 						if (err)
 						{
-							console.log("An error occured while saving config file.");
+							console.log("An error occured while saving config (" + global.fileConfig + ") file.");
 							sendResponse(res, 200,"Failed to write config file.");
 						}
 						else
 						{
-							console.log("Config file succesfully saved.");
+							console.log("Config file ("+global.fileConfig+") succesfully saved.");
 							sendResponse(res, 200,"Config file succesfully saved.");
 						}
 					});
@@ -469,7 +481,7 @@ server=http.createServer(function (req, res)
 				if (req.url=="/getanonservers")
 				{
 					var fs=require('fs');
-					var data=fs.readFileSync(fileConfig,'utf8');
+					var data=fs.readFileSync(global.fileConfig,'utf8');
 					var arr=[];
 					data.split("\n").map(function (val)
 					{
@@ -519,8 +531,9 @@ server=http.createServer(function (req, res)
 	});
 });
 console.log("Next NodeJS Server started...");
-console.log("Adress book file :"+fileAddressBook);
-console.log("Wallet password file :"+fileWalletPassword);
+console.log("Next Wallet password file :"+fileWalletPassword);
+console.log("Asset address book file :"+global.fileAddressBook);
+console.log("Asset config file :"+global.fileConfig);
 process.on('uncaughtException', function(err)
 {
   console.log('Caught exception: ' + err);

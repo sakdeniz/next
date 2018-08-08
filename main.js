@@ -117,28 +117,38 @@ sock.on('message', (topic, message) => {
 });
 let win;
 //
-store.delete('coin');
+//store.delete('coin');
 //store.set('update_preference',"3");
-console.log("Update Preference:"+store.get('update_preference'));
+//console.log("Update Preference:"+store.get('update_preference'));
 if (store.get('coin'))
 {
 	coin=coins["Coins"][store.get('coin')][0];
+	updateGlobals();
 	Init(false);
 }
 else
 {
 	bShowWelcomeWindow=true;
 }
+
+function updateGlobals()
+{
+	global.coin=coin;
+	global.assetDataPath=process.env.APPDATA ? process.env.APPDATA+"\\"+coin.data_dir_windows+"\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/'+coin.data_dir_osx+'/' : process.env.HOME+'/.'+coin.data_dir_linux+'/');
+	global.fileConfig=global.assetDataPath+coin.config_file;
+	global.fileAddressBook=global.assetDataPath+"addressbook.dat";
+}
+
 function Init(bStartDaemon)
 {
 	bBootstrap=false;
 	bootstrap="";
-	console.log(JSON.stringify(coin));
 	console.log("Coin Name:"+coin.name);
 	console.log("Coin Symbol:"+coin.symbol);
 	console.log("Coin Daemon File Windows:"+coin.daemon_file_windows);
 	console.log("Coin Daemon File OSX:"+coin.daemon_file_osx);
 	console.log("Coin Daemon File Linux:"+coin.daemon_file_linux);
+	console.log("Coin Data Path:"+global.assetDataPath);
 	console.log("Coin Bootstrap URL [mainnet]:"+coin.bootstrap_file_url_mainnet);
 	console.log("Coin Bootstrap URL [testnet]:"+coin.bootstrap_file_url_testnet);
 	//
@@ -861,6 +871,7 @@ function createMainWindow ()
 			store.set('coin', line.split(":")[2]);
 			console.log("Switch to coin : " + line.split(":")[2]);
 			coin=coins["Coins"][line.split(":")[2]][0];
+			updateGlobals();
 			Init(false);
 			RestartDaemon("mainnet");
 		}
@@ -978,6 +989,7 @@ app.on('ready', () => {
 				store.set('coin',line.split(":")[2]);
 				console.log("Switch to asset : " + line.split(":")[2]);
 				coin=coins["Coins"][line.split(":")[2]][0];
+				updateGlobals();
 				welcomeWin.hide();
 				Init(true);
 			}

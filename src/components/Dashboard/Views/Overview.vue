@@ -192,6 +192,7 @@ export default {
 		this.resync();
 	}
 	this.timer=setInterval(this.resync, interval);
+    const toast=swal.mixin({toast: true,position: 'top-end',showConfirmButton: false,timer: 3000});
 	toast({type:'success',title:'Welcome to NEXT'});
   },
   beforeDestroy() {
