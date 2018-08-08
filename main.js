@@ -644,7 +644,7 @@ function displayError(title,message)
    	var shell=require('electron').shell;
 	message=replaceAll(message,"\r", "<br>");
 	message=replaceAll(message,"\n", "<br>");
-	eWindow=new BrowserWindow({width: 800, height: 600,webPreferences:{webSecurity:false}});
+	eWindow=new BrowserWindow({width: 800, height: 600});
 	eWindow.webContents.on('console-message', function(level,message,line,sourceId)
 	{
 		if (line=="next:close")
@@ -728,7 +728,7 @@ function closeDaemon()
 
 function Bootstrap()
 {
-	bswin=new BrowserWindow({width: 600, height: 500,webPreferences:{webSecurity:false}});
+	bswin=new BrowserWindow({width: 600, height: 500});
 	bswin.setMenu(null);
 	bswin.loadURL(`file://${__dirname}/dist/static/bootstrap.html`);
 	bswin.on('close', function (event)
@@ -770,7 +770,7 @@ function createMainWindow ()
 {
 	if (bBootstrap)
 	{
-		bswin=new BrowserWindow({width: 700, height: 200,webPreferences:{webSecurity:false}});
+		bswin=new BrowserWindow({width: 700, height: 200});
 		bswin.setMenu(null);
 		bswin.loadURL(`file://${__dirname}/dist/static/bootstrap_progress.html`);
 		bswin.on('close', function (event)
@@ -956,7 +956,7 @@ app.on('ready', () => {
 	if (store.get('cNotificationGeneral')=="1" && store.get('coin')) eNotify.notify({title: 'NEXT',text: 'Welcome'});
 	if (bShowWelcomeWindow)
 	{
-		welcomeWin=new BrowserWindow({width: 800, height: 680,webPreferences:{webSecurity:false}});
+		welcomeWin=new BrowserWindow({width: 800, height: 680});
 		welcomeWin.setMenu(null);
 		welcomeWin.loadURL(`file://${__dirname}/dist/static/welcome.html?coins=`+JSON.stringify(coins));
 		//welcomeWin.webContents.openDevTools();
