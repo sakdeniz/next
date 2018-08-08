@@ -134,7 +134,7 @@ else
 function updateGlobals()
 {
 	global.coin=coin;
-	global.assetDataPath=process.env.APPDATA ? process.env.APPDATA+"\\"+coin.data_dir_windows+"\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/'+coin.data_dir_osx+'/' : process.env.HOME+'/.'+coin.data_dir_linux+'/');
+	global.assetDataPath=process.env.APPDATA ? process.env.APPDATA+"\\"+coin.data_dir_windows+"\\" : (process.platform == 'darwin' ? process.env.HOME+'/Library/Application Support/'+coin.data_dir_osx+'/' : process.env.HOME+'/'+coin.data_dir_linux+'/');
 	global.fileConfig=global.assetDataPath+coin.config_file;
 	global.fileAddressBook=global.assetDataPath+"addressbook.dat";
 }
