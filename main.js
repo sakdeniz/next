@@ -119,10 +119,9 @@ sock.on('message', (topic, message) => {
 });
 let win;
 //
-store.delete('coin');
+//store.delete('coin');
 //store.set('update_preference',"3");
 //console.log("Update Preference:"+store.get('update_preference'));
-
 function updateGlobals()
 {
 	global.coin=coin;
