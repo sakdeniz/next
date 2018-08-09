@@ -26,9 +26,11 @@ const sock=zmq.socket('sub');
 const hrt=new clock('%D%/%M%/%YY% %hh%:%mm%:%ss%');
 const Block=bitcore.Block;
 const Transaction=bitcore.Transaction;
-const port=30000;
-const binDir="bin"
+const portZMQ=30000;
+const binDir="bin";
 //
+var request = require('request');
+var fs = require('fs');
 var appDataPath;
 var executablePath;
 var daemonPath;
@@ -76,7 +78,7 @@ require('electron-context-menu')({
 		visible: params.mediaType === 'image'
 	}]
 });
-sock.connect('tcp://127.0.0.1:'+port);
+sock.connect('tcp://127.0.0.1:'+portZMQ);
 //sock.subscribe('hashblock');
 //sock.subscribe('hashtx');
 //sock.subscribe('rawblock');
@@ -143,14 +145,14 @@ function Init(bStartDaemon)
 {
 	bBootstrap=false;
 	bootstrap="";
-	console.log("Coin Name:"+coin.name);
-	console.log("Coin Symbol:"+coin.symbol);
-	console.log("Coin Daemon File Windows:"+coin.daemon_file_windows);
-	console.log("Coin Daemon File OSX:"+coin.daemon_file_osx);
-	console.log("Coin Daemon File Linux:"+coin.daemon_file_linux);
-	console.log("Coin Data Path:"+global.assetDataPath);
-	console.log("Coin Bootstrap URL [mainnet]:"+coin.bootstrap_file_url_mainnet);
-	console.log("Coin Bootstrap URL [testnet]:"+coin.bootstrap_file_url_testnet);
+	console.log("Name:"+coin.name);
+	console.log("Symbol:"+coin.symbol);
+	console.log("Daemon File Windows:"+coin.daemon_file_windows);
+	console.log("Daemon File OSX:"+coin.daemon_file_osx);
+	console.log("Daemon File Linux:"+coin.daemon_file_linux);
+	console.log("Data Path:"+global.assetDataPath);
+	console.log("Bootstrap URL [mainnet]:"+coin.bootstrap_file_url_mainnet);
+	console.log("Bootstrap URL [testnet]:"+coin.bootstrap_file_url_testnet);
 	//
 	if (os.type()==="Windows_NT")
 	{
@@ -408,6 +410,35 @@ function RestartDaemon(network)
 	})
 }
 
+function downloadFile(file_url , targetPath){
+    var received_bytes = 0;
+    var total_bytes = 0;
+    var req = request({
+        method: 'GET',
+        uri: file_url
+    });
+    var out = fs.createWriteStream(targetPath);
+    req.pipe(out);
+    req.on('response', function ( data ) {
+        total_bytes = parseInt(data.headers['content-length']);
+    });
+    req.on('data', function(chunk) {
+        received_bytes += chunk.length;
+        showProgress(received_bytes, total_bytes);
+    });
+    req.on('end', function() {
+        console.log("Daemon file succesfully downloaded...");
+        console.log("Starting daemon...");
+		out.end();
+		setTimeout(function() {StartDaemon();},3000);
+    });
+}
+
+function showProgress(received,total){
+    var percentage = (received * 100) / total;
+    console.log(percentage + "% | " + received + " bytes out of " + total + " bytes.");
+}
+
 function StartDaemon()
 {
 	var newProcess;
@@ -450,17 +481,28 @@ function StartDaemon()
 	if (os.platform()=="win32")
 	{
 		executablePath=binDir+"\\"+coin.daemon_file_windows;
+		var daemonBinaryFileName=coin.daemon_file_windows;
 		bShell=false;
 	}
 	if (os.platform()=="linux")
 	{
 		executablePath=binDir+"/./"+coin.daemon_file_linux;
+		var daemonBinaryFileName=coin.daemon_file_linux;
 		bShell=true;
 	}
 	if (os.platform()=="darwin")
 	{
 		executablePath=binDir+"/./"+coin.daemon_file_osx;
+		var daemonBinaryFileName=coin.daemon_file_osx;
 		bShell=true;
+	}
+	var fs=require('fs');
+	if (!fs.existsSync(executablePath))
+	{
+		const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+		console.log("Daemon binary not found : " + executablePath);
+		console.log("Downloading from : " + downloadURL);
+		downloadFile(downloadURL,executablePath);
 	}
 	if (bReindex) reindex=" -reindex"; else reindex="";
 	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
