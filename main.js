@@ -119,7 +119,7 @@ sock.on('message', (topic, message) => {
 });
 let win;
 //
-//store.delete('coin');
+store.delete('coin');
 //store.set('update_preference',"3");
 //console.log("Update Preference:"+store.get('update_preference'));
 
@@ -193,6 +193,7 @@ function Init(bStartDaemon)
 	console.log("Repair : "+bRepairWallet);
 	console.log("Reindex : "+bReindex);
 	console.log("Reindex Chainstate : "+bReindexChainState);
+	console.log("Bootstrap : "+store.get('bootstrap'));
 	if (bStartDaemon)
 	{
 		if (bTestnet)
@@ -208,6 +209,10 @@ function Init(bStartDaemon)
 			addnode="";
 		}
 	}
+	if (bShowBootstrapWindow && bStartDaemon)
+	{
+		Bootstrap();
+	}
 	if ((store.get('bootstrap')=="1"||bShowBootstrapWindow) && coin.bool_support_bootstrap=="1")
 	{
 		bBootstrap=true;
@@ -217,7 +222,6 @@ function Init(bStartDaemon)
 		{
 			bootstrap=" -bootstrap=";
 			if (bTestnet) bootstrap+=coin.bootstrap_file_url_testnet; else bootstrap+=coin.bootstrap_file_url_mainnet;
-			Bootstrap();
 		}
 	}
 	else
@@ -1038,10 +1042,10 @@ app.on('ready', () => {
 			}
 		});
 	}
-	if (bShowBootstrapWindow && !bShowWelcomeWindow)
+	/*if (bShowBootstrapWindow && !bShowWelcomeWindow)
 	{
 		Bootstrap();
-	}
+	}*/
 	if (!isDev)
 	{
 		console.log('Running in production.');
