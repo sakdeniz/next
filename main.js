@@ -503,6 +503,7 @@ function StartDaemon()
 		console.log("Daemon binary not found : " + executablePath);
 		console.log("Downloading from : " + downloadURL);
 		downloadFile(downloadURL,executablePath);
+		return;
 	}
 	if (bReindex) reindex=" -reindex"; else reindex="";
 	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
