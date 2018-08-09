@@ -122,16 +122,6 @@ let win;
 //store.delete('coin');
 //store.set('update_preference',"3");
 //console.log("Update Preference:"+store.get('update_preference'));
-if (store.get('coin'))
-{
-	coin=coins["Coins"][store.get('coin')][0];
-	updateGlobals();
-	Init(false);
-}
-else
-{
-	bShowWelcomeWindow=true;
-}
 
 function updateGlobals()
 {
@@ -1005,6 +995,16 @@ function createMainWindow ()
     })
 }
 app.on('ready', () => {
+	if (store.get('coin'))
+	{
+		coin=coins["Coins"][store.get('coin')][0];
+		updateGlobals();
+		Init(false);
+	}
+	else
+	{
+		bShowWelcomeWindow=true;
+	}
 	eNotify=require('./notify');
 	eNotify.setConfig({appIcon: path.join(__dirname, 'static/img/next.png'),displayTime: 4000});
 	if (store.get('cNotificationGeneral')=="1" && store.get('coin')) eNotify.notify({title: 'NEXT',text: 'Welcome'});
