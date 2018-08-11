@@ -450,7 +450,6 @@ function showProgress(received,total){
 
 function StartDaemon()
 {
-	var newProcess;
 	console.log("Checking config file : " + getConfigFileFullPath());
 	try
 	{
@@ -525,7 +524,8 @@ function StartDaemon()
 			console.log("Remote Daemon md5 :"+daemon_remote_md5);
 			if (daemon_local_md5==daemon_remote_md5)
 			{
-				console.log("Daemon version up to date.")
+				console.log("Daemon version up to date.");
+				startProcess();
 			}
 			else
 			{
@@ -538,9 +538,14 @@ function StartDaemon()
 			}
 		}).catch(function(err)
 		{
+			startProcess();
 			console.log(err);
 		})
 	}
+}
+
+function startProcess()
+{
 	if (bReindex) reindex=" -reindex"; else reindex="";
 	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
 	if (bRepairWallet) zapwallettxes=" -zapwallettxes=2"; else zapwallettxes="";
@@ -557,6 +562,7 @@ function StartDaemon()
 	console.log("Platform : "+os.platform());
 	console.log("Testnet : "+bTestnet);
 	console.log("RPC Port : "+rpcport);
+	var newProcess;
 	if (os.platform()=="linux" || os.platform()=="darwin")
 	{
 		if (os.platform()=="linux") daemonPath=app.getAppPath()+"/"+binDir+"/"+coin.daemon_file_linux;
