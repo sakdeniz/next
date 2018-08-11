@@ -5,6 +5,8 @@ var child=require('child_process').spawn;
 var child_ef=require('child_process').execFile;
 var iniparser=require('iniparser');
 var sb=require('satoshi-bitcoin');
+var request=require('request');
+var fs=require('fs');
 const dialog=require('electron').dialog;
 const axios=require('axios');
 const {app,BrowserWindow}=require('electron');
@@ -28,13 +30,11 @@ const Block=bitcore.Block;
 const Transaction=bitcore.Transaction;
 const portZMQ=30000;
 const binDir="bin";
-//
-var request = require('request');
-var fs = require('fs');
 var appDataPath;
 var executablePath;
 var daemonPath;
 var welcomeWin;
+var downloadWin;
 var eWindow;
 var rpcport;
 var testnet;
@@ -44,7 +44,6 @@ var reindex;
 var zapwallettxes;
 var bootstrap="";
 var	printtoconsole=" -printtoconsole";
-//
 var bBootstrap=false;
 var bShowBootstrapWindow=false;
 var bShowWelcomeWindow=false;
@@ -56,11 +55,9 @@ var bTestnet=false;
 var bError=true;
 var bExit=true;
 var bDaemonError=false;
-//
 var now=new Date(); 
 var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.getHours()+'-'+now.getMinutes()+'-'+now.getSeconds(); 
 var eNotify;
-//
 var coins=require(__dirname+'/coins.json');
 var coin=new Object();
 console.log("NEXT");
@@ -119,9 +116,21 @@ sock.on('message', (topic, message) => {
 });
 let win;
 //
+//store.clear();
 //store.delete('coin');
 //store.set('update_preference',"3");
 //console.log("Update Preference:"+store.get('update_preference'));
+function showDownloadWindow()
+{
+	downloadWin=new BrowserWindow({width: 700, height: 200});
+	downloadWin.setMenu(null);
+	downloadWin.loadURL(`file://${__dirname}/dist/static/download.html`);
+	downloadWin.on('close', function (event)
+	{
+		app.exit();
+	});
+}
+
 function updateGlobals()
 {
 	global.coin=coin;
@@ -169,7 +178,7 @@ function Init(bStartDaemon)
 		console.log("Config file not found.");
 	}
 	//
-	if (checkBlockchainDirectoriesExist()==false) bShowBootstrapWindow=true;
+	if (checkBlockchainDirectoriesExist()==false && store.get('bootstrap')!="1") bShowBootstrapWindow=true;
 	// Repair Wallet
 	if (store.get('repair_wallet')=="1")
 	{
@@ -208,25 +217,30 @@ function Init(bStartDaemon)
 			addnode="";
 		}
 	}
-	if (bShowBootstrapWindow && bStartDaemon)
+	else
+	{
+		rpcport=coin.rpc_port_mainnet;
+		testnet="";
+		addnode="";
+	}
+	if (bShowBootstrapWindow && !win)
 	{
 		Bootstrap();
 	}
-	if ((store.get('bootstrap')=="1"||bShowBootstrapWindow) && coin.bool_support_bootstrap=="1")
+	if ((store.get('bootstrap')=="1") && coin.bool_support_bootstrap=="1")
 	{
+		console.log("Bootstrapping...");
 		bBootstrap=true;
 		bShowBootstrapWindow=false;
 		store.set('bootstrap', '0');
-		if (bBootstrap)
-		{
-			bootstrap=" -bootstrap=";
-			if (bTestnet) bootstrap+=coin.bootstrap_file_url_testnet; else bootstrap+=coin.bootstrap_file_url_mainnet;
-		}
+		bootstrap=" -bootstrap=";
+		if (bTestnet) bootstrap+=coin.bootstrap_file_url_testnet; else bootstrap+=coin.bootstrap_file_url_mainnet;
 	}
 	else
 	{
 		if (bStartDaemon)
 		{
+			console.log("Starting daemon...");
 			bBootstrap=false;
 			bShowBootstrapWindow=false;
 			StartDaemon();
@@ -403,7 +417,7 @@ function RestartDaemon(network)
 	})
 }
 
-function downloadFile(file_url , targetPath){
+function downloadFile(file_url,targetPath){
     var received_bytes = 0;
     var total_bytes = 0;
     var req = request({
@@ -420,7 +434,8 @@ function downloadFile(file_url , targetPath){
         showProgress(received_bytes, total_bytes);
     });
     req.on('end', function() {
-        console.log("Daemon file succesfully downloaded...");
+        downloadWin.hide();
+		console.log("Daemon file succesfully downloaded...");
         console.log("Starting daemon...");
 		out.end();
 		setTimeout(function() {StartDaemon();},3000);
@@ -429,7 +444,8 @@ function downloadFile(file_url , targetPath){
 
 function showProgress(received,total){
     var percentage = (received * 100) / total;
-    console.log(percentage + "% | " + received + " bytes out of " + total + " bytes.");
+    console.log(percentage.toFixed(2) + "% | " + received + " bytes out of " + total + " bytes.");
+	downloadWin.webContents.executeJavaScript(`document.getElementById('info').innerHTML='`+percentage.toFixed(2) + `% | ` + received + ` bytes out of ` + total + ` bytes downloaded.`+`';`);
 }
 
 function StartDaemon()
@@ -492,11 +508,38 @@ function StartDaemon()
 	var fs=require('fs');
 	if (!fs.existsSync(executablePath))
 	{
+		showDownloadWindow();
 		const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
 		console.log("Daemon binary not found : " + executablePath);
 		console.log("Downloading from : " + downloadURL);
 		downloadFile(downloadURL,executablePath);
-		return;
+	}
+	else
+	{
+		const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
+		console.log("Checking remote md5 of "+daemonBinaryFileName);
+		console.log("Local Daemon md5  :"+daemon_local_md5);
+		axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: os.platform(),filename:daemonBinaryFileName}}).then(function(res)
+		{
+			const daemon_remote_md5=res.data;
+			console.log("Remote Daemon md5 :"+daemon_remote_md5);
+			if (daemon_local_md5==daemon_remote_md5)
+			{
+				console.log("Daemon version up to date.")
+			}
+			else
+			{
+				showDownloadWindow();
+				console.log("Daemon versions different, downloading new version from remote...")
+				const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+				console.log("Downloading from : " + downloadURL);
+				downloadFile(downloadURL,executablePath);
+				return;
+			}
+		}).catch(function(err)
+		{
+			console.log(err);
+		})
 	}
 	if (bReindex) reindex=" -reindex"; else reindex="";
 	if (bReindexChainState) reindexchainstate=" -reindex-chainstate"; else reindexchainstate="";
@@ -619,10 +662,6 @@ function StartDaemon()
 				if (bBootstrap)
 				{
 					var m=data.toString().split("\r")[0];
-					var m1=data.toString().split("\r")[1];
-					var im=data.toString().split("\r")[3];
-					//console.log("m"+m);
-					//console.log("m1"+m1);
 					if (data.toString().indexOf("init message: Downloaded")!=-1)
 					{
 						bBootstrap=false;
@@ -710,11 +749,9 @@ function displayError(title,message)
 		if (line=="next:reset-data"||line=="next:reset-data-bootstrap")
 		{
 			var Directory=appDataPath;
-			//
 			if (os.type()==="Windows_NT") Directory+="\\";
 			if (os.type()==="Darwin") Directory+="/";
 			if (os.type()==="Linux") Directory+="/";
-			//
 			if (bTestnet)
 			{
 				Directory+="testnet3";
@@ -722,7 +759,6 @@ function displayError(title,message)
 				if (os.type()==="Darwin") Directory+="/";
 				if (os.type()==="Linux") Directory+="/";
 			}
-			//
 			console.log("Removing blockchain data folder : " + Directory);
 			deleteDirectory(Directory+"database");
 			deleteDirectory(Directory+"chainstate");
@@ -829,7 +865,6 @@ function createMainWindow ()
 	console.log('Main window created.');
 	var server=require("./server");
 	win=new BrowserWindow({width: 1275, height: 850});
-	//win.setFullScreen(true);
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
 	win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+store.get("update_preference")+`")`);
@@ -847,25 +882,12 @@ function createMainWindow ()
 			}).catch(function(err) {
 				console.log(err);
 			})
-			//win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Link',text: '` +url+`'});`);
 		}
 		else
 		{
 			shell.openExternal(url);
 		}
-		//event.newGuest = nwin;
 	});
-    /*
-	let $=require("jquery");
-	win.webContents.on('did-finish-load', ()=>
-	{
-		win.webContents.executeJavaScript(`
-    		$(document).on('click', 'a[class^="external"]', function(event) {
-			event.preventDefault();
-			shell.openExternal(this.href);
-		});
-		`);
-    });*/
 	win.webContents.on('console-message', function(level,message ,line ,sourceId)
 	{
 		console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
@@ -1041,10 +1063,6 @@ app.on('ready', () => {
 			}
 		});
 	}
-	/*if (bShowBootstrapWindow && !bShowWelcomeWindow)
-	{
-		Bootstrap();
-	}*/
 	if (!isDev)
 	{
 		console.log('Running in production.');

@@ -464,11 +464,8 @@ export default {
                          $("#amount").val("");
                          $("#comment").val("");
                          $("#commentto").val("");
-                          swal({
-                            type: 'success',
-                            title: 'Success!',
-                            html: "Sending successful.<br><br>Transaction ID<br><code>" + res.data + "</code>"
-                          });
+                          //swal({type: 'success',title: 'Success!',html: "Sending successful.<br><br>Transaction ID<br><code>" + res.data + "</code>"});
+						  swal({type: 'success',title: 'Success!',html: "Sending successful."});
                         } else {
                           swal({
                             type: 'warning',

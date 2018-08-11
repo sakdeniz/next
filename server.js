@@ -446,15 +446,7 @@ server=http.createServer(function (req, res)
 				}
 				if (req.url=="/listtransactions")
 				{
-					if (global.coin.name=="PIVX")
-					{
-						console.log("Not supported");
-						return;
-					}
-					else
-					{
-						client.listTransactions('*', 1000,0).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
-					}
+					client.listTransactions('*', 1000,0).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/listaddressgroupings")
 				{
@@ -538,10 +530,10 @@ server=http.createServer(function (req, res)
 		});
 	});
 });
-console.log("Next NodeJS Server started...");
-console.log("Next Wallet password file :"+fileWalletPassword);
-console.log("Asset address book file :"+global.fileAddressBook);
-console.log("Asset config file :"+global.fileConfig);
+console.log("NEXT NodeJS Server started...");
+console.log("NEXT Wallet password file :"+fileWalletPassword);
+console.log("Asset Address Book file :"+global.fileAddressBook);
+console.log("Asset Configuration file :"+global.fileConfig);
 process.on('uncaughtException', function(err)
 {
   console.log('Caught exception: ' + err);

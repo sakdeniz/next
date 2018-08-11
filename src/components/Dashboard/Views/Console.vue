@@ -82,7 +82,6 @@ export default {
 		{
 			if (!res.data["error"])
 			{
-				console.log(res.data);
 				vm.sConsole+="<i class='ion-arrow-up-c'></i>&nbsp;<code>" + moment().format("HH:mm:ss") + " " + command+"</code><br><pre>";
 				if (res.data=="[object Object]") vm.sConsole+=vm.jsonPretty(JSON.stringify(res.data)); else vm.sConsole+=res.data;
 				vm.sConsole+="<br><br></pre>";
