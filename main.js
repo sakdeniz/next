@@ -115,7 +115,7 @@ sock.on('message', (topic, message) => {
 	}
 });
 let win;
-if (!fs.existsSync(app.getAppPath()+"/"+binDir))
+if (!fs.existsSync(binDir))
 {
     console.log("Bin directory not found, creating...");
 	fs.mkdirSync(binDir);
