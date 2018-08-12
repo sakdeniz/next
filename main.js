@@ -29,7 +29,7 @@ const hrt=new clock('%D%/%M%/%YY% %hh%:%mm%:%ss%');
 const Block=bitcore.Block;
 const Transaction=bitcore.Transaction;
 const portZMQ=30000;
-const binDir="bin";
+const binDir=__dirname+"/bin";
 var appDataPath;
 var executablePath;
 var daemonPath;
