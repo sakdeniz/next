@@ -570,8 +570,8 @@ function startProcess()
 	var newProcess;
 	if (os.platform()=="linux" || os.platform()=="darwin")
 	{
-		if (os.platform()=="linux") daemonPath=app.getAppPath()+"/"+binDir+"/"+coin.daemon_file_linux;
-		if (os.platform()=="darwin") daemonPath=app.getAppPath()+"/"+binDir+"/"+coin.daemon_file_osx;
+		if (os.platform()=="linux") daemonPath=binDir+"/"+coin.daemon_file_linux;
+		if (os.platform()=="darwin") daemonPath=binDir+"/"+coin.daemon_file_osx;
 		console.log("Setting daemon file as executable " + daemonPath);
 		var buttons = ['OK', 'Cancel'];
 		var chmodProcess=child_ef("chmod +x " + daemonPath, null, defaults, function(err, data)
