@@ -513,7 +513,7 @@ function StartDaemon()
 	if (!fs.existsSync(executablePath))
 	{
 		showDownloadWindow();
-		var downloadURL;
+		var downloadURL="";
 		if (process.arch=="arm64")
 		{
 			downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
