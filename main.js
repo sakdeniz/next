@@ -513,13 +513,14 @@ function StartDaemon()
 	if (!fs.existsSync(executablePath))
 	{
 		showDownloadWindow();
+		var downloadURL;
 		if (process.arch=="arm64")
 		{
-			const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+			downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
 		}
 		else
 		{
-			const downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
+			downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
 		}
 		console.log("Daemon binary not found : " + executablePath);
 		console.log("Downloading from : " + downloadURL);
