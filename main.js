@@ -517,11 +517,11 @@ function StartDaemon()
 		var downloadURL="";
 		if (process.arch=="arm64")
 		{
-			downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+			downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
 		}
 		else
 		{
-			downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
+			downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
 		}
 		console.log("Daemon binary not found : " + executablePath);
 		console.log("Downloading from : " + downloadURL);
