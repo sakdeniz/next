@@ -513,7 +513,14 @@ function StartDaemon()
 	if (!fs.existsSync(executablePath))
 	{
 		showDownloadWindow();
-		const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+		if (process.arch=="arm64")
+		{
+			const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+		}
+		else
+		{
+			const downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
+		}
 		console.log("Daemon binary not found : " + executablePath);
 		console.log("Downloading from : " + downloadURL);
 		downloadFile(downloadURL,executablePath);
@@ -565,6 +572,7 @@ function startProcess()
 	console.log("App Data Path : "+appDataPath);
 	console.log("Shell : "+bShell);
 	console.log("Platform : "+os.platform());
+	console.log("Architecture : "+process.arch);
 	console.log("Testnet : "+bTestnet);
 	console.log("RPC Port : "+rpcport);
 	var newProcess;

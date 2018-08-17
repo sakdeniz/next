@@ -309,6 +309,81 @@
 				"social_reddit_url":"",
 				"social_instagram_url":""
 			}
-        ]	
+        ],
+		"PEERCOIN":
+		[
+            {
+				"name":"PEERCOIN",
+				"symbol":"PPC",
+				"icon_class":"cc PPC",
+				"cmc_symbol":"PEERCOIN",
+				"qrcode_prefix":"PEERCOIN",
+				"logo":"static/img/coins/ppc.png",
+				"bgcolor":"green",
+				"url":"https://peercoin.net",
+				"description":"Proof of Stake, Private Payment, Staking",
+				"config_file":"peercoin.conf",
+				"data_dir_windows":"Peercoin",
+				"data_dir_osx":"Peercoin",
+				"data_dir_linux":".peercoin",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"peercoind.exe",
+				"daemon_file_osx":"peercoind",
+				"daemon_file_linux":"peercoind",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_support_bootstrap":"0",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ]
+		,
+		"BLACKCOIN":
+		[
+            {
+				"name":"BLACKCOIN",
+				"symbol":"BLK",
+				"icon_class":"cc BC-alt",
+				"cmc_symbol":"BLACKCOIN",
+				"qrcode_prefix":"BLACKCOIN",
+				"logo":"static/img/coins/blk.png",
+				"bgcolor":"black",
+				"url":"https://blackcoin.org/",
+				"description":"Proof of Stake, Private Payment, Staking",
+				"config_file":"blackcoin.conf",
+				"data_dir_windows":"Lore",
+				"data_dir_osx":"Lore",
+				"data_dir_linux":".lore",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"lored.exe",
+				"daemon_file_osx":"lored",
+				"daemon_file_linux":"lored",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_support_bootstrap":"0",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ]
     }
 }
