@@ -1,5 +1,6 @@
 //os.type(); // Linux, Darwin or Windows_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
+//process.arch // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', 'x32', and 'x64'
 var os=require("os");
 var child=require('child_process').spawn;
 var child_ef=require('child_process').execFile;
@@ -528,10 +529,19 @@ function StartDaemon()
 	}
 	else
 	{
+		var platform="";
+		if (process.arch=="arm64")
+		{
+			platform=process.arch;
+		}
+		else
+		{
+			platform=os.platform();
+		}
 		const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
-		console.log("Checking remote md5 of "+daemonBinaryFileName+"("+os.platform()+")");
+		console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
 		console.log("Local Daemon md5  :"+daemon_local_md5);
-		axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: os.platform(),filename:daemonBinaryFileName}}).then(function(res)
+		axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
 		{
 			const daemon_remote_md5=res.data;
 			console.log("Remote Daemon md5 :"+daemon_remote_md5);
@@ -544,7 +554,7 @@ function StartDaemon()
 			{
 				showDownloadWindow();
 				console.log("Daemon versions different, downloading new version from remote...")
-				const downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
+				const downloadURL="http://next.navcommunity.net/update/bin/"+platform+"/"+daemonBinaryFileName;
 				console.log("Downloading from : " + downloadURL);
 				downloadFile(downloadURL,executablePath);
 				return;
