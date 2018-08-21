@@ -10,7 +10,7 @@ var request=require('request');
 var fs=require('fs');
 const dialog=require('electron').dialog;
 const axios=require('axios');
-const {app,BrowserWindow}=require('electron');
+const {app,BrowserWindow,globalShortcut}=require('electron');
 const isDev=require('electron-is-dev');
 const path=require('path');
 const url=require('url');
@@ -122,7 +122,7 @@ if (!fs.existsSync(binDir))
 	fs.mkdirSync(binDir);
 }
 //
-//store.clear();
+store.clear();
 //store.delete('coin');
 //store.set('update_preference',"3");
 //console.log("Update Preference:"+store.get('update_preference'));
@@ -184,7 +184,7 @@ function Init(bStartDaemon)
 		console.log("Config file not found.");
 	}
 	//
-	if (checkBlockchainDirectoriesExist()==false && store.get('bootstrap')!="1") bShowBootstrapWindow=true;
+	if (checkBlockchainDirectoriesExist()==false && store.get('bootstrap')!="1" && coin.bool_support_bootstrap=="1") bShowBootstrapWindow=true;
 	// Repair Wallet
 	if (store.get('repair_wallet')=="1")
 	{
@@ -232,6 +232,7 @@ function Init(bStartDaemon)
 	if (bShowBootstrapWindow && !win)
 	{
 		Bootstrap();
+		return;
 	}
 	if ((store.get('bootstrap')=="1") && coin.bool_support_bootstrap=="1")
 	{
@@ -692,6 +693,7 @@ function startProcess()
 				if (bBootstrap)
 				{
 					var m=data.toString().split("\r")[0];
+					var m1=data.toString().split("\r")[1];
 					if (data.toString().indexOf("init message: Downloaded")!=-1)
 					{
 						bBootstrap=false;
@@ -1049,7 +1051,24 @@ function createMainWindow ()
 		}
     })
 }
+
+app.on('will-quit', () => {
+    globalShortcut.unregister('CommandOrControl+X')
+    globalShortcut.unregisterAll()
+})
+  
 app.on('ready', () => {
+	const ret = globalShortcut.register('CommandOrControl+Shift+Alt+Q', () =>
+	{
+		console.log('All settings deleted...');
+		store.clear();
+    })
+  
+    if (!ret)
+	{
+		console.log('registration failed');
+    }
+	
 	if (store.get('coin'))
 	{
 		coin=coins["Coins"][store.get('coin')][0];

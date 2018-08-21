@@ -20,7 +20,7 @@ img {
 
   @font-face {
   font-family: 'neo';
-  src: url('http://next.navcommunity.net/fonts/neo-latina.ttf');
+  src: url('https://next.navcommunity.net/fonts/neo-latina.ttf');
 }
 
 .logo-text { font-family: 'neo';font-size:40pt;color:#ffffff;}

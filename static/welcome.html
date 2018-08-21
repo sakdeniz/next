@@ -15,10 +15,17 @@
 <div v-if="step==0" style="height:100vh;background-image: linear-gradient( 135deg, #3B2667 10%, #BC78EC 100%);display: table; width:100%;">
 	<div style="display: table-cell; vertical-align: middle;">
 		<center><h1 class="logo-text-big">NEXT</h1></center>
-		<center><p class="info">NEXT is a secure, cross platform desktop wallet that supports many cryptocurrencies.<br/>Source codes is open to everyone.<br/>Everyone can contribute to the development of the wallet.</p></center>
+		<div style="text-align: center;margin-bottom:50px;">
+			<div style="display: inline-block; text-align: left;">
+				<p class="info"><i class="ion-checkmark-circled icn"></i>NEXT is a secure, cross platform desktop wallet that supports many cryptocurrencies.</p>
+				<p class="info"><i class="ion-social-github icn"></i>Source codes is open to everyone.</p>
+				<p class="info"><i class="ion-cube icn"></i>All of wallets run as full node.</p>
+				<p class="info"><i class="ion-person-add icn"></i>Everyone can contribute to the development of the wallet.</p>
+			</div>
+		</div>
 		<div style="margin-top:15px;text-align:center">
 		<div class="ui buttons">
-			<button class="ui right labeled icon button large blue" v-on:click="show_agreement()">Continue<i class="right chevron icon"></i></button>
+			<button class="ui right labeled icon button large blue" v-on:click="show_agreement()">Get Started<i class="right chevron icon"></i></button>
 		</div>
 		</div>
 	</div>
@@ -376,7 +383,6 @@ body
 {
 	color:#ffffff;
 	font-size:12pt;
-	padding:20px;
 }
 .top-header
 {
@@ -384,6 +390,12 @@ body
     height: 100px;
 	color:#ffffff;
 	background-image: linear-gradient( 135deg, #9F44D3 10%, #3B2667 100%);
+}
+
+.icn
+{
+	font-size:30pt;
+	margin-right:10px;
 }
 
 .left
