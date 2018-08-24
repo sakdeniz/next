@@ -3,13 +3,16 @@
     <div class="container-fluid">
       <a class="navbar-brand" href="#"><div><img style="width:48px;height:auto;" v-bind:src="coin.logo" v-bind:title="coin.name"></div></a>
 	  &nbsp;&nbsp;&nbsp;
-	  	<sui-dropdown icon="ion-arrow-down-b" class="labeled icon gray tiny button floating">
+	  	<sui-dropdown icon="ion-arrow-down-b" class="labeled icon gray tiny button floating" selection>
 		{{coin.name}}
+		
 		<sui-dropdown-menu>
-			<sui-dropdown-item v-bind:class=v[0].icon_class v-for="(v, k, i) in coins['Coins']" v-on:click="changecoin(k)">  {{v[0].name}} / {{v[0].symbol}}</sui-dropdown-item>
+			<!--  {{v[0].symbol}} -->
+			<sui-dropdown-item v-bind:class=v[0].icon_class v-for="(v, k, i) in coins['Coins']" v-on:click="changecoin(k)">  {{v[0].name}}</sui-dropdown-item>
 			</sui-dropdown-menu>
 		</sui-dropdown>
-        <sui-dropdown icon="ion-navicon-round" class="icon tiny gray" text="" button floating style="margin-right:10px;">
+        
+		<sui-dropdown icon="ion-navicon-round" class="icon tiny gray" text="" button floating style="margin-right:10px;">
           <sui-dropdown-menu>
             <router-link to="/admin/console" tag="sui-dropdown-item"><i class="ion-code"></i>&nbsp;Console</router-link>
             <router-link to="/admin/logs" tag="sui-dropdown-item"><i class="ion-ios-paper-outline"></i>&nbsp;Logs</router-link>

@@ -34,10 +34,9 @@
         <div class="ui left input tiny">
           <input placeholder="Search..." type="text" v-model="search" style="width:180px">
         </div>
-        <div class="ui toggle checkbox" style="margin-left:10px">
-          <input name="check1" type="checkbox" v-model="cTableView">
-          <label>Table View</label>
-        </div>
+        
+		<sui-checkbox label="Table View" toggle v-model="cTableView" style="margin-left:10px"/>
+			
         <br><br>
       </div>
     </div>

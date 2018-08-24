@@ -128,7 +128,7 @@
 		"DASH":
 		[
             {
-				"name":"DASH",
+				"name":"Dash",
 				"symbol":"DASH",
 				"icon_class":"cc DASH-alt",
 				"cmc_symbol":"dash",
@@ -165,7 +165,7 @@
 		"CROWN":
 		[
             {
-				"name":"CROWN",
+				"name":"Crown",
 				"symbol":"CRW",
 				"icon_class":"ion-record",
 				"cmc_symbol":"crown",
@@ -202,7 +202,7 @@
 		"VIACOIN":
 		[
             {
-				"name":"VIACOIN",
+				"name":"ViaCoin",
 				"symbol":"VIA",
 				"icon_class":"cc VIA-alt",
 				"cmc_symbol":"viacoin",
@@ -239,7 +239,7 @@
 		"PARTICL":
 		[
             {
-				"name":"PARTICL",
+				"name":"Particl",
 				"symbol":"PART",
 				"icon_class":"cc PART",
 				"cmc_symbol":"PARTICL",
@@ -276,7 +276,7 @@
 		"PHORE":
 		[
             {
-				"name":"PHORE",
+				"name":"Phore",
 				"symbol":"PHR",
 				"icon_class":"ion-record",
 				"cmc_symbol":"PHORE",
@@ -313,7 +313,7 @@
 		"PEERCOIN":
 		[
             {
-				"name":"PEERCOIN",
+				"name":"PeerCoin",
 				"symbol":"PPC",
 				"icon_class":"cc PPC",
 				"cmc_symbol":"PEERCOIN",
@@ -350,7 +350,7 @@
 		"BLACKCOIN":
 		[
             {
-				"name":"BLACKCOIN",
+				"name":"BlackCoin",
 				"symbol":"BLK",
 				"icon_class":"cc BC-alt",
 				"cmc_symbol":"BLACKCOIN",
@@ -387,7 +387,7 @@
 		"REDDCOIN":
 		[
             {
-				"name":"REDDCOIN",
+				"name":"ReddCoin",
 				"symbol":"RDD",
 				"icon_class":"cc RDD",
 				"cmc_symbol":"REDDCOIN",
@@ -424,10 +424,10 @@
 		"ZCOIN":
 		[
             {
-				"name":"ZCOIN",
+				"name":"ZCoin",
 				"symbol":"XZC",
 				"icon_class":"cc XZC",
-				"cmc_symbol":"REDDCOIN",
+				"cmc_symbol":"ZCOIN",
 				"qrcode_prefix":"ZCOIN",
 				"logo":"static/img/coins/xzc.png",
 				"bgcolor":"green",
@@ -461,7 +461,7 @@
 		"SYSCOIN":
 		[
             {
-				"name":"SYSCOIN",
+				"name":"SysCoin",
 				"symbol":"SYS",
 				"icon_class":"ion-record",
 				"cmc_symbol":"SYSCOIN",
@@ -498,7 +498,7 @@
 		"CRAVE":
 		[
             {
-				"name":"CRAVE",
+				"name":"Crave",
 				"symbol":"CRAVE",
 				"icon_class":"ion-record",
 				"cmc_symbol":"CRAVE",
@@ -535,7 +535,7 @@
 		"DIGIBYTE":
 		[
             {
-				"name":"DIGIBYTE",
+				"name":"DigiByte",
 				"symbol":"DGB",
 				"icon_class":"cc DGB",
 				"cmc_symbol":"DIGIBYTE",
@@ -543,7 +543,7 @@
 				"logo":"static/img/coins/dgb.png",
 				"bgcolor":"blue",
 				"url":"https://www.digibyte.co",
-				"description":"",
+				"description":"Mining Reward",
 				"config_file":"digibyte.conf",
 				"data_dir_windows":"Digibyte",
 				"data_dir_osx":"Digibyte",
@@ -572,7 +572,7 @@
 		"BITCORE":
 		[
             {
-				"name":"BITCORE",
+				"name":"BitCore",
 				"symbol":"BTX",
 				"icon_class":"ion-record",
 				"cmc_symbol":"BITCORE",
@@ -580,7 +580,7 @@
 				"logo":"static/img/coins/btx.png",
 				"bgcolor":"purple",
 				"url":"https://bitcore.cc",
-				"description":"",
+				"description":"Mining Reward",
 				"config_file":"bitcore.conf",
 				"data_dir_windows":"Bitcore",
 				"data_dir_osx":"Bitcore",
@@ -609,7 +609,7 @@
 		"VERTCOIN":
 		[
             {
-				"name":"VERTCOIN",
+				"name":"VertCoin",
 				"symbol":"VTC",
 				"icon_class":"cc VTC-alt",
 				"cmc_symbol":"VERTCOIN",
@@ -617,7 +617,7 @@
 				"logo":"static/img/coins/vtc.png",
 				"bgcolor":"green",
 				"url":"https://vertcoin.org",
-				"description":"",
+				"description":"Mining Reward",
 				"config_file":"vertcoin.conf",
 				"data_dir_windows":"Vertcoin",
 				"data_dir_osx":"Vertcoin",
@@ -646,15 +646,15 @@
 		"SMARTCASH":
 		[
             {
-				"name":"SMARTCASH",
+				"name":"SmartCash",
 				"symbol":"SMART",
 				"icon_class":"ion-record",
 				"cmc_symbol":"SMARTCASH",
-				"qrcode_prefix":"VERTCOIN",
+				"qrcode_prefix":"SMARTCASH",
 				"logo":"static/img/coins/smart.png",
 				"bgcolor":"purple",
 				"url":"https://smartcash.cc",
-				"description":"Mining Reward,Masternodes",
+				"description":"Mining Reward, Masternodes",
 				"config_file":"smartcash.conf",
 				"data_dir_windows":"Smartcash",
 				"data_dir_osx":"Smartcash",
@@ -663,6 +663,154 @@
 				"daemon_file_windows":"smartcashd.exe",
 				"daemon_file_osx":"smartcashd",
 				"daemon_file_linux":"smartcashd",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_support_bootstrap":"0",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"GLOBYCOIN":
+		[
+            {
+				"name":"GlobyCoin",
+				"symbol":"GLOBY",
+				"icon_class":"ion-record",
+				"cmc_symbol":"",
+				"qrcode_prefix":"GLOBYCOIN",
+				"logo":"static/img/coins/globy.png",
+				"bgcolor":"green",
+				"url":"https://www.globycoin.org/",
+				"description":"Mining Reward, Masternodes",
+				"config_file":"globycoin.conf",
+				"data_dir_windows":"Globycoin",
+				"data_dir_osx":"Globycoin",
+				"data_dir_linux":".globycoin",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"globycoind.exe",
+				"daemon_file_osx":"globycoind",
+				"daemon_file_linux":"globycoind",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_support_bootstrap":"0",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"LINC":
+		[
+            {
+				"name":"Linc",
+				"symbol":"LINC",
+				"icon_class":"ion-record",
+				"cmc_symbol":"",
+				"qrcode_prefix":"LINC",
+				"logo":"static/img/coins/linc.png",
+				"bgcolor":"blue",
+				"url":"https://www.linc.site/",
+				"description":"Mining Reward, Masternodes",
+				"config_file":"lin.conf",
+				"data_dir_windows":"Linc",
+				"data_dir_osx":"Linc",
+				"data_dir_linux":".linc",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"lincd.exe",
+				"daemon_file_osx":"lincd",
+				"daemon_file_linux":"lincd",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_support_bootstrap":"0",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"VIVO":
+		[
+            {
+				"name":"Vivo",
+				"symbol":"VIVO",
+				"icon_class":"ion-record",
+				"cmc_symbol":"vivo",
+				"qrcode_prefix":"VIVO",
+				"logo":"static/img/coins/vivo.png",
+				"bgcolor":"blue",
+				"url":"https://www.vivocrypto.com",
+				"description":"Masternodes, Private Payment",
+				"config_file":"vivo.conf",
+				"data_dir_windows":"VivoCore",
+				"data_dir_osx":"VivoCore",
+				"data_dir_linux":".vivocore",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"vivod.exe",
+				"daemon_file_osx":"vivod",
+				"daemon_file_linux":"vivod",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_support_bootstrap":"0",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"ZENCASH":
+		[
+            {
+				"name":"ZenCash",
+				"symbol":"ZEN",
+				"icon_class":"ion-record",
+				"cmc_symbol":"zencash",
+				"qrcode_prefix":"ZENCASH",
+				"logo":"static/img/coins/zen.png",
+				"bgcolor":"blue",
+				"url":"http://zencash.com",
+				"description":"Masternodes, Private Payment",
+				"config_file":"zencash.conf",
+				"data_dir_windows":"zencash",
+				"data_dir_osx":"zencash",
+				"data_dir_linux":".zencash",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"zend.exe",
+				"daemon_file_osx":"zend",
+				"daemon_file_linux":"zend",
 				"rpc_port_mainnet":"44444",
 				"rpc_port_testnet":"44445",
 				"bool_support_bootstrap":"0",

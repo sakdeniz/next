@@ -113,6 +113,7 @@ const signMessage = (navaddress,message) => {
 const getPrice = () => {
   var coin=new Object();
   if (urlParams.get('coin')) coin=JSON.parse(decodeURIComponent(urlParams.get('coin'))); else coin=JSON.parse(testCoin);
+  if (!coin.cmc_symbol)	return new Promise(function(resolve, reject) {resolve('')})
   return axios.get("https://api.coinmarketcap.com/v1/ticker/"+coin.cmc_symbol+"/?convert=EUR", {}, config)
   .then(handleError)
   .then(response => response.data)

@@ -78,21 +78,17 @@
 					<br><br>
 					<div class="row">
 						<div class="col-md-12">
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="check1" type="checkbox" v-on:change="changeConfig" v-model="cStaking">
-								<label>Staking</label>
+							<div>
+								<sui-checkbox label="Staking" toggle v-on:change="changeConfig" v-model="cStaking"/>
 							</div>
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="check1" type="checkbox" v-on:change="changeConfig" v-model="cTestnet">
-								<label>Testnet</label>
+							<div>
+								<sui-checkbox label="Testnet" toggle v-on:change="changeConfig" v-model="cTestnet"/>
 							</div>
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="check1" type="checkbox" v-on:change="changeConfig" v-model="cTxindex">
-								<label>TX Index</label>
+							<div>
+								<sui-checkbox label="TX Index" toggle v-on:change="changeConfig" v-model="cTxindex"/>
 							</div>
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="check1" type="checkbox" v-on:change="changeConfig" v-model="cAddressIndex">
-								<label>Address Index</label>
+							<div>
+								<sui-checkbox label="Address Index" toggle v-on:change="changeConfig" v-model="cAddressIndex"/>
 							</div>
 							<div class="col-md-12 ui ignored warning message">You must restart the NEXT for the changes to take effect.</div>
 							<div class="ui form">
@@ -112,18 +108,16 @@
 					<a class="ui purple ribbon label">Notifications</a>
 					<br><br>
 					<div class="row">
+					
 						<div class="col-md-12">
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="NotificationGeneral" type="checkbox" v-model="cNotificationGeneral" true-value="1" false-value="0" v-on:change="changeNotificationGeneral">
-								<label>General Notifications</label>
+							<div>
+								<sui-checkbox label="General Notifications" toggle v-model="cNotificationGeneral" true-value="1" false-value="0" v-on:change="changeNotificationGeneral"/>
 							</div>
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="NotificationIncomingTransaction" type="checkbox" v-model="cNotificationIncomingTransaction" true-value="1" false-value="0" v-on:change="changeNotificationIncomingTransaction">
-								<label>Incoming Transactions</label>
+							<div>
+								<sui-checkbox label="Incoming Transactions" toggle v-model="cNotificationIncomingTransaction" true-value="1" false-value="0" v-on:change="changeNotificationIncomingTransaction"/>
 							</div>
-							<div class="col-md-12 ui toggle checkbox" style="margin-left:10px">
-								<input name="NotificationNewStake" type="checkbox" v-model="cNotificationNewStake" true-value="1" false-value="0" v-on:change="changeNotificationNewStake">
-								<label>New Stakes</label>
+							<div>
+								<sui-checkbox label="New Stakes" toggle v-model="cNotificationNewStake" true-value="1" false-value="0" v-on:change="changeNotificationNewStake"/>
 							</div>
 						</div>
 					</div>

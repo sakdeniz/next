@@ -8,9 +8,8 @@
 			<router-link v-if="coin.bool_support_open_alias=='1'" to="/admin/open-alias"><button class="btn btn-info btn-fill"><i class="ion-arrow-return-right"></i>&nbsp;Open Alias</button></router-link>
 			</div>
 			<div class="col-md-12"><br>
-			<div class="ui toggle checkbox">
-				<input name="check1" type="checkbox" v-model="checked">
-				<label>Hide zero balances</label>
+			<div>
+				<sui-checkbox label="Hide zero balances" toggle v-model="checked"/>
 			</div>
 			</div>
 			<div class="col-md-12"><br>

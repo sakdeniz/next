@@ -14,10 +14,9 @@
             <br>Amount ({{coin.symbol}}) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
             <br>Comment (Optional) : <input type="text" class="form-control" style="width:100%;" id="comment" name="comment"></input><small>A comment used to store what the transaction is for. This is not part of the transaction, just kept in your wallet.</small>
             <br>Comment To (Optional) : <input type="text" class="form-control" style="width:100%;" id="commentto" name="commentto"></input><small>A comment to store the name of the person or organization to which you're sending the transaction. This is not part of the transaction, just kept in your wallet.</small>
-            <div v-if="coin.bool_anon_send=='1'" class="ui toggle checkbox" style="margin-left:10px;margin-top:20px;">
-              <input name="check1" type="checkbox" v-model="cPrivateSend">
-              <label style="text-transform:capitalize">Private Payment</label>
-            </div>
+			<div v-if="coin.bool_anon_send=='1'" style="margin-left:10px;margin-top:20px;">
+				<sui-checkbox label="Private Payment" toggle v-model="cPrivateSend"/>
+			</div>
             <br><br><button class='btn btn-fill btn-info' v-on:click='send'><i class="ion-paper-airplane"></i>&nbsp;Send</button>
           </div>
           <div id="address-table"></div>
