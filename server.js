@@ -452,6 +452,10 @@ server=http.createServer(function (req, res)
 				{
 					client.command('listaddressgroupings').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/listreceivedbyaddress")
+				{
+					client.listReceivedByAddress(1,true).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/getstakinginfo")
 				{
 					client.command('getstakinginfo').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});

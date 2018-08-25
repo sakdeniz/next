@@ -1,7 +1,7 @@
 <template>
 <div class="content">
 	<div class="container-fluid">
-		<h4 class="card-title"><i class="ion-archive"></i> Receive ({{total_address}} Addresses)</h4>
+		<h4 class="card-title"><i class="ion-archive"></i> Receive</h4>
 		<div class="row">
 			<div class="col-md-12">
 			<button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button>&nbsp;
@@ -14,6 +14,27 @@
 			</div>
 			<div class="col-md-12"><br>
 			<table class="ui celled padded table">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Address</th>
+						<th>Balance</th>
+						<th>Account</th>
+					</tr>
+				</thead>
+				<tbody v-if="receivedaddresslist">
+					<tr v-for="item of receivedaddresslist" v-if="(!checked) || checked && item.amount!='0'">
+						<td nowrap>
+							<button role="button" title='Copy to clipboard' class='ui icon button' v-on:click='copytoclipboard(item.address)'><i class='ion-android-clipboard'></i></button>
+							<button role="button" title='Show QR Code' class='ui icon button' v-on:click='getqrcode(item.address)'><i class='ion-qr-scanner'></i></button>
+						</td>
+						<td>{{item.address}}</td>
+						<td>{{item.amount}}</td>
+						<td style="width:100%">{{item.account}}</td>
+					</tr>
+				</tbody>
+			</table>
+			<table style="display:none" class="ui celled padded table">
 				<thead>
 					<tr>
 						<th></th>
@@ -64,12 +85,14 @@ export default {
     return {
       addresslist: [],
       total_address: 0,
+	  receivedaddresslist:"",
       checked: true
     }
   },
   components: {},
   created: function() {
     this.listaddressgroupings();
+	this.listreceivedbyaddress();
   },
   methods: {
     getnewaddress: function(event) {
@@ -126,7 +149,19 @@ export default {
       }).catch(function(err) {
         console.log(err)
       })
+    },
+  listreceivedbyaddress: function(event) {
+      let vm=this;
+      axios.post(window.hostname + 'listreceivedbyaddress', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+	  {
+		if (!res.data["error"])
+		{
+			vm.receivedaddresslist=res.data;
+		}
+      }).catch(function(err) {
+        console.log(err)
+      })
     }
-  },
+  }
 }
 </script>
