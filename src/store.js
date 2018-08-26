@@ -149,7 +149,7 @@ const store = new Vuex.Store({
 			params.append('address', arr["registeraddress"]);
 			params.append('name', arr["registeralias"]);
 			params.append('addressSig', msg);
-			axios.post('https://openalias.nav.community/api',params)
+			axios.post('https://openalias-api.nav.community/',params)
 			.then(function (response)
 			{
 				console.log(response.data);
