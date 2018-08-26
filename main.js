@@ -576,7 +576,10 @@ function startProcess()
 	var ntp="";
 	var zmq="";
 	//zmq=" -zmqpubrawblock=tcp://127.0.0.1:30000 -zmqpubrawtx=tcp://127.0.0.1:30000 -zmqpubhashblock=tcp://127.0.0.1:30000 -zmqpubhashtx=tcp://127.0.0.1:30000";
-	ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
+	if (coin.name==="NAVCoin")
+	{
+		ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
+	}
 	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + zmq + " -debug=0 -server -rpcbind=127.0.0.1 -rpcallowip=127.0.0.1 -uacomment=NEXT" + addnode + ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	const defaults = {cwd:__dirname,env:process.env,shell:bShell,windowsVerbatimArguments:true};
