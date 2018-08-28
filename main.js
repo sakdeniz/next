@@ -30,7 +30,7 @@ const hrt=new clock('%D%/%M%/%YY% %hh%:%mm%:%ss%');
 const Block=bitcore.Block;
 const Transaction=bitcore.Transaction;
 const portZMQ=30000;
-const binDir=__dirname+"/bin";
+var binDir;
 var appDataPath;
 var executablePath;
 var daemonPath;
@@ -116,6 +116,13 @@ sock.on('message', (topic, message) => {
 	}
 });
 let win;
+
+binDir=__dirname;
+if (os.type()==="Windows_NT") binDir+="\\";
+if (os.type()==="Darwin") binDir+="/";
+if (os.type()==="Linux") binDir+="/";
+binDir+="bin";
+
 if (!fs.existsSync(binDir))
 {
     console.log("Bin directory not found, creating...");
@@ -602,7 +609,7 @@ function startProcess()
 	}
 	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + zmq + " -debug=0 -server -rpcbind=127.0.0.1 -rpcallowip=127.0.0.1 -uacomment=NEXT" + addnode + ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
-	const defaults = {cwd:__dirname,env:process.env,shell:bShell,windowsVerbatimArguments:true};
+	const defaults = {cwd:binDir,env:process.env,shell:bShell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());
 	console.log("App Data Path : "+appDataPath);
 	console.log("Shell : "+bShell);
@@ -683,7 +690,8 @@ function startProcess()
 	}
 	else
 	{
-		newProcess=child(executablePath, parameters, defaults, function(err, data)
+		console.log(executablePath);
+		newProcess=child(coin.daemon_file_windows, parameters, defaults, function(err, data)
 		{
 			if (err)
 			{
