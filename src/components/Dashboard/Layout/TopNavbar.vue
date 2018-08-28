@@ -19,6 +19,7 @@
             <router-link to="/admin/peer-list" tag="sui-dropdown-item"><i class="ion-radio-waves"></i>&nbsp;Peer List</router-link>
             <router-link to="/admin/softforks" tag="sui-dropdown-item"><i class="ion-fork-repo"></i>&nbsp;Soft Forks</router-link>
             <router-link to="/admin/merchants" tag="sui-dropdown-item"><i class="ion-earth"></i>&nbsp;Merchants</router-link>
+            <router-link to="/admin/about" tag="sui-dropdown-item"><i class="ion-help"></i>&nbsp;About</router-link>
           </sui-dropdown-menu>
         </sui-dropdown>
       <button type="button"

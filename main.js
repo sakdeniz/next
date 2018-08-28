@@ -424,35 +424,55 @@ function RestartDaemon(network)
 	})
 }
 
+function formatBytes (bytes,decimals)
+{
+	if(bytes == 0) return '0 Bytes';
+	var k = 1024,
+	dm = decimals || 2,
+	sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+	i = Math.floor(Math.log(bytes) / Math.log(k));
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+	
 function downloadFile(file_url,targetPath){
     var received_bytes = 0;
     var total_bytes = 0;
-    var req = request({
+    var out;
+	var req = request({
         method: 'GET',
         uri: file_url
     });
-    var out = fs.createWriteStream(targetPath);
-    req.pipe(out);
-    req.on('response', function ( data ) {
+	req.on('response', function ( data ) {
         total_bytes = parseInt(data.headers['content-length']);
-    });
-    req.on('data', function(chunk) {
-        received_bytes += chunk.length;
-        showProgress(received_bytes, total_bytes);
-    });
-    req.on('end', function() {
-        downloadWin.hide();
-		console.log("Daemon file succesfully downloaded...");
-        console.log("Starting daemon...");
-		out.end();
-		setTimeout(function() {StartDaemon();},3000);
+		if (data.statusCode=="404")
+		{
+			downloadWin.hide();
+			console.log("File not found. [" + file_url + "]");
+			displayError("Daemon binary download failed","File not found : " + file_url);
+		}
+		else
+		{
+			out=fs.createWriteStream(targetPath);
+			req.pipe(out);
+		    req.on('data', function(chunk) {
+				received_bytes += chunk.length;
+				showProgress(received_bytes, total_bytes);
+			});
+			req.on('end', function() {
+				downloadWin.hide();
+				console.log("Daemon file succesfully downloaded...");
+				console.log("Starting daemon...");
+				out.end();
+				setTimeout(function() {StartDaemon();},3000);
+			});
+		}
     });
 }
 
 function showProgress(received,total){
     var percentage = (received * 100) / total;
     console.log(percentage.toFixed(2) + "% | " + received + " bytes out of " + total + " bytes.");
-	downloadWin.webContents.executeJavaScript(`document.getElementById('info').innerHTML='`+percentage.toFixed(2) + `% | ` + received + ` bytes out of ` + total + ` bytes downloaded.`+`';`);
+	downloadWin.webContents.executeJavaScript(`document.getElementById('info').innerHTML='`+percentage.toFixed(2) + `% | ` + formatBytes(received,0) + ` out of ` + formatBytes(total,0) + ` downloaded.`+`';`);
 }
 
 function StartDaemon()
@@ -516,7 +536,7 @@ function StartDaemon()
 	{
 		showDownloadWindow();
 		var downloadURL="";
-		if (process.arch=="arm64")
+		if (process.arch=="arm"||process.arch=="arm64")
 		{
 			downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
 		}
@@ -531,7 +551,7 @@ function StartDaemon()
 	else
 	{
 		var platform="";
-		if (process.arch=="arm64")
+		if (process.arch=="arm"||process.arch=="arm64")
 		{
 			platform=process.arch;
 		}
@@ -811,7 +831,10 @@ function displayError(title,message)
 		}
 	});
 	eWindow.loadURL(`file://${__dirname}/dist/static/error.html`);
-	eWindow.webContents.on('did-finish-load', ()=>{eWindow.webContents.executeJavaScript(`document.getElementById('error').innerHTML='`+message+`';`);});
+	eWindow.webContents.on('did-finish-load', ()=>{
+		eWindow.webContents.executeJavaScript(`document.getElementById('title').innerHTML='`+title+`';`);
+		eWindow.webContents.executeJavaScript(`document.getElementById('error').innerHTML='`+message+`';`);
+	});
 	eWindow.webContents.on('new-window', function(event, url)
 	{
 		event.preventDefault();

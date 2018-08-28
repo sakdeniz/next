@@ -18,12 +18,14 @@ img {
     height: auto;
 }
 
-  @font-face {
+@font-face {
   font-family: 'neo';
   src: url('https://next.navcommunity.net/fonts/neo-latina.ttf');
 }
 
 .logo-text { font-family: 'neo';font-size:40pt;color:#ffffff;}
+
+.logo-text-purple { font-family: 'neo';font-size:60pt;color:#7D5AB5;margin:-8px;}
 
 .all-icons [class*="pe-"]{
     font-size: 40px;

@@ -18,6 +18,42 @@ function sendResponse(res, statusCode, body)
 	res.write(body);
 	res.end();
 }
+
+function Send(client,post,to,res)
+{
+	if (post.encryption_password)
+	{
+		console.log("Unlocking wallet...");
+		client.walletPassphrase(post.encryption_password,3,false).then((retval) => 
+		{
+			if (post.isprivate)
+			{
+				console.log("Private Send");
+				client.anonSend(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+			}
+			else
+			{
+				console.log("Send");
+				client.sendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+			}
+			//console.log("Locking wallet...");
+			//client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+		}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+	}
+	else
+	{
+		if (post.isprivate)
+		{
+			console.log("Private Send");
+			client.anonSend(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+		}
+		else
+		{
+			console.log("Send");
+			client.sendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+		}
+	}
+}
 function sendError(res, statusCode, body)
 {
 	var obj={"error":body};
@@ -271,39 +307,36 @@ server=http.createServer(function (req, res)
 				}
 				if (req.url=="/sendtoaddress")
 				{
-					if (post.encryption_password)
+					var to;
+					if (post.to.indexOf('@')>-1)
 					{
-						console.log("Unlocking wallet...");
-						client.walletPassphrase(post.encryption_password,3,false).then((retval) => 
+						console.log('resolveopenalias ' + post.to);
+						client.resolveopenalias(post.to).then((retval) =>
 						{
-							if (post.isprivate)
+							console.log("Resolving open alias address : " + post.to);
+							console.log("Open alias dnssec_available : " + retval.dnssec_available);
+							console.log("Open alias dnssec_valid : " + retval.dnssec_valid);
+							console.log("Open alias address : " + retval.address);
+							if (retval.address)
 							{
-								console.log("Private Send");
-								client.anonSend(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+								console.log("Valid open alias address.");
+								to=retval.address;
+								Send(client,post,to,res)
 							}
 							else
 							{
-								console.log("Send");
-								client.sendToAddress(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+								console.log("Invalid open alias address.");
+								var obj = { message: "Invalid open alias address."};
+								sendError(res, 200,obj);
 							}
-							//console.log("Locking wallet...");
-							//client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
-						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+						}
+						).catch((e) => {sendError(res, 200,e);});
 					}
 					else
 					{
-						if (post.isprivate)
-						{
-							console.log("Private Send");
-							client.anonSend(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
-						}
-						else
-						{
-							console.log("Send");
-							client.sendToAddress(post.to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
-						}
+						to=post.to;
+						Send(client,post,to,res);
 					}
-
 				}
 				if (req.url=="/proposaldonate")
 				{

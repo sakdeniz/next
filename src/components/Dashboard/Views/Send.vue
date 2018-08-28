@@ -11,6 +11,7 @@
         <div class="card">
           <div class="card-body">
             Send to this address : <input type="text" class="form-control" style="width:100%;" id="to" name="to"></input>
+			<div v-if="coin.bool_support_open_alias=='1'"><span class="ui pointing basic label">Open Alias supported, you can enter receiver address in e-mail style. For example john@bitcoin.org</span></div>
             <br>Amount ({{coin.symbol}}) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
             <br>Comment (Optional) : <input type="text" class="form-control" style="width:100%;" id="comment" name="comment"></input><small>A comment used to store what the transaction is for. This is not part of the transaction, just kept in your wallet.</small>
             <br>Comment To (Optional) : <input type="text" class="form-control" style="width:100%;" id="commentto" name="commentto"></input><small>A comment to store the name of the person or organization to which you're sending the transaction. This is not part of the transaction, just kept in your wallet.</small>
@@ -436,7 +437,7 @@ export default {
                       isAdressValid = true;
                     }
                   });
-                  if (isAdressValid) {
+                  if (isAdressValid||$("#to").val().indexOf('@')>-1) {
                     if (isNaN($("#amount").val())) {
                       swal({
                         type: 'warning',

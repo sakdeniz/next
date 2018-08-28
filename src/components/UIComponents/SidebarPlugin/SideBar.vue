@@ -74,7 +74,7 @@ import {
     }),
       sidebarStyle () {
         return {
-          backgroundImage: `url(${this.backgroundImage})`
+          backgroundImage: `url(${this.coin.bgimage})`
         }
       }
     }
