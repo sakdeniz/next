@@ -809,6 +809,11 @@ function displayError(title,message)
 			store.set('reindex-chainstate', '1');
 			app.exit();
 		}
+		if (line=="next:reset-next-settings")
+		{
+			store.clear();
+			app.exit();
+		}
 		if (line=="next:reset-data"||line=="next:reset-data-bootstrap")
 		{
 			var Directory=appDataPath;
