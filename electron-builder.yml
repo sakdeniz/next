@@ -2,7 +2,7 @@ directories:
   output: electron-builder
   buildResources: build
 appId: net.navcommunity.next
-buildVersion : 1.0.4
+buildVersion : 1.0.5
 copyright: Copyright © 2018 NavCommunity.net
 productName: Next
 forceCodeSigning: false

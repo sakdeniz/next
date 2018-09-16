@@ -64,7 +64,7 @@ var coin=new Object();
 if (process.arch=="arm"||process.arch=="arm64")
 {
 	app.disableHardwareAcceleration();
-	console.log("Disabled hardware acceleration for ARM devices.");
+	console.log("Hardware acceleration disabled for ARM devices.");
 }
 console.log("NEXT");
 require('electron-context-menu')({
@@ -81,11 +81,11 @@ require('electron-context-menu')({
 		visible: params.mediaType === 'image'
 	}]
 });
-sock.connect('tcp://127.0.0.1:'+portZMQ);
-//sock.subscribe('hashblock');
-//sock.subscribe('hashtx');
-//sock.subscribe('rawblock');
-//sock.subscribe('rawtx');
+/*sock.connect('tcp://127.0.0.1:'+portZMQ);
+sock.subscribe('hashblock');
+sock.subscribe('hashtx');
+sock.subscribe('rawblock');
+sock.subscribe('rawtx');
 sock.on('message', (topic, message) => {
 	if(topic=='rawtx')
 	{
@@ -119,21 +119,18 @@ sock.on('message', (topic, message) => {
 			}
 		});
 	}
-});
+});*/
 let win;
-
 binDir=__dirname;
 if (os.type()==="Windows_NT") binDir+="\\";
 if (os.type()==="Darwin") binDir+="/";
 if (os.type()==="Linux") binDir+="/";
 binDir+="bin";
-
 if (!fs.existsSync(binDir))
 {
     console.log("Bin directory not found, creating...");
 	fs.mkdirSync(binDir);
 }
-//
 //store.clear();
 //store.delete('coin');
 //store.set('update_preference',"3");
