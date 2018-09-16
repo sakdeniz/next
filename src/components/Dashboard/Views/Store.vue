@@ -12,8 +12,8 @@
             </center>
           </div>
           <div class="content">
-            <div class="header">{{item.store_item_name}}</div>
-            <div class="description">
+            <h6 style="height:30px;overflow:hidden;">{{item.store_item_name}}</h6>
+            <div class="description" style="height:100px;overflow:hidden;">
               {{item.store_item_description}}
             </div>
           </div>

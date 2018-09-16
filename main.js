@@ -61,6 +61,11 @@ var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.
 var eNotify;
 var coins=require(__dirname+'/coins.json');
 var coin=new Object();
+if (process.arch=="arm"||process.arch=="arm64")
+{
+	app.disableHardwareAcceleration();
+	console.log("Disabled hardware acceleration for ARM devices.");
+}
 console.log("NEXT");
 require('electron-context-menu')({
 	showInspectElement:false,
@@ -132,7 +137,9 @@ if (!fs.existsSync(binDir))
 //store.clear();
 //store.delete('coin');
 //store.set('update_preference',"3");
-//console.log("Update Preference:"+store.get('update_preference'));
+if (!store.get('update_daemon_preference')) store.set('update_daemon_preference',"1");
+console.log("Update Preference:"+store.get('update_preference'));
+console.log("Update Daemon Preference:"+store.get('update_daemon_preference'));
 function showDownloadWindow()
 {
 	downloadWin=new BrowserWindow({width: 700, height: 200});
@@ -538,60 +545,69 @@ function StartDaemon()
 		var daemonBinaryFileName=coin.daemon_file_osx;
 		bShell=true;
 	}
-	var fs=require('fs');
-	if (!fs.existsSync(executablePath))
+	if (store.get('update_daemon_preference')=="1")
 	{
-		showDownloadWindow();
-		var downloadURL="";
-		if (process.arch=="arm"||process.arch=="arm64")
+		console.log("Checking daemon binary for auto update...");
+		var fs=require('fs');
+		if (!fs.existsSync(executablePath))
 		{
-			downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
-		}
-		else
-		{
-			downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
-		}
-		console.log("Daemon binary not found : " + executablePath);
-		console.log("Downloading from : " + downloadURL);
-		downloadFile(downloadURL,executablePath);
-	}
-	else
-	{
-		var platform="";
-		if (process.arch=="arm"||process.arch=="arm64")
-		{
-			platform=process.arch;
-		}
-		else
-		{
-			platform=os.platform();
-		}
-		const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
-		console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
-		console.log("Local Daemon md5  :"+daemon_local_md5);
-		axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
-		{
-			const daemon_remote_md5=res.data;
-			console.log("Remote Daemon md5 :"+daemon_remote_md5);
-			if (daemon_local_md5==daemon_remote_md5)
+			showDownloadWindow();
+			var downloadURL="";
+			if (process.arch=="arm"||process.arch=="arm64")
 			{
-				console.log("Daemon version up to date.");
-				startProcess();
+				downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
 			}
 			else
 			{
-				showDownloadWindow();
-				console.log("Daemon versions different, downloading new version from remote...")
-				const downloadURL="http://next.navcommunity.net/update/bin/"+platform+"/"+daemonBinaryFileName;
-				console.log("Downloading from : " + downloadURL);
-				downloadFile(downloadURL,executablePath);
-				return;
+				downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
 			}
-		}).catch(function(err)
+			console.log("Daemon binary not found : " + executablePath);
+			console.log("Downloading from : " + downloadURL);
+			downloadFile(downloadURL,executablePath);
+		}
+		else
 		{
-			startProcess();
-			console.log(err);
-		})
+			var platform="";
+			if (process.arch=="arm"||process.arch=="arm64")
+			{
+				platform=process.arch;
+			}
+			else
+			{
+				platform=os.platform();
+			}
+			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
+			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
+			console.log("Local Daemon md5  :"+daemon_local_md5);
+			axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
+			{
+				const daemon_remote_md5=res.data;
+				console.log("Remote Daemon md5 :"+daemon_remote_md5);
+				if (daemon_local_md5==daemon_remote_md5)
+				{
+					console.log("Daemon version up to date.");
+					startProcess();
+				}
+				else
+				{
+					showDownloadWindow();
+					console.log("Daemon versions different, downloading new version from remote...")
+					const downloadURL="http://next.navcommunity.net/update/bin/"+platform+"/"+daemonBinaryFileName;
+					console.log("Downloading from : " + downloadURL);
+					downloadFile(downloadURL,executablePath);
+					return;
+				}
+			}).catch(function(err)
+			{
+				startProcess();
+				console.log(err);
+			})
+		}
+	}
+	else
+	{
+		console.log("Daemon binary auto update disabled, starting daemon...");
+		startProcess();
 	}
 }
 
@@ -939,6 +955,7 @@ function createMainWindow ()
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
 	win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+store.get("update_preference")+`")`);
+	win.webContents.executeJavaScript(`window.localStorage.setItem("update_daemon_preference","`+store.get("update_daemon_preference")+`")`);
    	var shell=require('electron').shell;
 	win.webContents.on('new-window', function(event, url)
 	{
@@ -1064,6 +1081,11 @@ function createMainWindow ()
 			store.set('update_preference',line.split(":")[2]);
 			win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+line.split(":")[2]+`")`);
 		}
+		if (line.startsWith("next:update_daemon_preference:")) 
+		{
+			store.set('update_daemon_preference',line.split(":")[2]);
+			win.webContents.executeJavaScript(`window.localStorage.setItem("update_daemon_preference","`+line.split(":")[2]+`")`);
+		}
 	});
 	//win.webContents.openDevTools();
 	win.on('close', function (event)
@@ -1136,6 +1158,10 @@ app.on('ready', () => {
 			if (line.startsWith("next:update_preference:")) 
 			{
 				store.set('update_preference',line.split(":")[2]);
+			}
+			if (line.startsWith("next:update_daemon_preference:")) 
+			{
+				store.set('update_daemon_preference',line.split(":")[2]);
 			}
 			if (line.startsWith("next:coin:")) 
 			{

@@ -532,8 +532,16 @@ server=http.createServer(function (req, res)
 				}
 				if (req.url=="/navcommunity-getproposals")
 				{
-					axios.post("https://navcommunity.net/api/getproposals.php", {},{})
-					.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+					try
+					{
+						axios.post("https://navcommunity.net/api/getproposals.php", {},{})
+						.then((retval) => sendResponse(res, 200,JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
+						.catch(error => {console.log(error.response)});
+					}
+					catch (e)
+					{
+						console.log(e.response);
+					}
 				}
 				if (req.url=="/navcommunity-getnews")
 				{

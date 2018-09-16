@@ -133,7 +133,7 @@
 						<div class="col-md-12">
 							<sui-form>
 								<sui-form-fields grouped>
-									<label>Choose your update preference</label>
+									<label>Choose your application update preference</label>
 									<sui-form-field>
 										<sui-checkbox label="Auto update" radio value="1" v-model="update_preference" v-on:change="updatePreference(1)"/>
 									</sui-form-field>
@@ -142,6 +142,17 @@
 									</sui-form-field>
 									<sui-form-field>
 										<sui-checkbox label="Never update" radio value="3" v-model="update_preference" v-on:change="updatePreference(3)"/>
+									</sui-form-field>
+								</sui-form-fields>
+							</sui-form>
+							<sui-form>
+								<sui-form-fields grouped>
+									<label>Choose your update preference for daemon binaries</label>
+									<sui-form-field>
+										<sui-checkbox label="Auto update" radio value="1" v-model="update_daemon_preference" v-on:change="updateDaemonPreference(1)"/>
+									</sui-form-field>
+									<sui-form-field>
+										<sui-checkbox label="Never update" radio value="2" v-model="update_daemon_preference" v-on:change="updateDaemonPreference(2)"/>
 									</sui-form-field>
 								</sui-form-fields>
 							</sui-form>
@@ -247,6 +258,7 @@ export default {
 	var cNotificationNewStake=0;
 	var isDemo=window.isDemo;
 	var update_preference=1;
+	var update_daemon_preference=1;
     return {
 	 isDemo,
       walletpassphrase,
@@ -267,7 +279,8 @@ export default {
 	  cNotificationIncomingTransaction,
 	  cNotificationNewStake,
       is_verify_success,
-	  update_preference
+	  update_preference,
+	  update_daemon_preference
     }
   },
   components: {},
@@ -292,6 +305,9 @@ export default {
     updatePreference: function(up) {
 		console.log("next:update_preference:"+this.update_preference);
 	},
+    updateDaemonPreference: function(up) {
+		console.log("next:update_daemon_preference:"+this.update_daemon_preference);
+	},
     openDataFolder: function(event) {
 		console.log("next:open-data-folder");
 	},
@@ -301,6 +317,7 @@ export default {
 		this.cNotificationIncomingTransaction=localStorage.getItem("cNotificationIncomingTransaction");
 		this.cNotificationNewStake=localStorage.getItem("cNotificationNewStake");
 		this.update_preference=localStorage.getItem("update_preference");
+		this.update_daemon_preference=localStorage.getItem("update_daemon_preference");
 	},
     repairWallet: function(event) {
 		console.log("next:repair-wallet");

@@ -2,9 +2,15 @@
 <div class="content">
 	<div class="container-fluid">
 	<h4 class="card-title"><span class="logo-text-purple">NEXT</span></h4>
-			<p>Multi-coin & multi-asset open source cryptocurrency wallet</p>
-			<div><a class="external" title="NEXT Web Site" target="_blank" href="https://next.navcommunity.net"><i class="ion-android-open" style="width:24px;"></i>&nbsp;next.navcommunity.net</a></div>
-			<div><a class="external" title="NEXT Web Site" target="_blank" href="https://github.com/sakdeniz/next"><i class="ion-social-github" style="width:24px;"></i>&nbsp;github.com/sakdeniz/next</a></div>
+			<p>Multi-coin & multi-asset Open Source Cryptocurrency Wallet</p>
+					<a class="ui button violet external" title="NEXT Web Site" target="_blank" href="https://next.navcommunity.net"><i class="ion-android-open"></i>&nbsp;&nbsp;&nbsp;Official Site</a>
+					<a class="ui button violet external" title="Github Repo" target="_blank" href="https://github.com/sakdeniz/next"><i class="ion-social-github"></i>&nbsp;&nbsp;&nbsp;Github Repo</a>
+			<h2 class="ui dividing header">Lead Developer</h2>
+			<div class="ui list">
+				<div class="item">
+					Seyhan Akdeniz
+				</div>
+			</div>
 			<h2 class="ui dividing header">Contributors</h2>
 			<div class="ui list">
 				<div class="item">
