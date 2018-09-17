@@ -4,7 +4,7 @@
   <h4 class="card-title"><i class="ion-paper-airplane"></i> Send</h4>
     <div class="row">
       <div class="col-md-12">
-	  <span v-if="info.unlocked_until==0" title="Unlock Wallet" class="ui visible message yellow"><i class="ion-unlocked"></i>&nbsp;Your wallet is locked. You will be asked for your wallet password when you send NAV.</span>
+	  <span v-if="info.unlocked_until==0" title="Unlock Wallet" class="ui visible message yellow"><i class="ion-unlocked"></i>&nbsp;Your wallet is locked. You will be asked for your wallet password when you send {{coin.symbol}}.</span>
       <button title="Set Wallet Password" class="btn btn-xs btn-fill btn-danger" v-on:click="setPassword"><i class="ion-android-lock"></i>&nbsp;Set Password</button><br><br>
       </div>
       <div class="col-md-12">
@@ -268,7 +268,7 @@ export default {
         swal({
           type: 'warning',
           title: 'Oops...',
-          text: 'Please enter a name and a valid NAV address'
+          text: 'Please enter a name and a valid server address'
         });
       }
     },
@@ -300,7 +300,7 @@ export default {
         swal({
           type: 'warning',
           title: 'Oops...',
-          text: 'Please enter a name and a valid NAV address'
+          text: 'Please enter a name and a valid address'
         });
       }
     },
