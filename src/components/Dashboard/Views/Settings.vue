@@ -90,7 +90,7 @@
 							<div>
 								<sui-checkbox label="Address Index" toggle v-on:change="changeConfig" v-model="cAddressIndex"/>
 							</div>
-							<div class="col-md-12 ui ignored warning message">You must restart the NEXT for the changes to take effect.</div>
+							<div class="col-md-12 ui ignored warning message"><ul><li>If you change TX Index/Address Index setting, the blockchain database must be re-indexed again.</li><li>You must restart the NEXT for the changes to take effect.</li></ul></div>
 							<div class="ui form">
 								<div class="field">
 									<textarea v-model="config">{{config}}</textarea>

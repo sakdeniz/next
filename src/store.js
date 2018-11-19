@@ -42,6 +42,8 @@ const checkGoogleDNS = async (name) => {
 const store = new Vuex.Store({
   state: {
     transactions: [],
+	listunspent: [],
+	listreceivedbyaddress: [],
     peers: [],
     blockchainInfo: {},
 	networkInfo: {},
@@ -51,6 +53,7 @@ const store = new Vuex.Store({
     info: {},
 	price: {},
 	softForks: {},
+	cfundStats: {},
 	version:'',
     proposals: [],
 	storeitems: [],
@@ -70,6 +73,7 @@ const store = new Vuex.Store({
     registeralias: '',
 	registersignmessage: '',
 	registerapimessage: '',
+	latestVersion: '',
 	coin:{},
 	coins:{},
   },
@@ -95,8 +99,12 @@ const store = new Vuex.Store({
 	addInfo (state, info) { state.info = info, state.errorMessage = '' },
     addVersion (state, version) { state.version = version, state.errorMessage = '' },
     addTransactions (state, transactions) { state.transactions = transactions },
+	addListUnspent (state, listunspent) { state.listunspent = listunspent },
+	addListReceviedByAddress (state, listreceivedbyaddress) { state.listreceivedbyaddress = listreceivedbyaddress },
     addPrice (state, price) { state.price = price },
-    addSoftForks (state, softForks) { state.softForks = softForks },
+    addcfundStats (state, cfundStats) { state.cfundStats = cfundStats },
+	addSoftForks (state, softForks) { state.softForks = softForks },
+	addLatestVersion (state, latestVersion) { state.latestVersion = latestVersion },
     addPeers (state, peers) { state.peers = peers },
     addBlockchainInfo (state, blockchainInfo) { state.blockchainInfo = blockchainInfo },
     addNetworkInfo (state, networkInfo) { state.networkInfo = networkInfo },
@@ -136,7 +144,7 @@ const store = new Vuex.Store({
       const message=alias+"@"+aliasDomain;
 	  API.signMessage(address,message)
         .then(msg=>{arr["signmessage"]="You are owner this alias!";context.commit('saveAlias',arr);})
-        .catch(err => {arr["signmessage"]="You don't owner of this address.";context.commit('saveAlias',arr);})
+        .catch(err => {arr["signmessage"]="You are not the owner of this address.";context.commit('saveAlias',arr);})
     },
 	async registerAlias (context, arr) {
 		console.log("alias:"+arr["registeralias"]);
@@ -168,7 +176,7 @@ const store = new Vuex.Store({
 				console.log(error.response.config);
 			});
 			})
-        .catch(err => {arr["registersignmessage"]="You don't owner of this address";context.commit('saveAlias',arr);})
+        .catch(err => {arr["registersignmessage"]="You are not the owner of this address.";context.commit('saveAlias',arr);})
 	},
 	async getCoin(context) {
 		context.commit('addCoin', JSON.parse(API.getCoin()));
@@ -177,9 +185,7 @@ const store = new Vuex.Store({
 		context.commit('addCoins', coins);
     },
     async getVersion(context) {
-      API.getVersion()
-        .then(version => context.commit('addVersion', version))
-        .catch(err => context.commit('error', err))
+		context.commit('addVersion', API.getVersion());
     },
     async getInfo(context) {
       API.getInfo()
@@ -196,9 +202,24 @@ const store = new Vuex.Store({
         .then(softForks => context.commit('addSoftForks', softForks))
         .catch(err => context.commit('error', err))
     },
+	async getLatestVersion(context) {
+      API.getLatestVersion()
+        .then(latestVersion => context.commit('addLatestVersion', latestVersion))
+        .catch(err => context.commit('error', err))
+    },
     async getTransactions (context) {
       API.getTransactions()
         .then(transactions => context.commit('addTransactions', transactions))
+        .catch(err => context.commit('error', err))
+    },
+    async getListUnspent (context) {
+      API.getListUnspent()
+        .then(listunspent => context.commit('addListUnspent', listunspent))
+        .catch(err => context.commit('error', err))
+    },
+    async getListReceivedByAddress (context) {
+      API.getListReceivedByAddress()
+        .then(listreceivedbyaddress => context.commit('addListReceviedByAddress', listreceivedbyaddress))
         .catch(err => context.commit('error', err))
     },
     async getPeerInfo (context) {
@@ -234,6 +255,11 @@ const store = new Vuex.Store({
     async getProposals(context) {
       API.getProposals()
         .then(proposals => context.commit('addProposals', proposals))
+        .catch(err => context.commit('error', err))
+    },
+	async getCFundStats(context) {
+      API.getCFundStats()
+        .then(cfundstats => context.commit('addcfundStats', cfundstats))
         .catch(err => context.commit('error', err))
     },
     async getCommunitySiteProposals(context) {

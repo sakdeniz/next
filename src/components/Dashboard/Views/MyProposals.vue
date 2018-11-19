@@ -27,19 +27,34 @@
             <h4><span>{{proposal.desc}}</span></h4></div>
           <div class="card-body">
             <div class="card card-user"><img v-bind:src="proposal.image" /></div><span v-show="proposal.bAuthor" class="btn btn-fill btn-sm btn-primary pull-right">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</span><span style="margin-right:5px;" v-bind:class="proposal.classfeatured">&nbsp;{{proposal.textfeatured}}</span>
-            <div><i class="fa ion-trophy text-primary"></i>&nbsp;{{proposal.amount}} NAV</div>
-            <div><i class="fa fa-clock-o text-danger"></i>&nbsp;{{proposal.deadline}}</div>
-            <div><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}</div>
-            <div><br>
-              <div class='ui buttons tiny'>
-                <button class="ui button tiny gray">{{proposal.status}}</button>
-                <a target="_blank" class="ui button tiny blue" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash">View</a>
-              </div>
-              <div class="ui buttons tiny">
-                <button title="Yes" @click="proposalvote(proposal.hash,'yes')" class='ui button tiny green'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-                <button title="No" class="ui button tiny red" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-				<button title="Remove" @click="proposalvote(proposal.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
-			</div>
+     				<div class="row">
+
+  					<div class="col-md-12" style="margin-bottom:10px;">
+						<div class="ui label basic large" title="Proposal Status"><i class="icon ion-flag"></i>{{proposal.status}}</div>
+						<div class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{proposal.votingCycle}}</div>
+						<div class="ui label basic large" title="Proposal Duration"><i class="ion-calendar icon"></i>{{proposal.proposalDuration}}</div>
+					</div>
+					<div class="col-md-12" style="margin-bottom:10px;">
+						<a target="_blank" class="ui button small gray" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash"><i class='ion-android-open icon'></i>View</a>
+						<a target="_blank" class="ui button small gray" v-bind:href="'https://communityfund.nav.community/discussion/'+proposal.hash"><i class='ion-chatbubble-working icon'></i>Discuss</a>
+						<div class="ui violet label large" title="Requested Amount"><i class="ion-trophy icon"></i>{{proposal.amount.slice(0, -3)}} NAV</div>
+					</div>
+
+					<div class="col-md-12">
+						<button title="Vote Yes" @click="proposalvote(proposal.hash,'yes')" class='ui green basic button'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i> Yes</button>
+						<button title="Vote No" class="ui red basic button" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i> No</button>
+						<button title="Remove Vote" @click="proposalvote(proposal.hash, 'remove') " class='ui purple basic button'><i class='fa fa-close' aria-hidden='true'></i> Cancel</button>
+					</div>
+				</div>
+								<br/>
+				<div class="row">
+					<div class="col-md-6"><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}
+						<sui-progress color="green" :percent="proposal.yes_votes_proportion" progress/>
+					</div>
+					<div class="col-md-6"><i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}
+						<sui-progress color="red" :percent="proposal.no_votes_proportion" progress/>
+					</div>
+				</div>
 			<button v-if="proposal.status=='Accepted'" title="Create Payment Request" @click="paymentrequest(proposal.hash)" class='ui button tiny purple right floated'><i class='ion-plus' aria-hidden='true'></i> Create Payment Request</button>
 			<div class="ui segment" v-if="proposal.paymentRequests">
 				<a class="ui purple ribbon label">Payment Requests</a>
@@ -157,8 +172,9 @@ export default {
             var desc = "";
             var amount = "";
             var paymentAddress = "";
+			var votingCycle=0;
 			var paymentRequests=[];
-            var deadline = "";
+            var proposalDuration = "";
             var votesYes = "";
             var votesNo = "";
             var status = "";
@@ -183,30 +199,42 @@ export default {
               if (key2 == "description") desc = value2;
               if (key2 == "requestedAmount") amount = numberWithCommas(value2);
               if (key2 == "paymentAddress") paymentAddress = value2;
-              if (key2 == "deadline") deadline = moment.unix(value2).format("MM/DD/YYYY");
+              if (key2 == "proposalDuration") proposalDuration = secondsToDhms(value2);
               if (key2 == "votesYes") votesYes = value2;
               if (key2 == "votesNo") votesNo = value2;
+ 			  if (key2 == "votingCycle") votingCycle = value2;
               if (key2 == "status") {
                 nav_address_list.filter(function(v, k) {
                   if (v["address"] == paymentAddress) {
                     i++;
                     status = value2;
-                    if (status == "pending") status = "Pending";
-                    if (status == "accepted") status = "Accepted";
-                    if (status == "rejected") status = "Rejected";
+					if (status == "pending") status = "Pending";
+					if (status == "accepted") status = "Accepted";
+					if (status == "rejected") status = "Rejected";
+					if (status == "rejected waiting for end of voting period") status = "Rejected waiting for end of voting period";
+					if (status == "accepted waiting for enough coins in fund") status = "Accepted waiting for enough coins in fund";
+					//
+					var total_votes = votesYes + votesNo;
+					var yes_votes_proportion = Math.round((votesYes / total_votes) * 100, 2);
+					var no_votes_proportion = Math.round((votesNo / total_votes) * 100, 2);
+					if (!yes_votes_proportion) yes_votes_proportion = 0;
+					if (!no_votes_proportion) no_votes_proportion = 0;
                     array_proposals.push({
                       hash: hash,
                       desc: desc,
                       amount: amount,
                       paymentAddress: paymentAddress,
 					  paymentRequests: paymentRequests,
-                      deadline: deadline,
+                      proposalDuration: proposalDuration,
                       votesYes: votesYes,
                       votesNo: votesNo,
                       status: status,
                       image: image,
                       textfeatured: textfeatured,
-                      classfeatured: classfeatured
+                      classfeatured: classfeatured,
+                      yes_votes_proportion: yes_votes_proportion,
+                      no_votes_proportion: no_votes_proportion,
+					  votingCycle:votingCycle
                     });
                   }
                 });

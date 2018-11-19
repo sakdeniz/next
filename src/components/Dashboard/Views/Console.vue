@@ -42,7 +42,7 @@ export default {
   updated: function() {
 	var elem = document.getElementById('Console');
 	elem.scrollTop = elem.scrollHeight;
-	$('pre').each(function(i, block) {
+	$('pre code').each(function(i, block) {
   hljs.highlightBlock(block);
 });
   },
@@ -82,9 +82,9 @@ export default {
 		{
 			if (!res.data["error"])
 			{
-				vm.sConsole+="<i class='ion-arrow-up-c'></i>&nbsp;<code>" + moment().format("HH:mm:ss") + " " + command+"</code><br><pre>";
+				vm.sConsole+="<i class='ion-arrow-up-c'></i>&nbsp;<code>" + moment().format("HH:mm:ss") + " " + command+"</code><br><pre><code class='hljs json'>";
 				if (res.data=="[object Object]") vm.sConsole+=vm.jsonPretty(JSON.stringify(res.data)); else vm.sConsole+=res.data;
-				vm.sConsole+="<br><br></pre>";
+				vm.sConsole+="<br><br></code></pre>";
 			}
 			else
 			{
@@ -95,7 +95,7 @@ export default {
   }
 };
 $(window).resize(function(){
-    $('.log').css('height', $(window).height()-350);
+    $('.log').css('height', $(window).height()-375);
 });
 </script>
 <style>

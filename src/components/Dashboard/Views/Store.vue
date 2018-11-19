@@ -1,32 +1,37 @@
 <template>
 <div class="content">
-  <div class="container-fluid">
-    <h4 class="card-title"><i class="ion-bag"></i> Store</h4>
-    <div class="row">
-      <div class="ui link cards">
-        <div class="card" style="margin:10px;height:400px !important;" v-for="item in getStoreItems(items)">
-          <div>
-            <center>
-              <img style="width:auto;height:150px;" v-if="item.store_item_image!=''" v-bind:src="item.store_item_image" />
-              <img v-else style="width:auto;height:150px;" src="static/img/placeholder.png" />
-            </center>
-          </div>
-          <div class="content">
-            <h6 style="height:30px;overflow:hidden;">{{item.store_item_name}}</h6>
-            <div class="description" style="height:100px;overflow:hidden;">
-              {{item.store_item_description}}
-            </div>
-          </div>
-          <div class="extra content">
-            <span><i class="ion-person"></i>&nbsp;{{item.store_item_seller_name}}</span>
-          </div>
-          <div class="extra content">
-            <span class="right floated"><a class="ui purple tag label">{{item.store_item_price}} NAV</a></span>
-					<span><button class="ui green button " v-on:click='buy(item)'>Buy</button></button></span>
+	<div class="container-fluid">
+		<h4 class="card-title"><i class="ion-bag"></i> Store</h4>
+		<div class="row">
+			<div v-if="getStoreItems(items).length>0">
+				<div class="ui link cards">
+					<div class="card" style="margin:10px;height:400px !important;" v-for="item in getStoreItems(items)">
+						<div>
+							<center>
+							<img style="width:auto;height:150px;" v-if="item.store_item_image!=''" v-bind:src="item.store_item_image" />
+							<img v-else style="width:auto;height:150px;" src="static/img/placeholder.png" />
+							</center>
+						</div>
+						<div class="content">
+							<h6 style="height:30px;overflow:hidden;">{{item.store_item_name}}</h6>
+							<div class="description" style="height:100px;overflow:hidden;">
+								{{item.store_item_description}}
+							</div>
+						</div>
+						<div class="extra content">
+							<span><i class="ion-person"></i>&nbsp;{{item.store_item_seller_name}}</span>
+						</div>
+						<div class="extra content">
+							<span class="right floated"><a class="ui purple tag label">{{item.store_item_price}} NAV</a></span>
+							<span><button class="ui green button " v-on:click='buy(item)'>Buy</button></button></span>
+						</div>
+					</div>
 				</div>
 			</div>
-          </div>
-        </div>
+			<div v-else>
+				No products found in the store.
+			</div>
+		</div>
 	</div>
 </div>
 </template>

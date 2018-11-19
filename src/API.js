@@ -24,6 +24,18 @@ const getTransactions = () => {
   .then(response => response.data.reverse())
 }
 
+const getListUnspent = () => {
+  return axios.post(hostname + "listunspent", { rpcuser:rpcuser,token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
+const getListReceivedByAddress = () => {
+  return axios.post(hostname + "listreceivedbyaddress", { rpcuser:rpcuser,token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 const getPeerInfo = () => {
   return axios.post(hostname + "getpeerinfo", { rpcuser:rpcuser,token: token, rpcport: rpcport }, config)
   .then(handleError)
@@ -72,6 +84,12 @@ const getProposals = () => {
   .then(response => response.data)
 }
 
+const getCFundStats = () => {
+  return axios.post(hostname + "cfundstats", { rpcuser:rpcuser,token: token, rpcport: rpcport }, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 const getCommunitySiteNews = () => {
   return axios.post(hostname + "navcommunity-getnews", { rpcuser:rpcuser,token: token, rpcport: rpcport }, config)
   .then(handleError)
@@ -97,9 +115,7 @@ const getStoreItems = () => {
 }
 
 const getVersion = () => {
-  return axios.post(hostname + "getversion", { rpcuser:rpcuser,token: token, rpcport: rpcport }, config)
-  .then(handleError)
-  .then(response => response.data)
+  return urlParams.get('version');
 }
 
 const signMessage = (navaddress,message) => {
@@ -125,6 +141,12 @@ const getCommunitySoftForks = () => {
   .then(response => response.data)
 }
 
+const getLatestVersion = () => {
+  return axios.get("https://next.navcommunity.net/update/latest.php", {}, config)
+  .then(handleError)
+  .then(response => response.data)
+}
+
 function buyStoreItems (obj) {
   return axios.post(hostname + "navcommunity-buystoreitems", { rpcuser:rpcuser,token: token, rpcport: rpcport, store_item_id: obj["store_item_id"], store_item_name: obj["store_item_name"], store_item_price: obj["store_item_price"], store_item_payment_address: obj["store_item_payment_address"],name:obj["name"],surname:obj["surname"],country:obj["country"],address:obj["address"],city:obj["city"],state:obj["state"],zipcode:obj["zipcode"],phone:obj["phone"],email:obj["email"],notes:obj["notes"]}, config)
   .then(handleError)
@@ -134,6 +156,8 @@ function buyStoreItems (obj) {
 export {
   getCoin,
   getTransactions,
+  getListUnspent,
+  getListReceivedByAddress,
   getBlockchainInfo,
   getWalletInfo,
   getStakingInfo,
@@ -150,5 +174,7 @@ export {
   getCommunitySiteProposals,
   getCommunitySiteNews,
   getCommunitySiteGames,
-  getCommunitySoftForks
+  getCommunitySoftForks,
+  getLatestVersion,
+  getCFundStats
 }

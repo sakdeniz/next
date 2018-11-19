@@ -2,7 +2,7 @@
 <div class="content">
   <div class="container-fluid">
     <!-- !-->
-    <div class="row">
+	<div class="row">
       <div class="col-md-12 col-sm-12">
         <sui-dropdown icon="ion-navicon-round" class="labeled icon large violet" text="Menu" button floating>
           <sui-dropdown-menu>
@@ -27,6 +27,9 @@
             <sui-dropdown-item v-on:click="listproposals('pending')">Pending</sui-dropdown-item>
             <sui-dropdown-item v-on:click="listproposals('accepted')">Accepted</sui-dropdown-item>
             <sui-dropdown-item v-on:click="listproposals('accepted waiting for enough coins in fund')">Accepted, waiting for enough coins in fund</sui-dropdown-item>
+			<sui-dropdown-item v-on:click="listproposals('accepted waiting for end of voting period')">Accepted, waiting for end of voting period</sui-dropdown-item>
+			<sui-dropdown-item v-on:click="listproposals('rejected waiting for end of voting period')">Rejected, waiting for end of voting period</sui-dropdown-item>
+			<sui-dropdown-item v-on:click="listproposals('expired waiting for end of voting period')">Expired, waiting for end of voting period</sui-dropdown-item>
             <sui-dropdown-item v-on:click="listproposals('rejected')">Rejected</sui-dropdown-item>
           </sui-dropdown-menu>
         </sui-dropdown>
@@ -40,12 +43,59 @@
         <br><br>
       </div>
     </div>
-
     <div class="ui two column grid">
       <div class="column">
         <div class="ui segment">
-          <a class="ui red ribbon label">Overview</a>
-		            <table class="ui celled striped table">
+    <a class="ui red ribbon label">Overview</a>
+	<br/><br/>
+    <div class="ui top pointing attached menu">
+  <a class="item active" data-tab="first">Fund</a>
+  <a class="item" data-tab="second">Current Period</a>
+  <a class="item" data-tab="third">Consensus</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="first">
+  			<table class="ui celled striped table">
+  <thead>
+    <tr><th colspan="2">
+      Fund
+    </th>
+  </tr></thead>
+  <tbody>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Available in NAV
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.available)}} NAV</td>
+    </tr>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Available in USD
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_usd).toFixed(2))}} USD</td>
+    </tr>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Available in EUR
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_eur).toFixed(2))}} EURO</td>
+    </tr>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Available in BTC
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_btc).toFixed(2))}} BTC</td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Locked
+      </td>
+      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.locked)}} NAV</td>
+    </tr>
+	</tbody>
+</table>
+</div>
+<div class="ui bottom attached tab segment" data-tab="second">
+  	<table class="ui celled striped table">
   <thead>
     <tr><th colspan="2">
       Current Period
@@ -54,39 +104,39 @@
   <tbody>
 	<tr>
       <td>
-        <i class="ion-android-arrow-dropright"></i> Available
+        <i class="ion-android-arrow-dropright"></i> Starting Block Number
       </td>
-      <td class="right aligned collapsing">{{formatnumbers(cfund_available)}} NAV</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats.votingPeriod.starting">{{cfundStats.votingPeriod.starting}}</span></td>
     </tr>
     <tr>
       <td>
-        <i class="ion-android-arrow-dropright"></i> Locked
+        <i class="ion-android-arrow-dropright"></i> Ending Block Number
       </td>
-      <td class="right aligned collapsing">{{formatnumbers(cfund_locked)}} NAV</td>
-    </tr>
-	<tr>
-      <td>
-        <i class="ion-android-arrow-dropright"></i> Voting Period Start
-      </td>
-      <td class="right aligned collapsing">{{cfund_starting}}</td>
+      <td class="right aligned"><span v-if="cfundStats.votingPeriod.ending">{{cfundStats.votingPeriod.ending}}</span></td>
     </tr>
     <tr>
       <td>
-        <i class="ion-android-arrow-dropright"></i> Voting Period End 
+        <i class="ion-android-arrow-dropright"></i> Current Block Number
       </td>
-      <td class="right aligned">{{cfund_ending}}</td>
+      <td class="right aligned"><span v-if="cfundStats.votingPeriod.current">{{cfundStats.votingPeriod.current}}</span></td>
+    </tr>
+    <tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Remaining Blocks
+      </td>
+      <td nowrap class="right aligned"><span v-if="cfundStats.votingPeriod.current">{{cfundStats.votingPeriod.ending-cfundStats.votingPeriod.current}} ({{roundnumber((cfundStats.votingPeriod.ending-cfundStats.votingPeriod.current)*100/cfundStats.consensus.blocksPerVotingCycle)}}%)</span></td>
     </tr>
     <tr>
       <td>
         <i class="ion-android-arrow-dropright"></i> Voted Proposals
       </td>
-      <td class="right aligned">{{cfund_voted_proposals}}</td>
+      <td class="right aligned">{{cfundStats.votingPeriod.votedProposals.length}}</td>
     </tr>
     <tr>
       <td>
         <i class="ion-android-arrow-dropright"></i> Voted Payment Requests
       </td>
-      <td class="right aligned">{{cfund_voted_payment_requests}}</td>
+      <td class="right aligned">{{cfundStats.votingPeriod.votedPaymentrequests.length}}</td>
     </tr>
     <tr>
       <td>
@@ -103,192 +153,290 @@
   </tbody>
 </table>
 </div>
-</div>
-      <div class="column">
-        <div class="ui segment">
-          <a class="ui orange right ribbon label">Status</a>
-          <p></p>
-          <table class="ui celled striped table">
+<div class="ui bottom attached tab segment" data-tab="third">
+  			<table class="ui celled striped table">
   <thead>
     <tr><th colspan="2">
-      Proposals by Status
+      Consensus
     </th>
   </tr></thead>
   <tbody>
-    <tr>
+	<tr>
       <td>
-        <i class="ion-android-time"></i> Pending
+        <i class="ion-android-arrow-dropright"></i> Minimum Fee For Create a Proposal
       </td>
-      <td class="right aligned collapsing">{{array_proposals.filter(item => item.status=="Pending").length}}</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.proposalMinimalFee}}</span></td>
     </tr>
-    <tr>
+	<tr>
       <td>
-        <i class="ion-android-done-all"></i> Accepted
+        <i class="ion-android-arrow-dropright"></i> Blocks Per Voting Cycle
       </td>
-      <td class="right aligned">{{array_proposals.filter(item => item.status=="Accepted").length}}</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.blocksPerVotingCycle}}</span></td>
     </tr>
-    <tr>
+	<tr>
       <td>
-        <i class="ion-android-done"></i> Accepted waiting for enough coins in fund
+        <i class="ion-android-arrow-dropright"></i> Minimum Sum of Votes Per Voting Cycle
       </td>
-      <td class="right aligned">{{array_proposals.filter(item => item.status=="Accepted waiting for enough coins in fund").length}}</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.minSumVotesPerVotingCycle}}</span></td>
     </tr>
-    <tr>
+	<tr>
       <td>
-        <i class="ion-android-close"></i> Rejected
+        <i class="ion-android-arrow-dropright"></i> Maximum Count Voting Cycle / Proposals
       </td>
-      <td class="right aligned">{{array_proposals.filter(item => item.status=="Rejected").length}}</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.maxCountVotingCycleProposals}}</span></td>
     </tr>
-    <tr>
+	<tr>
       <td>
-        <i class="ion-android-delete"></i> Expired
+        <i class="ion-android-arrow-dropright"></i> Maximum Count Voting Cycle / Payment Requests
       </td>
-      <td class="right aligned">{{array_proposals.filter(item => item.status=="Expired").length}}</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.maxCountVotingCyclePaymentRequests}}</span></td>
     </tr>
-    <tr>
+	<tr>
       <td>
-        <i class="ion-android-add"></i> Total
+        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-success text-white">Accept</span> Proposals
       </td>
-      <td class="right aligned">{{array_proposals.length}}</td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesAcceptProposalPercentage)}}%</span></td>
     </tr>
-  </tbody>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-danger text-white">Reject</span> Proposals
+      </td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesRejectProposalPercentage)}}%</span></td>
+    </tr>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-success text-white">Accept</span> Payment Requests
+      </td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesAcceptPaymentRequestPercentage)}}%</span></td>
+    </tr>
+	<tr>
+      <td>
+        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-danger text-white">Reject</span> Payment Requests
+      </td>
+      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesRejectPaymentRequestPercentage)}}%</span></td>
+    </tr>
+</tbody>
 </table>
-
-          <div class="ui tag labels">
-            <div class="ui label gray" v-for="category in array_categories">{{category.name}}
-              <div class="detail">{{array_proposals.filter(item => item.category_name==category.name).length}}</div>
+</div>		  
+</div>
+</div>
+<div class="column">
+	<div class="ui segment">
+		<a class="ui orange right ribbon label">Status</a>
+		<p></p>
+          <table class="ui celled striped table">
+			<thead>
+				<tr>
+					<th colspan="2">
+						Proposals by Status
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<i class="ion-android-time"></i> Pending
+					</td>
+					<td class="right aligned collapsing">{{array_proposals.filter(item => item.status=="Pending").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-done-all"></i> Accepted
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="Accepted").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-done"></i> Accepted waiting for enough coins in fund
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="Accepted waiting for enough coins in fund").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-done"></i> Accepted waiting for end of voting period
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="accepted waiting for end of voting period").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-done"></i> Rejected waiting for end of voting period
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="rejected waiting for end of voting period").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-done"></i> Expired waiting for end of voting period
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="expired waiting for end of voting period").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-close"></i> Rejected
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="Rejected").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-delete"></i> Expired
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="Expired").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-android-add"></i> Total
+					</td>
+					<td class="right aligned">{{array_proposals.length}}</td>
+				</tr>
+			</tbody>
+		</table>
+        <div class="ui tag labels">
+			<div class="ui label gray" v-for="category in array_categories">{{category.name}}
+				<div class="detail">{{array_proposals.filter(item => item.category_name==category.name).length}}</div>
             </div>
             <div class="ui label gray">Uncategorized
               <div class="detail">{{array_proposals.filter(item => item.category_name=="").length}}</div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <h4>Community Proposals</h4>
-    <div v-if='search'>Search : {{search}}</div>
-    <div class="row">
-      <div v-for="proposal in array_proposals" v-if="!cTableView && (!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1)" class="col-md-6 col-sm-6">
-        <div class="card">
-          <div class="card-header">
-            <h6><span>{{proposal.desc}}</span></h6>
-            <div>
-              <button role="button" v-show="proposal.bCategory" class="ui icon left labeled button"><i class="ion-bookmark icon icon"></i>{{proposal.category_name}}</button>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="card card-user"><img v-bind:src="proposal.image" /></div>
-            <span v-show="proposal.bAuthor" class="ui purple button pull-right">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</span>
-            <span style="margin-right:5px;" v-bind:class="proposal.classfeatured">&nbsp;{{proposal.textfeatured}}</span>
-            <div><i class="fa ion-trophy text-primary"></i>&nbsp;{{proposal.amount}} NAV</div>
-            <div><i class="fa fa-clock-o text-danger"></i>&nbsp;{{proposal.deadline}}</div>
-            <div class="row">
-              <div class="col-md-6"><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}
-                <sui-progress color="green" :percent="proposal.yes_votes_proportion" progress/>
-              </div>
-              <div class="col-md-6"><i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}
-                <sui-progress color="orange" :percent="proposal.no_votes_proportion" progress/>
-              </div>
-            </div>
-            <div>
-              <div class="row">
-			  <div class="col-md-12">
-              <div class='form-group ui buttons tiny'>
-                <button class="ui button tiny gray">{{proposal.status}}</button>
-                <a target="_blank" class="ui button tiny blue" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash">View</a>
-              </div>
-			  </div>
-			  </div>
-              <div class="row" style="margin-top:5px">
-			  <div class="col-md-12">
-			  <div class="ui buttons tiny">
-                <button title="Vote Yes" @click="proposalvote(proposal.hash,'yes')" class='ui button tiny green'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-                <button title="Vote No" class="ui button tiny red" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-				<button title="Remove Vote" @click="proposalvote(proposal.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
+		</div>
+	</div>
+</div>
+</div>
+
+
+<h4>Community Proposals</h4>
+<div v-if='search'>Search : {{search}}</div>
+<div class="row">
+	<div v-for="proposal in array_proposals" v-if="!cTableView && (!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1)" class="col-md-6 col-sm-6">
+		<div class="card">
+			<div class="card-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="card card-user"><img v-bind:src="proposal.image" /></div>
+						<div v-html="linkify(proposal.desc)" style="margin-bottom:20px">
+							<div>
+								<div v-show="proposal.bCategory" class="ui gray label large" style="margin-top:10px;"><i class="ion-pricetag icon"></i>{{proposal.category_name}}</div>
+							</div>
+						</div>
+						<div v-show="proposal.bAuthor" class="ui purple button pull-right" style="margin-bottom:10px;">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</div>
+						<div style="margin-right:5px;margin-bottom:10px;" v-bind:class="proposal.classfeatured">&nbsp;{{proposal.textfeatured}}</div>
+					</div>
+				</div>
+				<br/>
+				<div class="row">
+					<div class="col-md-12" style="margin-bottom:10px;">
+						<div class="ui label basic large" title="Proposal Status"><i class="icon ion-flag"></i>{{proposal.status}}</div>
+						<div class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{proposal.votingCycle}}</div>
+						<div class="ui label basic large" title="Proposal Duration"><i class="ion-calendar icon"></i>{{proposal.proposalDuration}}</div>
+					</div>
+					<div class="col-md-12">
+						<a target="_blank" class="ui button small gray" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash"><i class='ion-android-open icon'></i>View</a>
+						<a target="_blank" class="ui button small gray" v-bind:href="'https://communityfund.nav.community/discussion/'+proposal.hash"><i class='ion-chatbubble-working icon'></i>Discuss</a>
+						<div class="ui violet label large" title="Requested Amount"><i class="ion-trophy icon"></i>{{proposal.amount.slice(0, -3)}} NAV</div>
+					</div>
+				</div>
+				<br/>
+				<div class="row">
+					<div class="col-md-6"><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}
+					    <sui-progress size="tiny" color="green" state="active" :percent="proposal.yes_votes_proportion" :label="'%' + proposal.yes_votes_proportion"/>
+					</div>
+					<div class="col-md-6"><i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}
+					    <sui-progress size="tiny" color="red" state="active" :percent="proposal.no_votes_proportion" :label="'%' + proposal.no_votes_proportion"/>
+					</div>
+					<div class="col-md-12" style="margin-top:10px;" title="Minimum Sum of Votes Per Voting Cycle">
+					    <sui-progress size="tiny" color="violet" state="active" :percent="(((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2)" :label="'%' + (((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2) + ' (' + (proposal.votesYes+proposal.votesNo) + '/' + cfundStats.consensus.minSumVotesPerVotingCycle + ')'"/>
+					</div>
+				</div>
+				<div>
+					<div class="row" style="margin-top:20px">
+						<div class="col-md-12">
+							<button title="Vote Yes" @click="proposalvote(proposal.hash,'yes')" class='ui green basic button'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i> Yes</button>
+							<button title="Vote No" class="ui red basic button" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i> No</button>
+							<button title="Remove Vote" @click="proposalvote(proposal.hash, 'remove') " class='ui purple basic button'><i class='fa fa-close' aria-hidden='true'></i> Cancel</button>
+							<div v-show="proposal.status=='Accepted'" class="ui labeled button tiny right floated" tabindex="0">
+							<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
+								<a class="ui basic purple left pointing label">
+									{{proposal.totaldonationamount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.totaldonation}}
+								</a>
+							</div>
+							<div class="ui segment" v-if="proposal.paymentRequests">
+								<a class="ui purple ribbon label">Payment Requests</a>
+								<table class="ui striped table">
+									<thead>
+										<tr>
+											<th nowrap>Request ID</th>
+											<th nowrap>Amount (NAV)</th>
+											<th nowrap>Status</th>
+										</tr>
+									</thead>
+									<tbody>
+										<template v-for="paymentRequest in proposal.paymentRequests">
+											<tr>
+												<td nowrap style="width:100%">{{paymentRequest.description}}</td>
+												<td nowrap>{{paymentRequest.requestedAmount}}</td>
+												<td nowrap>{{paymentRequest.status}}</td>
+											</tr>
+											<tr>
+												<td colspan='6'>
+													<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
+													<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
+													<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
+													<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
+													<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
+												</td>
+											</tr>
+										</template>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-			<div v-show="proposal.status=='Accepted'" class="ui labeled button tiny right floated" tabindex="0">
-				<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
-					<a class="ui basic purple left pointing label">
-						{{proposal.totaldonationamount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.totaldonation}}
-					</a>
-			</div>
-			<div class="ui segment" v-if="proposal.paymentRequests">
-				<a class="ui purple ribbon label">Payment Requests</a>
-				<table class="ui striped table">
-				<thead>
-					<tr>
-						<th nowrap>Request ID</th>
-						<th nowrap>Amount (NAV)</th>
-						<th nowrap>Status</th>
-						</tr>
-					</thead>
-					<tbody>
-					<template v-for="paymentRequest in proposal.paymentRequests">
-					<tr>
-						<td nowrap style="width:100%">{{paymentRequest.description}}</td>
-						<td nowrap>{{paymentRequest.requestedAmount}}</td>
-						<td nowrap>{{paymentRequest.status}}</td>
-					</tr>
-					<tr>
-					<td colspan='6'>
-						<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
-						<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-						<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-						<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
-						<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
-					</td>
-					</tr>
-					</template>
-					</tbody>
-					</table>
-			</div>
-			</div>
-			</div>
-		</div></div></div></div></div>
-		<!-- !-->
-		<table class="ui padded striped table " v-if="cTableView ">
-		<thead>
-		<tr>
-		<th></th>
+		</div>
+	</div>
+</div>
+<table class="ui padded striped table " v-if="cTableView ">
+<thead>
+	<tr>
+		<th style="width:100px"></th>
 		<th>Title</th>
 		<th>Vote</th>
 		<th>Status</th>
 		<th>Amount (NAV)</th>
-		<th>Deadline</th>
+		<th>Duration</th>
 		<th nowrap>Yes Votes</th>
 		<th nowrap>No Votes</th>
 		<th>Category</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr v-for="proposal in array_proposals" v-if="!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1 ">
-		<td><a target="_blank " class="ui button tiny purple " v-bind:href=" 'http://navcommunity.net/view-proposal/'+proposal.hash ">View</a></td>
-		<td>{{proposal.desc}}<div><span v-show="proposal.bAuthor " class="ui purple button pull-right ">&nbsp;<i class="ion-person text-default "></i>&nbsp;{{proposal.author}}</span><span style="margin-right:5px; " v-bind:class="proposal.classfeatured ">&nbsp;{{proposal.textfeatured}}</span></div></td>
+	</tr>
+</thead>
+<tbody>
+	<tr v-for="proposal in array_proposals" v-if="!search || proposal.desc.toLowerCase().indexOf(search.toLowerCase())!=-1 ">
 		<td>
-		<div class="btn-group ">
-		<button title="Yes " @click="proposalvote(proposal.hash, 'yes')" class='ui button tiny green'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-		<button title="No " class="ui button tiny orange " @click="proposalvote(proposal.hash,'no') ""><i class="fa fa-thumbs-o-down" aria-hidden="true"></i></button>
-		<button title="Remove" @click="proposalvote(proposal.hash,'remove')" class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button></div>
-              </td>
-              <td>{{proposal.status}}</td>
-              <td>{{proposal.amount}}</td>
-              <td>{{proposal.deadline}}</td>
-              <td>{{proposal.votesYes}}
-                <sui-progress color="green" :percent="proposal.yes_votes_proportion" progress/>
-              </td>
-              <td>{{proposal.votesNo}}
-                <sui-progress color="orange" :percent="proposal.no_votes_proportion" progress/>
-              </td>
-              <td>{{proposal.category_name}}</td>
-              </tr>
-              </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+		<a target="_blank" class="ui button small gray" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash" style="margin-bottom:5px;"><i class='ion-android-open icon'></i>View</a>
+		<a target="_blank" class="ui button small gray" v-bind:href="'https://communityfund.nav.community/discussion/'+proposal.hash"><i class='ion-chatbubble-working icon'></i>Discuss</a>
+		</td>
+		<td><div v-html="linkify(proposal.desc)"></div><div><span v-show="proposal.bAuthor " class="ui purple button pull-right" style="margin-top:10px;">&nbsp;<i class="ion-person text-default "></i>&nbsp;{{proposal.author}}</span><span style="margin-right:5px;margin-top:10px;" v-bind:class="proposal.classfeatured ">&nbsp;{{proposal.textfeatured}}</span></div></td>
+		<td>
+			<div class="btn-group ">
+			<button title="Yes " @click="proposalvote(proposal.hash, 'yes')" class='ui green basic button'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
+			<button title="No " class="ui red basic button" @click="proposalvote(proposal.hash,'no') ""><i class="fa fa-thumbs-o-down" aria-hidden="true"></i></button>
+			<button title="Remove" @click="proposalvote(proposal.hash,'remove')" class='ui purple basic button'><i class='fa fa-close' aria-hidden='true'></i></button></div>
+		</td>
+		<td>{{proposal.status}}</td>
+		<td>{{proposal.amount.slice(0, -3)}}</td>
+		<td>{{proposal.proposalDuration}}</td>
+		<td>{{proposal.votesYes}}
+			<sui-progress color="green" :percent="proposal.yes_votes_proportion" progress/>
+		</td>
+		<td>{{proposal.votesNo}}
+			<sui-progress color="red" :percent="proposal.no_votes_proportion" progress/>
+		</td>
+		<td>{{proposal.category_name}}</td>
+	</tr>
+</tbody>
+</table>
+</div>
+</div>
 </template>
-
 <script>
 import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
 import StatsCard from 'src/components/UIComponents/Cards/StatsCard.vue'
@@ -327,6 +475,8 @@ export default {
   computed: {
     ...mapState({
       info: "info",
+	  cfundStats: "cfundStats",
+      price: "price"
     })
   },
   data: function() {
@@ -346,13 +496,26 @@ export default {
   },
   created: function() {
     this.getInfo();
+	this.getCFundStats();
 	this.listproposals("all");
+	this.getPrice();
+  },
+  mounted: function() {
+	$('.menu .item').tab();
   },
   methods: {
     ...mapActions({
       getInfo: "getInfo",
+	  getCFundStats: "getCFundStats",
+      getPrice: "getPrice"
     }),
-    formatnumbers: function(n) {
+	roundnumber: n => {
+      if (!n) {
+        return "0.00"
+      }
+	  return Math.round(n).toFixed(2);
+    },
+	formatnumbers: function(n) {
 	  if (n==undefined) return;
       var parts = n.toString().split(".");
       return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
@@ -419,30 +582,29 @@ export default {
 		}
       });
 	},
+	linkify:function(inputText) {
+    var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+    //URLs starting with http://, https://, or ftp://
+    replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    replacedText = inputText.replace(replacePattern1, '<a title="Open Link on Browser" class="ui button tiny gray" href="$1" target="_blank" style="margin-top:5px;"><i class="ion-android-open icon"></i>&nbsp;$1</a>');
+
+    //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+    //Change email addresses to mailto:: links.
+    replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+    replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+    return replacedText;
+	},
     listproposals: function(filter, proposal_category_id) {
       var array_proposals_remote = [];
       var array_proposals = [];
-      var cfund_available = "";
-      var cfund_locked = "";
-      var cfund_starting = "";
-      var cfund_ending = "";
-      var cfund_voted_proposals = "";
-      var cfund_voted_payment_requests = "";
       let vm = this;
       vm.array_proposals = [];
       vm.array_categories = [];
-      axios.post(window.hostname + 'cfundstats', {
-        rpcuser: window.rpcuser,
-		token: window.token,
-        rpcport: window.rpcport
-      }, window.config).then(function(res) {
-        vm.cfund_available = jsonQ(res.data).pathValue(["funds", "available"]);
-        vm.cfund_locked = jsonQ(res.data).pathValue(["funds", "locked"]);
-        vm.cfund_starting = jsonQ(res.data).pathValue(["votingPeriod", "starting"]);
-        vm.cfund_ending = jsonQ(res.data).pathValue(["votingPeriod", "ending"]);
-        vm.cfund_voted_proposals = jsonQ(res.data).pathValue(["votingPeriod", "votedProposals"]).length;
-        vm.cfund_voted_payment_requests = jsonQ(res.data).pathValue(["votingPeriod", "votedPaymentrequests"]).length;
-      });
       axios.post(window.hostname + 'listproposals', {
         rpcuser: window.rpcuser,
 		token: window.token,
@@ -476,15 +638,18 @@ export default {
           //console.log("Return:" + res.data)
           jsonQ.each(res.data, function(key, value) {
             var hash = "";
+			var blockHash = "";
             var cls = "";
             var icon = "";
             var desc = "";
             var amount = "";
             var paymentAddress = "";
 			var paymentRequests=[];
-            var deadline = "";
+            var proposalDuration = "";
             var votesYes = "";
             var votesNo = "";
+			var votingCycle=0;
+			var state="";
             var status = "";
             var image = "static/img/placeholder.png";
             var textfeatured = "";
@@ -544,12 +709,14 @@ export default {
                   }
                 }
               }
-              if (key2 == "description") desc = value2;
+			  if (key2 == "blockHash") blockHash = value2;
+              if (key2 == "description")	desc = value2;
               if (key2 == "requestedAmount") amount = numberWithCommas(value2);
               if (key2 == "paymentAddress") paymentAddress = value2;
-              if (key2 == "deadline") deadline = moment.unix(value2).format("MM/DD/YYYY");
+              if (key2 == "proposalDuration") proposalDuration = secondsToDhms(value2);
               if (key2 == "votesYes") votesYes = value2;
               if (key2 == "votesNo") votesNo = value2;
+			  if (key2 == "votingCycle") votingCycle = value2;
               if (key2 == "status") {
                 var bAdd = false;
                 status = value2;
@@ -570,13 +737,15 @@ export default {
                 if (!no_votes_proportion) no_votes_proportion = 0;
                 if (bAdd) vm.array_proposals.push({
                   hash: hash,
+				  blockHash: blockHash,
                   desc: desc,
                   amount: amount,
                   paymentAddress: paymentAddress,
 				  paymentRequests: paymentRequests,
-                  deadline: deadline,
+                  proposalDuration: proposalDuration,
                   votesYes: votesYes,
                   votesNo: votesNo,
+				  votingCycle: votingCycle,
                   status: status,
                   image: image,
                   textfeatured: textfeatured,

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>NEXT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link href="plugins/semantic/semantic.min.css" rel="stylesheet" type="text/css" />
+<link href="plugins/ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<script type="text/javascript" src="plugins/vuejs/vue.min.js"></script>
+<script>
+var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82acc0a523'};
+</script>
+</head>
+<body>
+<div id="app">
+<div class="row">
+<div v-if="step==0" class="hero is-primary" style="height:100vh;background-image: linear-gradient( 135deg, #3B2667 10%, #BC78EC 100%);display: table; width:100%;">
+	<div style="display: table-cell; vertical-align: middle;">
+	<svg class="hero-bg"></svg>
+		<center><h1 class="logo-text-big">NEXT</h1></center>
+		<div style="margin-top:5px;text-align:center">
+			<center>
+			<img class="ui tiny image" v-bind:src=getlogo(coins['Coins'][c_coin][0].logo)>
+			<br/><br/><br/>
+			<button class="ui labeled icon button huge blue" v-on:click="start()">Start Wallet<i class="right chevron icon"></i></button><br/><br/><br/>
+			<button class="ui labeled icon button large teal" v-on:click="change_asset()" style="margin-left:10px;">Change Asset<i class="right ion-navicon-round icon"></i></button>
+			<button class="ui labeled icon button large violet" v-on:click="settings()" style="margin-left:10px;">Settings<i class="right cog icon"></i></button>
+			<button class="ui labeled icon button large violet" v-on:click="help()" style="margin-left:10px;">Help<i class="right help icon"></i></button>
+			</center>
+		</div>
+	</div>
+</div>
+
+<div class="top-header" v-else>
+  <div class="left">
+    <h2>Welcome</h2>
+	<p>
+	<span v-if="step==1">{{coin.name}}</span>
+	<span v-if="step==1 && !coin">Please choose an asset...</span>
+	<span v-if="step==2">Settings</span>
+	<span v-if="step==3">Help</span>
+	</p>
+  </div>
+  <div class="right">
+    <h1 class="logo-text">NEXT</h1>
+  </div>
+</div>
+</div>
+
+<div v-if="step==1" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<div class="ui middle aligned selection list" style="padding-left:20px;padding-right:20px;padding-top:20px;width: 100%;height: 430px; overflow-y: scroll;border:1px solid #dedede">
+  <div class="item" v-for="(v, k, i) in coins['Coins']" v-on:click="select(v[0],k)">
+    <img class="ui avatar image" v-bind:src=getlogo(v[0].logo)>
+    <div class="content">
+      <div class="header">{{v[0].name}}</div>
+	  {{v[0].description}}
+    </div>
+  </div>
+</div>
+<div style="margin-top:25px;text-align:center" v-if="coin">
+<a class="ui button labeled gray icon big" v-on:click="home()"><i class="ion-arrow-left-c icon"></i>Back</a>
+<a class="ui button labeled violet icon big" v-on:click="start()"><i class="ion-arrow-right-c icon"></i>Start Wallet</a>
+</div>
+</div>
+
+<div v-if="step==2" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<h1>Settings</h1>
+<div class="ui form" style="padding-left:20px;padding-right:20px;padding-top:20px;width: 100%;">
+<label>Choose your application update preference</label>
+  <div class="grouped fields">
+    <div class="field">
+      <div class="ui radio checkbox large">
+        <input name="opt1" checked="checked" type="radio" value="1" v-model="update_preference" v-on:change="updatePreference(1)"/>
+        <label>Auto Update</label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="ui radio checkbox">
+        <input name="opt1" type="radio" value="2" v-model="update_preference" v-on:change="updatePreference(2)"/>
+        <label>Ask Me</label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="ui radio checkbox">
+        <input name="opt1" type="radio" value="3" v-model="update_preference" v-on:change="updatePreference(3)"/>
+        <label>Never</label>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="ui form" style="padding-left:20px;padding-right:20px;padding-top:20px;width: 100%;">
+<label>Choose your application daemon update preference</label>
+  <div class="grouped fields">
+    <div class="field">
+      <div class="ui radio checkbox large">
+        <input name="aopt1" checked="checked" type="radio" value="1" v-model="update_daemon_preference" v-on:change="updateDaemonPreference(1)"/>
+        <label>Auto Update</label>
+      </div>
+    </div>
+    <div class="field">
+      <div class="ui radio checkbox">
+        <input name="aopt1" type="radio" value="2" v-model="update_daemon_preference" v-on:change="updateDaemonPreference(2)"/>
+        <label>Never Update</label>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="height:150px"></div>
+<a class="ui button labeled gray icon big" v-on:click="home()"><i class="ion-arrow-left-c icon"></i>Back</a>
+</div>
+<div v-if="step==3" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<h1>Help</h1>
+<div><a class="ui button labeled icon" href="javascript:confirmReindex();"><i class="ion-wrench icon"></i>Try repair wallet with '-reindex' argument</a></div>
+<div style="margin-top:5px"><a class="ui button labeled icon" href="javascript:confirmReindexChainstate();"><i class="ion-wrench icon"></i>Try repair wallet with '-reindex-chainstate' argument</a></div>
+<div style="margin-top:5px"><a class="ui button labeled icon" href="javascript:confirmResetData();"><i class="ion-trash-a icon"></i>Delete all Blockchain data</a></div>
+<div style="margin-top:5px"><a class="ui button labeled icon" href="javascript:confirmResetDataAndBootstrap();"><i class="ion-trash-a icon"></i>Delete all Blockchain data & Bootstrap From URL</a></div>
+<div style="margin-top:5px"><a class="ui button labeled icon" href="javascript:openDataFolder();"><i class="ion-folder icon"></i>Open Data Folder</a></div>
+<div style="margin-top:5px"><a class="ui button labeled icon" href="javascript:confirmResetNextSettings();"><i class="ion-refresh icon"></i>Reset NEXT Settings</a></div>
+<br/>
+<a class="ui button labeled gray icon big" v-on:click="home()"><i class="ion-arrow-left-c icon"></i>Back</a>
+</div>
+</div>
+</div>
+</body>
+<script type="text/javascript">
+var app = new Vue({
+  el: '#app',
+  data: {
+    step:0,
+	update_preference:1,
+	update_daemon_preference:1,
+    coins:"",
+	coin:"",
+	c_coin:"",
+	coinkey:""
+  },
+  created: function() {
+	const urlParams=new URLSearchParams(window.location.search);
+	this.c_coin=urlParams.get('coin');
+	this.coinkey=urlParams.get('coin');
+	this.coins=JSON.parse(urlParams.get('coins'));
+	this.coin=this.coins["Coins"][this.c_coin][0];
+	this.update_preference=urlParams.get('update_preference');
+	this.update_daemon_preference=urlParams.get('update_daemon_preference');
+	/*this.coins={
+    "Coins":{
+        "NAVCOIN":
+		[
+            {
+				"name":"NAVCoin",
+				"symbol":"NAV",
+				"icon_class":"cc NAV-alt",
+				"logo":"static/img/coins/nav.png",
+				"url":"https://navcoin.org",
+				"description":"Proof of Stake, Private Payment, Staking, Community Fund",
+				"cmc_symbol":"nav-coin",
+				"qrcode_prefix":"navcoin",
+				"config_file":"navcoin.conf",
+				"data_dir_windows":"NavCoin4",
+				"data_dir_osx":"NavCoin4",
+				"data_dir_linux":".navcoin4",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"navcoind.exe",
+				"daemon_file_osx":"navcoind",
+				"daemon_file_linux":"navcoind",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"1",
+				"bool_support_staking":"1",
+				"bool_support_community_fund":"1",
+				"bool_support_open_alias":"1",
+				"bootstrap_file_url_mainnetx":"https://nav.nyc3.digitaloceanspaces.com/bootstrap/mainnet/bootstrap-navcoin-4.2.1_mainnet.tar",
+				"bootstrap_file_url_mainnet":"http://localhost/bootstrap/bootstrap-navcoin-4.2.1_mainnet.tar",
+				"bootstrap_file_url_testnet":"https://navcommunity.net/bootstrap/testnet.tar",
+				"social_youtube_url":"https://www.youtube.com/channel/UCjDs4JceVSsaeCyvkA9cWCg",
+				"social_facebook_url":"https://www.facebook.com/navcoin",
+				"social_twitter_url":"https://www.twitter.com/navcoin",
+				"social_github_url":"https://www.github.com/navcoin",
+				"social_reddit_url":"https://www.reddit.com/r/NavCoin/",
+				"social_instagram_url":"https://www.instagram.com/navcore",
+				"block_explorers":
+				{
+					"CryptoID":
+					{
+						"name":"CryptoID",
+						"url":"https://chainz.cryptoid.info/nav/"
+					},
+					"NavExplorer":
+					{
+						"name":"NavExplorer",
+						"url":"https://navexplorer.com"
+					}
+				}
+			}
+        ],
+		"PIVX":
+		[
+            {
+				"name":"PIVX",
+				"symbol":"PIVX",
+				"icon_class":"cc PIVX",
+				"cmc_symbol":"pivx",
+				"qrcode_prefix":"pivx",
+				"logo":"static/img/coins/pivx.png",
+				"url":"https://pivx.org",
+				"description":"Proof of Stake, Private Payment, Staking",
+				"config_file":"pivx.conf",
+				"data_dir_windows":"Pivx",
+				"data_dir_osx":"Pivx",
+				"data_dir_linux":".pivx",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"pivxd.exe",
+				"daemon_file_osx":"pivxd",
+				"daemon_file_linux":"pivxd",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"LITECOIN":
+		[
+            {
+				"name":"Litecoin",
+				"symbol":"LTC",
+				"icon_class":"cc LTC-alt",
+				"cmc_symbol":"litecoin",
+				"qrcode_prefix":"litecoin",
+				"logo":"static/img/coins/ltc.png",
+				"url":"https://litecoin.org",
+				"description":"Proof of Work, Mining Reward",
+				"config_file":"litecoin.conf",
+				"data_dir_windows":"Litecoin",
+				"data_dir_osx":"Litecoin",
+				"data_dir_linux":".litecoin",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"litecoind.exe",
+				"daemon_file_osx":"litecoind",
+				"daemon_file_linux":"litecoind",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ],
+		"PARTICL":
+		[
+            {
+				"name":"PARTICL",
+				"symbol":"PART",
+				"icon_class":"cc PART",
+				"cmc_symbol":"PARTICL",
+				"qrcode_prefix":"PARTICL",
+				"logo":"static/img/coins/part.png",
+				"url":"https://particl.io",
+				"description":"Proof of Stake, Private Payment, Staking",
+				"config_file":"particl.conf",
+				"data_dir_windows":"Particl",
+				"data_dir_osx":"Particl",
+				"data_dir_linux":".particl",
+				"testnet_dir":"testnet3",
+				"daemon_file_windows":"particld.exe",
+				"daemon_file_osx":"particld",
+				"daemon_file_linux":"particld",
+				"rpc_port_mainnet":"44444",
+				"rpc_port_testnet":"44445",
+				"bool_anon_send":"0",
+				"bool_support_staking":"0",
+				"bool_support_community_fund":"0",
+				"bool_support_open_alias":"0",
+				"bootstrap_file_url_mainnet":"",
+				"bootstrap_file_url_testnet":"",
+				"social_youtube_url":"",
+				"social_facebook_url":"",
+				"social_twitter_url":"",
+				"social_github_url":"",
+				"social_reddit_url":"",
+				"social_instagram_url":""
+			}
+        ]
+    }
+}*/
+  },
+  methods: {
+      updatePreference: function(up) {
+		console.log("next:update_preference_m:"+this.update_preference);
+	},
+    updateDaemonPreference: function(up) {
+		console.log("next:update_daemon_preference_m:"+this.update_daemon_preference);
+	},
+	select:function(coin,coinkey)
+	{
+		console.log(coin);
+		console.log(coinkey);
+		let vm=this;
+		vm.coin=coin;
+		vm.coinkey=coinkey;
+		vm.c_coin=coinkey;
+	},
+	home:function()
+	{
+		let vm=this;
+		vm.step=0;
+	},
+	change_asset:function()
+	{
+		let vm=this;
+		vm.step=1;
+	},
+	settings:function()
+	{
+		let vm=this;
+		vm.step=2;
+	},
+	help:function()
+	{
+		let vm=this;
+		vm.step=3;
+	},
+	start:function()
+	{
+		let vm=this;
+		console.log("next:coin_m:"+vm.coinkey);
+	},
+	getlogo: function(logo) {
+		return "../"+logo;
+	}}
+})
+</script>
+</html>
+<style>
+  @font-face {
+  font-family: 'neo';
+  src: url('https://next.navcommunity.net/fonts/neo-latina.ttf');
+}
+
+
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.logo-text { font-family: 'neo';font-size:60pt;font-weight:normal;}
+.logo-text-big { font-family: 'neo';font-size:120pt;font-weight:normal;}
+body
+{
+	margin:0px;
+	background:#ffffff;
+	-webkit-user-select: none;
+}
+.info
+{
+	color:#ffffff;
+	font-size:12pt;
+	line-height:20px;
+}
+
+.info2
+{
+	color:#ffffff;
+	font-size:12pt;
+	line-height:20px;
+}
+
+.top-header
+{
+    padding: 20px;
+    height: 100px;
+	color:#ffffff;
+	background-image: linear-gradient( 135deg, #9F44D3 10%, #3B2667 100%);
+}
+
+.icn
+{
+	font-size:30pt;
+	margin-right:10px;
+	min-width:40px;
+	display:inline-block;
+}
+
+.left
+{
+    float: left;
+    color:#ffffff;
+}
+
+.right
+{
+    float: right;
+	color:#ffffff;
+	margin-top:-17px;
+}
+
+h1
+{
+	color:#ffffff;
+}
+
+.terms_heading
+{
+	font-weight:bold;
+	font-size:12pt;
+}
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.hero.is-primary {
+    background-color: #4608ad;
+    color: #fff;
+}
+
+.hero {
+}
+
+.hero-nav {
+    flex-grow: 1;
+    flex-shrink: 0;
+    padding: 1.5rem 0;
+}
+
+.hero {
+    align-items: stretch;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.hero .hero-bg {
+    left: 0;
+    height: 500px;
+    opacity: .2;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+</style>
+<script>
+function openDataFolder()
+{
+	console.log('next:open-data-folder');
+}
+function confirmResetNextSettings()
+{
+	swal({title: 'Are you sure?',html: "NEXT settings will be reset.",type: 'warning',showCancelButton: true,confirmButtonColor: '#3085d6',cancelButtonColor: '#d33',confirmButtonText: 'Yes'}).then((result) => {if (result.value) {console.log('next:reset-next-settings');}});
+}
+function confirmResetData()
+{
+	swal({title: 'Are you sure?',html: "All blockchain data <u>except your wallet file</u> will be deleted.<br/><br/>The blockchain files will be sync again when the wallet restarts.",type: 'warning',showCancelButton: true,confirmButtonColor: '#3085d6',cancelButtonColor: '#d33',confirmButtonText: 'Yes, delete it!'}).then((result) => {if (result.value) {console.log('next:reset-data');}});
+}
+function confirmResetDataAndBootstrap()
+{
+	swal({title: 'Are you sure?',html: "All blockchain data <u>except your wallet file</u> will be deleted.<br/><br/>The blockchain files will be download and bootstrap from URL when the wallet restarts.",type: 'warning',showCancelButton: true,confirmButtonColor: '#3085d6',cancelButtonColor: '#d33',confirmButtonText: 'Yes, delete it!'}).then((result) => {if (result.value) {console.log('next:reset-data-bootstrap');}});
+}
+function confirmReindex()
+{
+	swal({title: 'Are you sure?',text: "Reindex process may take a long time",type: 'warning',showCancelButton: true,confirmButtonColor: '#3085d6',cancelButtonColor: '#d33',confirmButtonText: 'Yes'}).then((result) => {if (result.value) {console.log('next:reindex');}});
+}
+function confirmReindexChainstate()
+{
+	swal({title: 'Are you sure?',text: "Reindex Chainstate process may take a long time",type: 'warning',showCancelButton: true,confirmButtonColor: '#3085d6',cancelButtonColor: '#d33',confirmButtonText: 'Yes'}).then((result) => {if (result.value) {console.log('next:reindex-chainstate');}});
+}
+</script>
+<script src="plugins/chainanimation/chainanimation.js"></script>

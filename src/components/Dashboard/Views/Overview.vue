@@ -8,7 +8,18 @@
         <div class="ui segment">
           <a class="ui red ribbon label"><i style="font-size:2em;" class="ion-android-wifi"></i></a>
 			<sui-dropdown icon="ion-network" class="labeled icon twitter tiny button floating">
-				{{blockchainInfo.chain==="test" ? 'Test' : 'Main'}}
+				<div v-if="blockchainInfo.chain==='test'">
+					Test
+				</div>
+				<div v-else-if="blockchainInfo.chain==='dev'">
+					Dev
+				</div>
+				<div v-else-if="blockchainInfo.chain==='main'">
+					Main
+				</div>
+				<div v-else>
+					Unknown
+				</div>
 				<sui-dropdown-menu>
 					<sui-dropdown-item icon="ion-home" v-on:click="switchnetwork('mainnet')">Main</sui-dropdown-item>
 					<sui-dropdown-item icon="ion-erlenmeyer-flask" v-on:click="switchnetwork('testnet')">Test</sui-dropdown-item>
@@ -28,7 +39,7 @@
       <div>
         <div class="ui segment">
           <a class="ui green ribbon label"><i style="font-size:2em;" class="ion-social-buffer"></i></a>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{numberWithCommas(walletInfo.balance)}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{walletInfo.balance}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'" title="Unconfirmed"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.immature_balance!=='undefined'" title="Immature"><div class="ui gray button tiny"><i class="ion-egg"></i></div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="coin.bool_support_staking=='1' && typeof info.stake!=='undefined'" title="Staking"><div class="ui gray button tiny"><i class="ion-leaf"></i></div><a class="ui basic left pointing gray label tiny">{{info.stake}} {{coin.symbol}}</a></div>
@@ -50,83 +61,170 @@
     </div>
     </div>
 	</div>
-	
-	  <div v-else class="ui tiny button gray" style="margin-bottom:25px">
+	<div v-else class="ui tiny button gray" style="margin-bottom:25px">
       <div class="row">
         <div class="col-md-12"><i class="ion-asterisk loading icon"></i>&nbsp;{{errorMessage}}</div>
       </div>
     </div>
-
-	
-    <h4 v-if="proposals.length>0" class="card-title">Community Fund <button class="btn btn-fill btn-sm btn-info"> Featured Proposals</button></h4>
+	<div v-if="coin.bool_support_community_fund==1">
+	<br><br>
+	<div class="ui cards">
+		<div class="card">
+			<div class="content">
+				<div class="header"><i class="ion-flag icon"></i>Getting Started</div>
+				<div class="description" style="min-height:45px">
+					Find out what the Community Fund is and how it works.
+				</div>
+				<br/><router-link to="/admin/community-fund"><button class="ui right labeled icon button violet">Read More<i class="right chevron icon"></i></button></router-link>
+			</div>
+			</router-link>
+		</div>
+		<div class="card">
+			<div class="content">
+				<div class="header"><i class="ion-plus icon"></i>Create Your Proposal</div>
+				<div class="description" style="min-height:45px">
+					Learn how to create and submit your proposal to NavCoin blockchain.
+				</div>
+				<br/><router-link to="/admin/create-proposal"><button class="ui right labeled icon button green"><i class="right chevron icon"></i>Create a Proposal</button></router-link>
+			</div>
+		</div>
+		<div class="card">
+			<div class="content">
+				<div class="header"><i class="ion-person-add icon"></i>Join The Community</div>
+				<div class="description" style="min-height:45px">
+					You can collaborate with other people in the Community to bring your ideas to life.
+				</div>
+				<br/><router-link to="/admin/meet-community"><button class="ui right labeled icon button orange"><i class="right chevron icon"></i>Meet The Community</button></router-link>
+			</div>
+		</div>
+	</div>	
+	<div class="ui five doubling cards">
+		<div class="ui centered card">
+			<div class="image"><img src="static/img/cf_cat_01.png" style="padding:10px"></div>
+			<div class="content">
+				<h6><a class="header">Advertisement</a><div class="extra content"><div class="right floated author ui violet horizontal label">{{proposals.filter(function(v) {return v.category_id == '1'}).length}}</div></div></h6>
+			</div>
+		</div>
+		<div class="ui centered card">
+			<div class="image"><img src="static/img/cf_cat_08.png" style="padding:10px"></div>
+			<div class="content">
+				<h6><a class="header">Real World Adoption</a><div class="extra content"><div class="right floated author ui violet horizontal label">{{proposals.filter(function(v) {return v.category_id == '8'}).length}}</div></div></h6>
+			</div>
+		</div>
+		<div class="ui centered card">
+			<div class="image"><img src="static/img/cf_cat_03.png" style="padding:10px"></div>
+			<div class="content">
+				<h6><a class="header">Software</a><div class="extra content"><div class="right floated author ui violet horizontal label">{{proposals.filter(function(v) {return v.category_id == '3'}).length}}</div></div></h6>
+			</div>
+		</div>
+		<div class="ui centered card">
+			<div class="image"><img src="static/img/cf_cat_09.png" style="padding:10px"></div>
+			<div class="content">
+				<h6><a class="header">Video</a><div class="extra content"><div class="right floated author ui violet horizontal label">{{proposals.filter(function(v) {return v.category_id == '9'}).length}}</div></div></h6>
+			</div>
+		</div>
+				<div class="ui centered card">
+			<div class="image"><img src="static/img/cf_cat_05.png" style="padding:10px"></div>
+			<div class="content">
+				<h6><a class="header">Charity</a><div class="extra content"><div class="right floated author ui violet horizontal label">{{proposals.filter(function(v) {return v.category_id == '5'}).length}}
+				</div></div></h6>
+			</div>
+		</div>
+	</div>
+    <h4 v-if="proposals.length>0" class="card-title">Featured Proposals</h4>
     <div class="row">
       <div v-for="proposal in getFeaturedProposals(proposals)" :key="proposal.hash" class="col-md-6 col-sm-12">
         <div class="card">
-          <div class="card-header">
-            <h6><span>{{proposal.description}}</span></h6>
-          </div>
           <div class="card-body">
-            <div class="card card-user"><img v-bind:src="proposal.image" /></div>
-            <span v-show="proposal.author" class="ui purple button pull-right">&nbsp;
-			<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</span>
-            <div><i class="fa ion-trophy text-primary"></i>&nbsp;{{numberWithCommas(proposal.requestedAmount)}} {{coin.symbol}}</div>
-            <div><i class="fa fa-clock-o text-danger"></i>&nbsp;{{getDate(proposal.deadline)}}</div>
-            <div><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}</div>
-            <div style="margin-top:10px;">
-              <div class='ui buttons tiny'>
-                <button class="ui button tiny gray" style="text-transform:capitalize;">{{proposal.status}}</button>
-                <a target="_blank" class="ui button tiny primary" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash">View</a>
-              </div>&nbsp;
-              <div class="row" style="margin-top:5px">
-			  <div class="col-md-12">
-			  <div class="ui buttons tiny">
-                <button title="Yes" @click="proposalvote(proposal.hash,'yes')" class='ui button tiny green'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-                <button title="No" @click="proposalvote(proposal.hash,'no')" class="ui button tiny red"><i class="fa fa-thumbs-o-down" aria-hidden="true"></i></button>
-                <button title="Remove" @click="proposalvote(proposal.hash,'remove')" class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
-              </div>
-			  	<div v-show="proposal.status=='accepted'" class="ui labeled button tiny right floated" tabindex="0">
-				<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
-					<a class="ui basic purple left pointing label">
-						{{proposal.total_donation_amount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.total_donation}}
-					</a>
+				<div class="row">
+					<div class="col-md-12" style="margin-bottom:10px;">
+						<div class="card card-user"><img v-bind:src="proposal.image" /></div>
+						<div v-html="linkify(proposal.description)" style="margin-bottom:20px">
+							<div>
+								<div v-show="proposal.bCategory" class="ui gray label large" style="margin-top:10px;"><i class="ion-pricetag icon"></i>{{proposal.category_name}}</div>
+							</div>
+						</div>
+						<div v-show="proposal.author" class="ui purple button pull-right">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</div>
+					</div>
 				</div>
+				<br/>
+				<div class="row">
+					<div class="col-md-12" style="margin-bottom:10px;">
+						<div class="ui label basic large" title="Proposal Status"><i class="icon ion-flag"></i>{{proposal.status}}</div>
+						<div class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{proposal.votingCycle}}</div>
+						<div class="ui label basic large" title="Proposal Duration"><i class="ion-calendar icon"></i>{{getDuration(proposal.proposalDuration)}}</div>
+					</div>
+					<div class="col-md-12">
+						<a target="_blank" class="ui button small gray" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash"><i class='ion-android-open icon'></i>View</a>
+						<a target="_blank" class="ui button small gray" v-bind:href="'https://communityfund.nav.community/discussion/'+proposal.hash"><i class='ion-chatbubble-working icon'></i>Discuss</a>
+						<div class="ui violet label large" title="Requested Amount"><i class="ion-trophy icon"></i>{{proposal.requestedAmount.slice(0, -3)}} NAV</div>
+					</div>
 				</div>
-			</div>
-			<div class="ui segment" v-if="proposal.paymentRequests">
-				<a class="ui purple ribbon label">Payment Requests</a>
-				<table class="ui striped table">
-				<thead>
-					<tr>
-						<th nowrap>Request ID</th>
-						<th nowrap>Amount ({{coin.symbol}})</th>
-						<th nowrap>Status</th>
-						</tr>
-					</thead>
-					<tbody>
-					<template v-for="paymentRequest in proposal.paymentRequests">
-					<tr>
-						<td nowrap style="width:100%">{{paymentRequest.description}}</td>
-						<td nowrap>{{paymentRequest.requestedAmount}}</td>
-						<td nowrap>{{paymentRequest.status}}</td>
-					</tr>
-					<tr>
-					<td colspan='6'>
-						<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
-						<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-						<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-						<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
-						<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
-					</td>
-					</tr>
-					</template>
-					</tbody>
-					</table>
-			</div>
-            </div>
+				<br/>
+				
+				<div class="row">
+					<div class="col-md-6"><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{proposal.votesYes}}
+					    <sui-progress size="tiny" color="green" state="active" :percent="Math.round((proposal.votesYes/(proposal.votesYes+proposal.votesNo))*100,2)" :label="'%' + Math.round((proposal.votesYes/(proposal.votesYes+proposal.votesNo))*100,2)"/>
+					</div>
+					<div class="col-md-6"><i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{proposal.votesNo}}
+					    <sui-progress size="tiny" color="red" state="active" :percent="Math.round((proposal.votesNo/(proposal.votesYes+proposal.votesNo))*100,2)" :label="'%' + Math.round((proposal.votesNo/(proposal.votesYes+proposal.votesNo))*100,2)"/>
+					</div>
+					<div class="col-md-12" style="margin-top:10px;" title="Minimum Sum of Votes Per Voting Cycle">
+					    <sui-progress size="tiny" color="violet" state="active" :percent="(((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2)" :label="'%' + (((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2) + ' (' + (proposal.votesYes+proposal.votesNo) + '/' + cfundStats.consensus.minSumVotesPerVotingCycle + ')'"/>
+					</div>
+
+				</div>
+
+				<div style="margin-top:10px;">
+					<div class="row" style="margin-top:5px">
+						<div class="col-md-12">
+							<button title="Vote Yes" @click="proposalvote(proposal.hash,'yes')" class='ui green basic button'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i> Yes</button>
+							<button title="Vote No" class="ui red basic button" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i> No</button>
+							<button title="Remove Vote" @click="proposalvote(proposal.hash, 'remove') " class='ui purple basic button'><i class='fa fa-close' aria-hidden='true'></i> Cancel</button>
+							<div v-show="proposal.status=='accepted'" class="ui labeled button tiny right floated" tabindex="0">
+								<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
+								<a class="ui basic purple left pointing label">
+								{{proposal.total_donation_amount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.total_donation}}
+								</a>
+							</div>
+						</div>
+					</div>
+					<div class="ui segment" v-if="proposal.paymentRequests">
+						<a class="ui purple ribbon label">Payment Requests</a>
+						<table class="ui striped table">
+							<thead>
+								<tr>
+									<th nowrap>Request ID</th>
+									<th nowrap>Amount ({{coin.symbol}})</th>
+									<th nowrap>Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<template v-for="paymentRequest in proposal.paymentRequests">
+									<tr>
+										<td nowrap style="width:100%">{{paymentRequest.description}}</td>
+										<td nowrap>{{paymentRequest.requestedAmount}}</td>
+										<td nowrap>{{paymentRequest.status}}</td>
+									</tr>
+									<tr>
+										<td colspan='6'>
+											<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
+											<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
+											<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
+											<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
+											<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
+										</td>
+									</tr>
+								</template>
+							</tbody>
+						</table>
+					</div>
+				</div>
           </div>
         </div>
       </div>
     </div>
+   </div>
   </div>
 </div>
 </template>
@@ -175,6 +273,7 @@ export default {
       info: "info",
       price: "price",
       proposals: "combinedProposals",
+  	  cfundStats: "cfundStats"
     })
   },
   created: function() {
@@ -183,6 +282,7 @@ export default {
 	this.getCoin();
 	this.getCoins();
 	this.getPrice();
+	this.getCFundStats();
 	this.timer=setInterval(this.resync, interval);
 	//const toast=swal.mixin({toast: true,position: 'top-end',showConfirmButton: false,timer: 3000});
 	//toast({type:'success',title:'Welcome to NEXT'});
@@ -203,6 +303,7 @@ export default {
       getWalletInfo: "getWalletInfo",
       getStakeReport: "getStakeReport",
       getCombinedProposals: "getCombinedProposals",
+	  getCFundStats: "getCFundStats",
     }),
 	getCoinKeys: (obj) => {
       var r = []
@@ -240,11 +341,31 @@ export default {
 		allowOutsideClick: false,
 		type:type});
 	},
+	linkify:function(inputText) {
+    var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+    //URLs starting with http://, https://, or ftp://
+    replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    replacedText = inputText.replace(replacePattern1, '<a title="Open Link on Browser" class="ui button tiny gray" href="$1" target="_blank" style="margin-top:5px;"><i class="ion-android-open icon"></i>&nbsp;$1</a>');
+
+    //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+    //Change email addresses to mailto:: links.
+    replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+    replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+    return replacedText;
+	},
     getTime: () => {
       return moment().format("D MMM, YYYY HH:mm:ss");
     },
     getDate: (v) => {
       return moment.unix(v).format("MM/DD/YYYY");
+    },
+    getDuration: (v) => {
+      return secondsToDhms(v);
     },
     getFeaturedProposals: (proposals) => {
       return proposals.filter(item => item.featured === '1')
@@ -257,6 +378,7 @@ export default {
 		this.getNetworkInfo();
 		this.getTransactions();
 		this.getBlockchainInfo();
+		if (vm.coin.bool_support_community_fund=="1") this.getCFundStats();
 		if (vm.coin.bool_support_staking=="1")
 		{
 			this.getInfo();

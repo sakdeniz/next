@@ -35,6 +35,7 @@ var appDataPath;
 var executablePath;
 var daemonPath;
 var welcomeWin;
+var bswin;
 var downloadWin;
 var eWindow;
 var rpcport;
@@ -53,6 +54,7 @@ var bRepairWallet=false;
 var bReindexChainState=false;
 var bReindex=false;
 var bTestnet=false;
+var bDevnet=false;
 var bError=true;
 var bExit=true;
 var bDaemonError=false;
@@ -61,12 +63,16 @@ var datetime=now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate()+'-'+now.
 var eNotify;
 var coins=require(__dirname+'/coins.json');
 var coin=new Object();
+var version;
 if (process.arch=="arm"||process.arch=="arm64")
 {
 	app.disableHardwareAcceleration();
 	console.log("Hardware acceleration disabled for ARM devices.");
 }
-console.log("NEXT");
+fs=require('fs');
+json=JSON.parse(fs.readFileSync(__dirname+'/package.json', 'utf8'))
+version=json.version;
+console.log("NEXT "+version);
 require('electron-context-menu')({
 	showInspectElement:false,
 	labels: {
@@ -188,14 +194,19 @@ function Init(bStartDaemon)
 		var conf=iniparser.parseSync(getConfigFileFullPath());
 		console.log("Config file found.");
 		console.log("Config file testnet variable :"+conf.testnet);
+		console.log("Config file devnet variable :"+conf.devnet);
 		if (conf.testnet=="1") bTestnet=true;
+		if (conf.devnet=="1") bDevnet=true;
 	}
 	catch (e)
 	{
 		console.log("Config file not found.");
 	}
 	//
-	if (checkBlockchainDirectoriesExist()==false && store.get('bootstrap')!="1" && coin.bool_support_bootstrap=="1") bShowBootstrapWindow=true;
+	if (checkBlockchainDirectoriesExist()==false && store.get('bootstrap')!="1" && coin.bool_support_bootstrap=="1")
+	{
+		bShowBootstrapWindow=true;
+	}
 	// Repair Wallet
 	if (store.get('repair_wallet')=="1")
 	{
@@ -227,6 +238,11 @@ function Init(bStartDaemon)
 			testnet=" -testnet";
 			addnode=" -addnode=37.148.210.7";
 		}
+		else if (bDevnet)
+		{
+			rpcport=coin.rpc_port_testnet;
+			testnet=" -devnet";
+		}
 		else
 		{
 			rpcport=coin.rpc_port_mainnet;
@@ -253,6 +269,7 @@ function Init(bStartDaemon)
 		store.set('bootstrap', '0');
 		bootstrap=" -bootstrap=";
 		if (bTestnet) bootstrap+=coin.bootstrap_file_url_testnet; else bootstrap+=coin.bootstrap_file_url_mainnet;
+		StartDaemon();
 	}
 	else
 	{
@@ -656,7 +673,7 @@ function startProcess()
 			{
 				if (bExit==false)
 				{
-					win.loadURL(`file://${__dirname}/dist/index.html?rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
+					win.loadURL(`file://${__dirname}/dist/index.html?version=${version}&rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
 				}
 				bExit=true;
 				console.log("Daemon started. PID:" + newProcess.pid);
@@ -721,7 +738,7 @@ function startProcess()
 		{
 			if (bExit==false)
 			{
-				win.loadURL(`file://${__dirname}/dist/index.html?rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
+				win.loadURL(`file://${__dirname}/dist/index.html?version=${version}&rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
 			}
 			bExit=true;
 			console.log("Daemon started. PID:" + newProcess.pid);
@@ -800,6 +817,247 @@ function displayDaemonError(err,bObject)
 	displayError("Daemon start failed",e);
 }
 
+function handleCommand(line)
+{
+	var appDataPath;
+   	var shell=require('electron').shell;
+	if (os.type()==="Windows_NT")
+	{
+		appDataPath=app.getPath("appData")+"\\"+coin.data_dir_windows;
+	}
+	else if (os.type()==="Darwin")
+	{
+		appDataPath=app.getPath("appData")+"/"+coin.data_dir_osx;
+	}
+	else
+	{
+		appDataPath=process.env.HOME+"/"+coin.data_dir_linux;
+	}
+	if (line=="next:sync-from-bootstrap")
+	{
+		console.log("Sync from bootstrap");
+		bShowBootstrapWindow=false;
+		bBootstrap=true;
+		if (bBootstrap)
+		{
+			bootstrap=" -bootstrap=";
+			if (bTestnet) bootstrap+=coin.bootstrap_file_url_testnet; else bootstrap+=coin.bootstrap_file_url_mainnet;
+		}
+		bswin.hide();
+		StartDaemon();
+	}
+	if (line=="next:sync-from-network")
+	{
+		console.log("Sync from network");
+		bootstrap="";
+		bBootstrap=false;
+		bShowBootstrapWindow=false;
+		bswin.hide();
+		StartDaemon();
+	}
+	if (line=="next:close")
+	{
+		app.exit();
+	}
+	if (line=="next:reindex")
+	{
+		store.set('reindex', '1');
+		app.exit();
+	}
+	if (line=="next:reindex-chainstate")
+	{
+		store.set('reindex-chainstate', '1');
+		app.exit();
+	}
+	if (line=="next:reset-next-settings")
+	{
+		store.clear();
+		app.exit();
+	}
+	if (line=="next:reset-data"||line=="next:reset-data-bootstrap")
+	{
+		var Directory;
+		if (os.type()==="Windows_NT")
+		{
+			Directory=app.getPath("appData")+"\\"+coin.data_dir_windows;
+		}
+		else if (os.type()==="Darwin")
+		{
+			Directory=app.getPath("appData")+"/"+coin.data_dir_osx;
+		}
+		else
+		{
+			Directory=process.env.HOME+"/"+coin.data_dir_linux;
+		}
+		//
+		if (os.type()==="Windows_NT") Directory+="\\";
+		if (os.type()==="Darwin") Directory+="/";
+		if (os.type()==="Linux") Directory+="/";
+		if (bTestnet)
+		{
+			Directory+="testnet3";
+			if (os.type()==="Windows_NT") Directory+="\\";
+			if (os.type()==="Darwin") Directory+="/";
+			if (os.type()==="Linux") Directory+="/";
+		}
+		if (bDevnet)
+		{
+			Directory+="devnet";
+			if (os.type()==="Windows_NT") Directory+="\\";
+			if (os.type()==="Darwin") Directory+="/";
+			if (os.type()==="Linux") Directory+="/";
+		}
+		console.log("Removing blockchain data folder : " + Directory);
+		deleteDirectory(Directory+"database");
+		deleteDirectory(Directory+"chainstate");
+		deleteDirectory(Directory+"cfund");
+		deleteDirectory(Directory+"blocks");
+		var win;
+		if (eWindow) win=eWindow;
+		if (welcomeWin) win=welcomeWin;
+		if (line=="next:reset-data")
+		{
+			win.webContents.executeJavaScript(`swal({type: 'success',title: 'Reset Blockchain Data',html: "Your blockchain data successfully removed.<br/><br/>Please restart NEXT."});`);
+		}
+		if (line=="next:reset-data-bootstrap")
+		{
+			win.webContents.executeJavaScript(`swal({type: 'success',title: 'Reset Blockchain Data',html: "Your blockchain data successfully removed.<br/><br/>After you restart NEXT, it will bootstrap blockchain files from remote URL.<br/><br/>Please restart NEXT."});`);
+			store.set('bootstrap', '1');
+			console.log("Bootstrap set for next launch");
+		}
+	}
+	//
+	if (line=="next:setting:cNotificationGeneral:on")
+	{
+		store.set('cNotificationGeneral','1');
+		win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationGeneral","1")`);
+	}
+	if (line=="next:setting:cNotificationGeneral:off")
+	{
+		store.set('cNotificationGeneral','0');
+		win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationGeneral","0")`);
+	}
+	//
+	if (line=="next:setting:cNotificationIncomingTransaction:on")
+	{
+		store.set('cNotificationIncomingTransaction','1');
+		win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationIncomingTransaction","1")`);
+	}
+	if (line=="next:setting:cNotificationIncomingTransaction:off")
+	{
+		store.set('cNotificationIncomingTransaction','0');
+		win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationIncomingTransaction","0")`);
+	}
+	//
+	if (line=="next:setting:cNotificationNewStake:on")
+	{
+		store.set('cNotificationNewStake','1');
+		win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationNewStake","1")`);
+	}
+	if (line=="next:setting:cNotificationNewStake:off")
+	{
+		store.set('cNotificationNewStake','0');
+		win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationNewStake","0")`);
+	}
+	//
+	if (line.startsWith("next:coin:")) 
+	{
+		store.set('coin', line.split(":")[2]);
+		console.log("Switch to coin : " + line.split(":")[2]);
+		coin=coins["Coins"][line.split(":")[2]][0];
+		updateGlobals();
+		Init(false);
+		RestartDaemon("mainnet");
+	}
+	if (line=="next:network:mainnet") RestartDaemon("mainnet");
+	if (line=="next:network:testnet") RestartDaemon("testnet");
+	if (line=="next:open-data-folder")
+	{
+		var path=appDataPath;
+		console.log("Open data folder:"+path);
+		shell.openItem(`${path}`);
+	}
+	if (line=="next:repair-wallet")
+	{
+		store.set('repair_wallet', '1');
+		closeDaemon();
+	}
+	if (line=="next:backup-wallet")
+	{
+		var savepath=dialog.showSaveDialog({title:'Backup Wallet',defaultPath:'~/wallet.dat'});
+		if (savepath)
+		{
+			axios.post('http://localhost:3000/backupwallet',{rpcuser:rpcuser,token:rpcpassword,rpcport:rpcport,savepath:savepath},config).then(function(res)
+			{
+				if (res.data==null)
+				{
+					win.webContents.executeJavaScript(`swal({type: 'success',title: 'Backup Wallet',text: "Your wallet has been successfully backed up."});`);
+				}
+				else
+				{
+					win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + res.data["error"]["message"]+`'});`);
+				}
+			}).catch(function(err)
+			{
+				win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + err+`'});`);
+			})
+		}
+	}
+	if (line=="next:import-wallet")
+	{
+		var walletpath=dialog.showOpenDialog({properties: ['openFile']});
+		if (walletpath)
+		{
+			axios.post('http://localhost:3000/importwallet',{rpcuser:rpcuser,token:rpcpassword,rpcport:rpcport,walletpath:walletpath[0]},config).then(function(res)
+			{
+				if (res.data==null)
+				{
+					win.webContents.executeJavaScript(`swal({type: 'success',title: 'Backup Wallet',text: "Your wallet has been imported successfully."});`);
+				}
+				else
+				{
+					win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + res.data["error"]["message"]+`'});`);
+				}
+			}).catch(function(err)
+			{
+				win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + err+`'});`);
+			})
+		}
+	}
+	if (line.startsWith("next:update_preference:")) 
+	{
+		store.set('update_preference',line.split(":")[2]);
+		win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+line.split(":")[2]+`")`);
+	}
+	if (line.startsWith("next:update_daemon_preference:")) 
+	{
+		store.set('update_daemon_preference',line.split(":")[2]);
+		win.webContents.executeJavaScript(`window.localStorage.setItem("update_daemon_preference","`+line.split(":")[2]+`")`);
+	}
+	if (line.startsWith("next:update_preference_m:")) 
+	{
+		store.set('update_preference',line.split(":")[2]);
+		console.log("Update preference changed : " + line.split(":")[2]);
+	}
+	if (line.startsWith("next:update_daemon_preference_m:")) 
+	{
+		store.set('update_daemon_preference',line.split(":")[2]);
+		console.log("Update daemon preference changed : " + line.split(":")[2]);
+	}
+	if (line.startsWith("next:coin_m:")) 
+	{
+		bShowWelcomeWindow=false;
+		bShowBootstrapWindow=false;
+		bBootstrap=false;
+		store.set('coin',line.split(":")[2]);
+		console.log("Switch to asset : " + line.split(":")[2]);
+		coin=coins["Coins"][line.split(":")[2]][0];
+		updateGlobals();
+		welcomeWin.hide();
+		Init(true);
+	}
+}
+
 function displayError(title,message)
 {
    	var shell=require('electron').shell;
@@ -808,53 +1066,7 @@ function displayError(title,message)
 	eWindow=new BrowserWindow({width: 800, height: 600});
 	eWindow.webContents.on('console-message', function(level,message,line,sourceId)
 	{
-		if (line=="next:close")
-		{
-			app.exit();
-		}
-		if (line=="next:reindex")
-		{
-			store.set('reindex', '1');
-			app.exit();
-		}
-		if (line=="next:reindex-chainstate")
-		{
-			store.set('reindex-chainstate', '1');
-			app.exit();
-		}
-		if (line=="next:reset-next-settings")
-		{
-			store.clear();
-			app.exit();
-		}
-		if (line=="next:reset-data"||line=="next:reset-data-bootstrap")
-		{
-			var Directory=appDataPath;
-			if (os.type()==="Windows_NT") Directory+="\\";
-			if (os.type()==="Darwin") Directory+="/";
-			if (os.type()==="Linux") Directory+="/";
-			if (bTestnet)
-			{
-				Directory+="testnet3";
-				if (os.type()==="Windows_NT") Directory+="\\";
-				if (os.type()==="Darwin") Directory+="/";
-				if (os.type()==="Linux") Directory+="/";
-			}
-			console.log("Removing blockchain data folder : " + Directory);
-			deleteDirectory(Directory+"database");
-			deleteDirectory(Directory+"chainstate");
-			deleteDirectory(Directory+"cfund");
-			deleteDirectory(Directory+"blocks");
-			if (line=="next:reset-data")
-			{
-				eWindow.webContents.executeJavaScript(`swal({type: 'success',title: 'Reset Blockchain Data',html: "Your blockchain data successfully removed.<br/><br/>Please restart NEXT."});`);
-			}
-			if (line=="next:reset-data-bootstrap")
-			{
-				eWindow.webContents.executeJavaScript(`swal({type: 'success',title: 'Reset Blockchain Data',html: "Your blockchain data successfully removed.<br/><br/>After you restart NEXT, it will bootstrap blockchain files from remote URL.<br/><br/>Please restart NEXT."});`);
-				store.set('bootstrap', '1');
-			}
-		}
+		handleCommand(line);
 	});
 	eWindow.loadURL(`file://${__dirname}/dist/static/error.html`);
 	eWindow.webContents.on('did-finish-load', ()=>{
@@ -903,32 +1115,8 @@ function Bootstrap()
 	});
 	bswin.webContents.on('console-message', function(level,message ,line ,sourceId)
 	{
-		if (line=="next:sync-from-bootstrap")
-		{
-			console.log("Sync from bootstrap");
-			bShowBootstrapWindow=false;
-			bBootstrap=true;
-			if (bBootstrap)
-			{
-				bootstrap=" -bootstrap=";
-				if (bTestnet) bootstrap+=coin.bootstrap_file_url_testnet; else bootstrap+=coin.bootstrap_file_url_mainnet;
-			}
-			bswin.hide();
-			StartDaemon();
-		}
-		if (line=="next:sync-from-network")
-		{
-			console.log("Sync from network");
-			bootstrap="";
-			bBootstrap=false;
-			bShowBootstrapWindow=false;
-			bswin.hide();
-			StartDaemon();
-		}
-		if (line=="next:close")
-		{
-			app.exit();
-		}
+		console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
+		handleCommand(line);
 	});
 }
 
@@ -950,7 +1138,7 @@ function createMainWindow ()
 	var server=require("./server");
 	win=new BrowserWindow({width: 1275, height: 850});
 	win.setMenu(null);
-	win.loadURL(`file://${__dirname}/dist/index.html?rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
+	win.loadURL(`file://${__dirname}/dist/index.html?version=${version}&rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
 	win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+store.get("update_preference")+`")`);
 	win.webContents.executeJavaScript(`window.localStorage.setItem("update_daemon_preference","`+store.get("update_daemon_preference")+`")`);
    	var shell=require('electron').shell;
@@ -976,113 +1164,7 @@ function createMainWindow ()
 	win.webContents.on('console-message', function(level,message ,line ,sourceId)
 	{
 		console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
-		if (line=="next:setting:cNotificationGeneral:on")
-		{
-			store.set('cNotificationGeneral','1');
-			win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationGeneral","1")`);
-		}
-		if (line=="next:setting:cNotificationGeneral:off")
-		{
-			store.set('cNotificationGeneral','0');
-			win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationGeneral","0")`);
-		}
-		//
-		if (line=="next:setting:cNotificationIncomingTransaction:on")
-		{
-			store.set('cNotificationIncomingTransaction','1');
-			win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationIncomingTransaction","1")`);
-		}
-		if (line=="next:setting:cNotificationIncomingTransaction:off")
-		{
-			store.set('cNotificationIncomingTransaction','0');
-			win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationIncomingTransaction","0")`);
-		}
-		//
-		if (line=="next:setting:cNotificationNewStake:on")
-		{
-			store.set('cNotificationNewStake','1');
-			win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationNewStake","1")`);
-		}
-		if (line=="next:setting:cNotificationNewStake:off")
-		{
-			store.set('cNotificationNewStake','0');
-			win.webContents.executeJavaScript(`window.localStorage.setItem("cNotificationNewStake","0")`);
-		}
-		//
-		if (line.startsWith("next:coin:")) 
-		{
-			store.set('coin', line.split(":")[2]);
-			console.log("Switch to coin : " + line.split(":")[2]);
-			coin=coins["Coins"][line.split(":")[2]][0];
-			updateGlobals();
-			Init(false);
-			RestartDaemon("mainnet");
-		}
-		if (line=="next:network:mainnet") RestartDaemon("mainnet");
-		if (line=="next:network:testnet") RestartDaemon("testnet");
-		if (line=="next:open-data-folder")
-		{
-			var path=appDataPath;
-			console.log("Open data folder:"+path);
-			shell.openItem(`${path}`);
-		}
-		if (line=="next:repair-wallet")
-		{
-			store.set('repair_wallet', '1');
-			closeDaemon();
-		}
-		if (line=="next:backup-wallet")
-		{
-			var savepath=dialog.showSaveDialog({title:'Backup Wallet',defaultPath:'~/wallet.dat'});
-			if (savepath)
-			{
-				axios.post('http://localhost:3000/backupwallet',{rpcuser:rpcuser,token:rpcpassword,rpcport:rpcport,savepath:savepath},config).then(function(res)
-				{
-					if (res.data==null)
-					{
-						win.webContents.executeJavaScript(`swal({type: 'success',title: 'Backup Wallet',text: "Your wallet has been successfully backed up."});`);
-					}
-					else
-					{
-						win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + res.data["error"]["message"]+`'});`);
-					}
-				}).catch(function(err)
-				{
-					win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + err+`'});`);
-				})
-			}
-		}
-		if (line=="next:import-wallet")
-		{
-			var walletpath=dialog.showOpenDialog({properties: ['openFile']});
-			if (walletpath)
-			{
-				axios.post('http://localhost:3000/importwallet',{rpcuser:rpcuser,token:rpcpassword,rpcport:rpcport,walletpath:walletpath[0]},config).then(function(res)
-				{
-					if (res.data==null)
-					{
-						win.webContents.executeJavaScript(`swal({type: 'success',title: 'Backup Wallet',text: "Your wallet has been imported successfully."});`);
-					}
-					else
-					{
-						win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + res.data["error"]["message"]+`'});`);
-					}
-				}).catch(function(err)
-				{
-					win.webContents.executeJavaScript(`swal({type: 'warning',title: 'Oops...',text: '` + err+`'});`);
-				})
-			}
-		}
-		if (line.startsWith("next:update_preference:")) 
-		{
-			store.set('update_preference',line.split(":")[2]);
-			win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+line.split(":")[2]+`")`);
-		}
-		if (line.startsWith("next:update_daemon_preference:")) 
-		{
-			store.set('update_daemon_preference',line.split(":")[2]);
-			win.webContents.executeJavaScript(`window.localStorage.setItem("update_daemon_preference","`+line.split(":")[2]+`")`);
-		}
+		handleCommand(line);
 	});
 	//win.webContents.openDevTools();
 	win.on('close', function (event)
@@ -1121,59 +1203,61 @@ app.on('ready', () => {
 		console.log('All settings deleted...');
 		store.clear();
     })
-  
     if (!ret)
 	{
 		console.log('registration failed');
     }
-	
-	if (store.get('coin'))
-	{
-		coin=coins["Coins"][store.get('coin')][0];
-		updateGlobals();
-		Init(false);
-	}
-	else
-	{
-		bShowWelcomeWindow=true;
-	}
 	eNotify=require('./notify');
 	eNotify.setConfig({appIcon: path.join(__dirname, 'static/img/next.png'),displayTime: 4000});
 	if (store.get('cNotificationGeneral')=="1" && store.get('coin')) eNotify.notify({title: 'NEXT',text: 'Welcome'});
-	if (bShowWelcomeWindow)
+	bShowWelcomeWindow=true;
+	welcomeWin=new BrowserWindow({width: 800, height: 680});
+	welcomeWin.setMenu(null);
+	if (store.get('coin'))
 	{
-		welcomeWin=new BrowserWindow({width: 800, height: 680});
-		welcomeWin.setMenu(null);
-		welcomeWin.loadURL(`file://${__dirname}/dist/static/welcome.html?coins=`+JSON.stringify(coins));
-		//welcomeWin.webContents.openDevTools();
-		welcomeWin.on('close', function (event)
+		coin=coins["Coins"][store.get('coin')][0];
+		if (os.type()==="Windows_NT")
 		{
-			app.exit();
-		});
-		welcomeWin.webContents.on('console-message', function(level,message ,line ,sourceId)
+			appDataPath=app.getPath("appData")+"\\"+coin.data_dir_windows;
+		}
+		else if (os.type()==="Darwin")
 		{
-			if (line.startsWith("next:update_preference:")) 
-			{
-				store.set('update_preference',line.split(":")[2]);
-			}
-			if (line.startsWith("next:update_daemon_preference:")) 
-			{
-				store.set('update_daemon_preference',line.split(":")[2]);
-			}
-			if (line.startsWith("next:coin:")) 
-			{
-				bShowWelcomeWindow=false;
-				bShowBootstrapWindow=false;
-				bBootstrap=false;
-				store.set('coin',line.split(":")[2]);
-				console.log("Switch to asset : " + line.split(":")[2]);
-				coin=coins["Coins"][line.split(":")[2]][0];
-				updateGlobals();
-				welcomeWin.hide();
-				Init(true);
-			}
-		});
+			appDataPath=app.getPath("appData")+"/"+coin.data_dir_osx;
+		}
+		else
+		{
+			appDataPath=process.env.HOME+"/"+coin.data_dir_linux;
+		}
+		console.log("Checking config file : " + getConfigFileFullPath());
+		try
+		{
+			var conf=iniparser.parseSync(getConfigFileFullPath());
+			console.log("Config file found.");
+			console.log("Config file testnet variable :"+conf.testnet);
+			console.log("Config file devnet variable :"+conf.devnet);
+			if (conf.testnet=="1") bTestnet=true;
+			if (conf.devnet=="1") bDevnet=true;
+		}
+		catch (e)
+		{
+			console.log("Config file not found.");
+		}
+		welcomeWin.loadURL(`file://${__dirname}/dist/static/boot.html?version=${version}&coins=`+JSON.stringify(coins)+`&coin=`+store.get('coin')+`&update_preference=`+store.get('update_preference')+`&update_daemon_preference=`+store.get('update_daemon_preference'));
 	}
+	else
+	{
+		welcomeWin.loadURL(`file://${__dirname}/dist/static/welcome.html?version=${version}&coins=`+JSON.stringify(coins));
+	}
+	//welcomeWin.webContents.openDevTools();
+	welcomeWin.on('close', function (event)
+	{
+		app.exit();
+	});
+	welcomeWin.webContents.on('console-message', function(level,message ,line ,sourceId)
+	{
+		console.log('[CONSOLE]', "Level:"+level+" Message:"+message+" Line:"+line+" SourceId:"+sourceId);
+		handleCommand(line);
+	});
 	if (!isDev)
 	{
 		console.log('Running in production.');

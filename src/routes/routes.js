@@ -14,6 +14,8 @@ import SoftForks from 'src/components/Dashboard/Views/SoftForks.vue'
 import Merchants from 'src/components/Dashboard/Views/Merchants.vue'
 import PeerList from 'src/components/Dashboard/Views/PeerList.vue'
 import CommunityProposals from 'src/components/Dashboard/Views/CommunityProposals.vue'
+import CommunityFund from 'src/components/Dashboard/Views/CommunityFund.vue'
+import MeetCommunity from 'src/components/Dashboard/Views/MeetCommunity.vue'
 import MyProposals from 'src/components/Dashboard/Views/MyProposals.vue'
 import CreateProposal from 'src/components/Dashboard/Views/CreateProposal.vue'
 import ProposalVoteList from 'src/components/Dashboard/Views/ProposalVoteList.vue'
@@ -103,6 +105,16 @@ const routes = [
         path: 'community-proposals',
         name: 'CommunityProposals',
         component: CommunityProposals
+      },
+      {
+        path: 'community-fund',
+        name: 'CommunityFund',
+        component: CommunityFund
+      },
+      {
+        path: 'meet-community',
+        name: 'MeetCommunity',
+        component: MeetCommunity
       },
       {
         path: 'create-proposal',

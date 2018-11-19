@@ -14,20 +14,34 @@
     <table class="ui celled padded table">
       <thead>
         <tr>
+          <th></th>
           <th>Category</th>
           <th>Address/TXID</th>
           <th>Amount</th>
+          <th>Fee</th>
           <th>Confirmations</th>
-          <th>Date</th>
+          <th>Date (GMT)</th>
           <th>Comment</th>
           <th>To</th>
         </tr>
       </thead>
       <tbody v-if="transactions">
-        <tr :key=transaction.id v-for="transaction of transactions" v-if="!filter || transaction.category==filter">
+        <tr v-show="(transaction.category=='send' && transaction.vout=='1') || transaction.category!='send'" :key=transaction.id v-for="transaction of transactions" v-if="!filter || transaction.category==filter">
+          <td>
+		  <span v-if="transaction.category=='receive'" class='ui label green ion-arrow-down-c'></span>
+		  <span v-else-if="transaction.category=='send'" class='ui label red ion-arrow-up-c'></span>
+		  <span v-else-if="transaction.category=='cfund contribution'" class='ui label red ion-arrow-up-c'></span>
+		  <span v-else class='ui label ion-arrow-swap'></span>
+		  </td>
           <td>{{transaction.category}}</td>
           <td>{{transaction.address}}<br><code>{{transaction.txid}}</code></td>
-          <td>{{transaction.amount}}</td>
+          <td>
+			<span v-if="transaction.category=='receive'" class='ui label green'> {{transaction.amount}}</span>
+			<span v-else-if="transaction.category=='send'" class='ui label red'> {{transaction.amount}}</span>
+			<span v-else-if="transaction.category=='cfund contribution'" class='ui label red'> {{transaction.amount}}</span>
+			<span v-else class='ui label'> {{transaction.amount}}</span>
+		  </td>
+          <td>{{transaction.fee}}</td>
           <td>{{transaction.confirmations}}</td>
           <td>{{formatTime(transaction.timereceived)}}</td>
           <td>{{transaction.comment}}</td>
@@ -60,7 +74,7 @@ export default {
   },
   methods: {
     formatTime: function(time) {
-      return moment.unix(time).format("MM/DD/YYYY HH:MM:SS");
+      return moment.unix(time).utc().format("MM/DD/YYYY hh:mm:ss");
     },
     filterBy: function(f) {
       this.filter = f;

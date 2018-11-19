@@ -21,6 +21,7 @@
 <script src="static/plugins/axios/axios.min.js"></script>
 <script src="static/plugins/highlightjs/highlight.min.js"></script>
 <script src="static/plugins/qrcode/qrcode.js"></script>
+<script src="static/plugins/semantic/semantic.min.js"></script>
 </head>
 <body>
 <div id="app">
@@ -28,6 +29,26 @@
 </body>
 </html>
 <script>
+
+function sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
+}
+
+function secondsToDhms(seconds)
+{
+seconds = Number(seconds);
+var d = Math.floor(seconds / (3600*24));
+var h = Math.floor(seconds % (3600*24) / 3600);
+var m = Math.floor(seconds % 3600 / 60);
+var s = Math.floor(seconds % 3600 % 60);
+
+var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
+return dDisplay;
+}
+
 function copy(selector)
 {
 	swal("Success!", "Your wallet address copied to clipboard", "success");

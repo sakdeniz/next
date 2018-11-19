@@ -131,7 +131,7 @@ server=http.createServer(function (req, res)
 					console.log("params="+JSON.stringify(params));
 					const batch = [{ method: methodname, parameters: params }]
 					client.command(batch).then((retval) => {
-					const pretty=stringifyObject(retval, {indent: '  ',singleQuotes: false});
+					const pretty=stringifyObject(retval, {indent: '\t',singleQuotes: false});
 					sendResponse(res, 200,pretty);
 					}).catch((e) => {sendError(res, 200,e);});
 				}
@@ -228,6 +228,8 @@ server=http.createServer(function (req, res)
 					}
 					else
 					{
+						var obj = { message: "Address book file ("+ global.fileAddressBook+") not exist."};
+						sendError(res, 200,obj);
 						console.log("Address book file ("+ global.fileAddressBook+") not exist.")
 					}
 				}
@@ -242,7 +244,9 @@ server=http.createServer(function (req, res)
 					}
 					else
 					{
-						console.log("Config file ("+ global.fileConfig+") not exist.")
+						var obj = { message: "Config file ("+ global.fileConfig+") not exist."};
+						sendError(res, 200,obj);
+						console.log("Config file ("+ global.fileConfig+") not exist.");
 					}
 				}
 				if (req.url=="/getlogs")
@@ -284,6 +288,10 @@ server=http.createServer(function (req, res)
 				{
 					console.log(post.address);
 					client.validateAddress(post.address).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/listunspent")
+				{
+					client.listUnspent().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/encryptwallet")
 				{
@@ -350,7 +358,7 @@ server=http.createServer(function (req, res)
 				}
 				if (req.url=="/createproposal")
 				{
-					console.log("Address :"+post.navcoinaddress+"\r\nAmount:"+post.amount+"\r\nDeadline:"+post.deadline+"\r\nDesc:"+post.desc+"\r\nOwner:"+post.owner+"\r\nWeb Site URL:"+post.website+"\r\nE-Mail:"+post.email+"\r\nShort Description:"+post.short_desc+"\r\nLong Description:"+post.long_desc);
+					console.log("Address :"+post.navcoinaddress+"\r\nAmount:"+post.amount+"\r\Proposal Duration:"+post.proposalduration+"\r\nDesc:"+post.desc+"\r\nOwner:"+post.owner+"\r\nWeb Site URL:"+post.website+"\r\nE-Mail:"+post.email+"\r\nShort Description:"+post.short_desc+"\r\nLong Description:"+post.long_desc);
 					if (post.b_wallet_locked)
 					{
 						console.log("Wallet locked.");
@@ -358,9 +366,9 @@ server=http.createServer(function (req, res)
 						console.log("Unlocking wallet...");
 						client.walletPassphrase(post.wallet_password,5,false).then((retval) => 
 						{
-							client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) =>	{
+							client.createproposal(post.navcoinaddress,post.amount,post.proposalduration,post.desc).then((retval) =>	{
 							var t=JSON.parse(JSON.stringify(retval));
-							axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.deadline+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
+							axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.proposalduration+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
 							.then((retval) => console.log(JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 							sendResponse(res, 200,JSON.stringify(retval));
 							}
@@ -371,9 +379,9 @@ server=http.createServer(function (req, res)
 					}
 					else
 					{
-						client.createproposal(post.navcoinaddress,post.amount,post.deadline,post.desc).then((retval) =>	{
+						client.createproposal(post.navcoinaddress,post.amount,post.proposalduration,post.desc).then((retval) =>	{
 						var t=JSON.parse(JSON.stringify(retval));
-						axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.deadline+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
+						axios.post("https://navcommunity.net/api/createproposal.php", "hash="+t['hash']+"&amount="+post.amount+"&desc="+post.desc+"&navcoinaddress="+post.navcoinaddress+"&deadline="+post.proposalduration+"&owner="+post.owner+"&website="+post.website+"&email="+post.email+"&short_description="+post.short_desc+"&long_description="+post.long_desc,config)
 						.then((retval) => console.log(JSON.stringify(retval.data))).catch((e) => {sendError(res, 200,e);})
 						sendResponse(res, 200,JSON.stringify(retval));
 						}
@@ -476,6 +484,10 @@ server=http.createServer(function (req, res)
 				if (req.url=="/getstakereport")
 				{
 					client.command('getstakereport').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/cfundstats")
+				{
+					client.command('cfundstats').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/listtransactions")
 				{
