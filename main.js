@@ -600,8 +600,6 @@ function StartDaemon()
 			{
 				platform=os.platform();
 			}
-			console.log(platform);
-			return;
 			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
 			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
 			console.log("Local Daemon md5  :"+daemon_local_md5);
