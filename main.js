@@ -586,6 +586,7 @@ function StartDaemon()
 		}
 		else
 		{
+			console.log("Platform : " + os.platform() + " Arch:"+process.arch);
 			var platform="";
 			if (process.arch=="arm"||process.arch=="arm64")
 			{
