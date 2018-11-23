@@ -601,6 +601,7 @@ function StartDaemon()
 				platform=os.platform();
 			}
 			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
+			console.log("Platform : " + platform + " OS Arch : "+process.arch);
 			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
 			console.log("Local Daemon md5  :"+daemon_local_md5);
 			axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
