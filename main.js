@@ -572,6 +572,10 @@ function StartDaemon()
 			{
 				downloadURL="http://next.navcommunity.net/update/bin/"+process.arch+"/"+daemonBinaryFileName;
 			}
+			else if (os.platform()=="linux" && process.arch=="ia32")
+			{
+				downloadURL="http://next.navcommunity.net/update/bin/linux_"+process.arch+"/"+daemonBinaryFileName;
+			}
 			else
 			{
 				downloadURL="http://next.navcommunity.net/update/bin/"+os.platform()+"/"+daemonBinaryFileName;
@@ -586,6 +590,10 @@ function StartDaemon()
 			if (process.arch=="arm"||process.arch=="arm64")
 			{
 				platform=process.arch;
+			}
+			else if (os.platform()=="linux" && process.arch=="ia32")
+			{
+				platform="linux_ia32";
 			}
 			else
 			{
