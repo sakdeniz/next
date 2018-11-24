@@ -508,7 +508,7 @@ function getRemoteVersion()
 {
 
 						const https = require('https');
-			https.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform=linux&filename=navcoind', (resp) => {
+			https.get('https://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform=linux&filename=navcoind', (resp) => {
 			let data = '';
 			// A chunk of data has been recieved.
 			resp.on('data', (chunk) => {
