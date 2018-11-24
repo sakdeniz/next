@@ -504,6 +504,26 @@ function showProgress(received,total){
 	downloadWin.webContents.executeJavaScript(`document.getElementById('info').innerHTML='`+percentage.toFixed(2) + `% | ` + formatBytes(received,0) + ` out of ` + formatBytes(total,0) + ` downloaded.`+`';`);
 }
 
+function getRemoteVersion()
+{
+
+						const http = require('http');
+			http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform=linux&filename=navcoind', (resp) => {
+			let data = '';
+			// A chunk of data has been recieved.
+			resp.on('data', (chunk) => {
+				data += chunk;
+			});
+			// The whole response has been received. Print out the result.
+			resp.on('end', () => {
+			console.log(data);
+			});
+
+			}).on("error", (err) => {
+				console.log("Error: " + err.message);
+				});
+}
+
 function StartDaemon()
 {
 	console.log("Checking config file : " + getConfigFileFullPath());
@@ -603,21 +623,7 @@ function StartDaemon()
 			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
 			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
 			console.log("Local Daemon md5  :"+daemon_local_md5);
-						const http = require('http');
-			http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform=linux&filename=navcoind', (resp) => {
-			let data = '';
-			// A chunk of data has been recieved.
-			resp.on('data', (chunk) => {
-				data += chunk;
-			});
-			// The whole response has been received. Print out the result.
-			resp.on('end', () => {
-			console.log(data);
-			});
-
-			}).on("error", (err) => {
-				console.log("Error: " + err.message);
-				});
+			getRemoteVersion();
 			/*axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
 			{
 				const daemon_remote_md5=res.data;
