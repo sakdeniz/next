@@ -88,6 +88,11 @@ require('electron-context-menu')({
 		visible: params.mediaType === 'image'
 	}]
 });
+    var urlx = "https://jsonplaceholder.typicode.com/posts/1";
+    request.get(urlx, (error, response, body) => {
+      let json = JSON.parse(body);
+      console.log(body);
+    });
 /*sock.connect('tcp://127.0.0.1:'+portZMQ);
 sock.subscribe('hashblock');
 sock.subscribe('hashtx');
@@ -638,24 +643,21 @@ function StartDaemon()
 			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
 			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
 			const http = require('http');
+			http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform='+platform+"&filename="+daemonBinaryFileName, (resp) => {
+			let data = '';
+			// A chunk of data has been recieved.
+			resp.on('data', (chunk) => {
+				data += chunk;
+			});
+			// The whole response has been received. Print out the result.
+			resp.on('end', () => {
+			console.log(data);
+			});
 
-http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform='+platform+"&filename="+daemonBinaryFileName, (resp) => {
-  let data = '';
-
-  // A chunk of data has been recieved.
-  resp.on('data', (chunk) => {
-    data += chunk;
-  });
-
-  // The whole response has been received. Print out the result.
-  resp.on('end', () => {
-    console.log(data);
-  });
-
-}).on("error", (err) => {
-  console.log("Error: " + err.message);
-});
-return;
+			}).on("error", (err) => {
+				console.log("Error: " + err.message);
+				});
+			return;
 			console.log("Local Daemon md5  :"+daemon_local_md5);
 			axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
 			{
