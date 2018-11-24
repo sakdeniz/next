@@ -72,6 +72,22 @@ if (process.arch=="arm"||process.arch=="arm64")
 fs=require('fs');
 json=JSON.parse(fs.readFileSync(__dirname+'/package.json', 'utf8'))
 version=json.version;
+			const http = require('http');
+			http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform=linux&filename=navcoind', (resp) => {
+			let data = '';
+			// A chunk of data has been recieved.
+			resp.on('data', (chunk) => {
+				data += chunk;
+			});
+			// The whole response has been received. Print out the result.
+			resp.on('end', () => {
+			console.log(data);
+			});
+
+			}).on("error", (err) => {
+				console.log("Error: " + err.message);
+				});
+				return;
 console.log("NEXT "+version);
 console.log("OS Arch :"+process.arch);
 require('electron-context-menu')({
@@ -88,11 +104,7 @@ require('electron-context-menu')({
 		visible: params.mediaType === 'image'
 	}]
 });
-    var urlx = "https://jsonplaceholder.typicode.com/posts/1";
-    request.get(urlx, (error, response, body) => {
-      let json = JSON.parse(body);
-      console.log(body);
-    });
+
 /*sock.connect('tcp://127.0.0.1:'+portZMQ);
 sock.subscribe('hashblock');
 sock.subscribe('hashtx');
@@ -467,41 +479,6 @@ function formatBytes (bytes,decimals)
 	i = Math.floor(Math.log(bytes) / Math.log(k));
 	return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
-
-function httpRequest(file_url,targetPath){
-    var received_bytes = 0;
-    var total_bytes = 0;
-    var out;
-	var req = request({
-        method: 'GET',
-        uri: file_url
-    });
-	req.on('response', function ( data ) {
-        total_bytes = parseInt(data.headers['content-length']);
-		if (data.statusCode=="404")
-		{
-			downloadWin.hide();
-			console.log("File not found. [" + file_url + "]");
-			displayError("Daemon binary download failed","File not found : " + file_url);
-		}
-		else
-		{
-			out=fs.createWriteStream(targetPath);
-			req.pipe(out);
-		    req.on('data', function(chunk) {
-				received_bytes += chunk.length;
-				showProgress(received_bytes, total_bytes);
-			});
-			req.on('end', function() {
-				downloadWin.hide();
-				console.log("Daemon file succesfully downloaded...");
-				console.log("Starting daemon...");
-				out.end();
-				setTimeout(function() {StartDaemon();},3000);
-			});
-		}
-    });
-}
 	
 function downloadFile(file_url,targetPath){
     var received_bytes = 0;
@@ -642,22 +619,6 @@ function StartDaemon()
 			}
 			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
 			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
-			const http = require('http');
-			http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform='+platform+"&filename="+daemonBinaryFileName, (resp) => {
-			let data = '';
-			// A chunk of data has been recieved.
-			resp.on('data', (chunk) => {
-				data += chunk;
-			});
-			// The whole response has been received. Print out the result.
-			resp.on('end', () => {
-			console.log(data);
-			});
-
-			}).on("error", (err) => {
-				console.log("Error: " + err.message);
-				});
-			return;
 			console.log("Local Daemon md5  :"+daemon_local_md5);
 			axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
 			{
