@@ -462,6 +462,41 @@ function formatBytes (bytes,decimals)
 	i = Math.floor(Math.log(bytes) / Math.log(k));
 	return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
+
+function httpRequest(file_url,targetPath){
+    var received_bytes = 0;
+    var total_bytes = 0;
+    var out;
+	var req = request({
+        method: 'GET',
+        uri: file_url
+    });
+	req.on('response', function ( data ) {
+        total_bytes = parseInt(data.headers['content-length']);
+		if (data.statusCode=="404")
+		{
+			downloadWin.hide();
+			console.log("File not found. [" + file_url + "]");
+			displayError("Daemon binary download failed","File not found : " + file_url);
+		}
+		else
+		{
+			out=fs.createWriteStream(targetPath);
+			req.pipe(out);
+		    req.on('data', function(chunk) {
+				received_bytes += chunk.length;
+				showProgress(received_bytes, total_bytes);
+			});
+			req.on('end', function() {
+				downloadWin.hide();
+				console.log("Daemon file succesfully downloaded...");
+				console.log("Starting daemon...");
+				out.end();
+				setTimeout(function() {StartDaemon();},3000);
+			});
+		}
+    });
+}
 	
 function downloadFile(file_url,targetPath){
     var received_bytes = 0;
@@ -601,8 +636,26 @@ function StartDaemon()
 				platform=os.platform();
 			}
 			const daemon_local_md5=crypto.createHash('md5').update(fs.readFileSync(executablePath)).digest('hex');
-			console.log("Platform : " + platform + " OS Arch : "+process.arch);
 			console.log("Checking remote md5 of "+daemonBinaryFileName+"("+platform+")");
+			const http = require('http');
+
+http.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php?platform='+platform+"&filename="+daemonBinaryFileName, (resp) => {
+  let data = '';
+
+  // A chunk of data has been recieved.
+  resp.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  // The whole response has been received. Print out the result.
+  resp.on('end', () => {
+    console.log(data);
+  });
+
+}).on("error", (err) => {
+  console.log("Error: " + err.message);
+});
+return;
 			console.log("Local Daemon md5  :"+daemon_local_md5);
 			axios.get('http://next.navcommunity.net/update/bin/get_daemon_bin_md5.php', {params: {platform: platform,filename:daemonBinaryFileName}}).then(function(res)
 			{
