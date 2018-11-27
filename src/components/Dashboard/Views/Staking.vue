@@ -54,7 +54,7 @@
       </tr>
     </tbody>
   </table>
-  <h4>Last 30 Day</h4>
+  <h4>Last 30 Days</h4>
   <table class="ui celled padded table">
     <thead>
       <tr>

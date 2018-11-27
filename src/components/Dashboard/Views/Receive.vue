@@ -14,7 +14,7 @@
 			</div>
 			<div class="col-md-12"><br>
 			<h4>Available addresses with balance</h4>
-			<table class="ui celled padded table">
+			<table style="display:none" class="ui celled padded table">
 				<thead>
 					<tr>
 						<th></th>
@@ -37,7 +37,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<table style="display:none" class="ui celled padded table">
+			<table class="ui celled padded table">
 				<thead>
 					<tr>
 						<th></th>
@@ -53,10 +53,10 @@
 					<button role="button" title='Show QR Code' class='ui icon button' v-on:click='getqrcode(item.address)'><i class='ion-qr-scanner'></i></button>
 					</td>
 					<td>
-						<div v-bind:id="item.address">{{item.address}}</div>
+						<div v-bind:id="item.address"><pre>{{item.address}}</pre></div>
 					</td>
-					<td>{{item.balance}}</td>
-					<td style="width:100%">{{item.account}}</td>
+					<td><pre>{{item.balance}}</pre></td>
+					<td style="width:100%"><pre>{{item.account}}</pre></td>
 					</tr>
 				</tbody>
 			</table>
@@ -71,7 +71,7 @@
 					</tr>
 				</thead>
 				<tbody v-if="receivedaddresslist">
-					<tr v-for="item of receivedaddresslist" v-if="(!checked) || checked && item.amount!='0'">
+					<tr v-for="item of receivedaddresslist">
 						<td nowrap>
 							<button role="button" title='Copy to clipboard' class='ui icon button' v-on:click='copytoclipboard(item.address)'><i class='ion-android-clipboard'></i></button>
 							<button role="button" title='Show QR Code' class='ui icon button' v-on:click='getqrcode(item.address)'><i class='ion-qr-scanner'></i></button>
@@ -112,7 +112,7 @@ export default {
       addresslist: [],
       total_address: 0,
 	  receivedaddresslist:"",
-      checked: false
+      checked: true
     }
   },
   components: {},

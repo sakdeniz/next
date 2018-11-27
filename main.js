@@ -1104,12 +1104,15 @@ function CloseApp ()
 
 function closeDaemon()
 {
+	console.log("Closing daemon... ");
 	win.webContents.executeJavaScript(`swal({onOpen: () => {swal.showLoading()},allowOutsideClick:false,text: 'Please wait...'});`);
 	axios.post('http://localhost:3000/stop',{rpcuser:rpcuser,token:rpcpassword,rpcport:rpcport},config).then(function(res)
 	{
+		console.log("Response : " + res.data);
 		console.log(res.data);
 	}).catch(function(err)
 	{
+		console.log("An error occured while trying to stop daemon.");
 		console.log(err);
 	})
 }
