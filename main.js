@@ -1109,7 +1109,6 @@ function closeDaemon()
 	axios.post('http://localhost:3000/stop',{rpcuser:rpcuser,token:rpcpassword,rpcport:rpcport},config).then(function(res)
 	{
 		console.log("Response : " + res.data);
-		console.log(res.data);
 	}).catch(function(err)
 	{
 		console.log("An error occured while trying to stop daemon.");
