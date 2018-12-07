@@ -1321,6 +1321,15 @@ app.on('window-all-closed', () => {
 		if(bError) app.quit();
     }
 })
+app.on('before-quit', function (event)
+{
+	console.log("app.on -> before-quit");
+	if (process.platform == 'darwin' && win)
+	{
+		event.preventDefault();
+		closeDaemon();
+    }
+})
 app.on('activate', () => {
     if (win === null)
 	{
