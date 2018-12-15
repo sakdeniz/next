@@ -40,6 +40,7 @@
         <div class="ui segment">
           <a class="ui green ribbon label"><i style="font-size:2em;" class="ion-social-buffer"></i></a>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{walletInfo.balance}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.coldstaking_balance!=='undefined'" title='Cold Staking Balance'><div class="ui gray button tiny"><i class="ion-ios-snowy"></i></div><a class="ui basic left pointing label tiny">{{walletInfo.coldstaking_balance}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'" title="Unconfirmed"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.immature_balance!=='undefined'" title="Immature"><div class="ui gray button tiny"><i class="ion-egg"></i></div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="coin.bool_support_staking=='1' && typeof info.stake!=='undefined'" title="Staking"><div class="ui gray button tiny"><i class="ion-leaf"></i></div><a class="ui basic left pointing gray label tiny">{{info.stake}} {{coin.symbol}}</a></div>
@@ -144,13 +145,24 @@
 								<div v-show="proposal.bCategory" class="ui gray label large" style="margin-top:10px;"><i class="ion-pricetag icon"></i>{{proposal.category_name}}</div>
 							</div>
 						</div>
-						<div v-show="proposal.author" class="ui purple button pull-right">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</div>
+						<div v-show="proposal.author" class="ui purple button tiny pull-right">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</div>
+						<div v-show="proposal.status=='accepted'" class="ui labeled button tiny pull-right" tabindex="0">
+						<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
+							<a class="ui basic left pointing label">
+								{{proposal.totaldonationamount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.totaldonation}}
+							</a>
+						</div>
+
 					</div>
 				</div>
 				<br/>
 				<div class="row">
 					<div class="col-md-12" style="margin-bottom:10px;">
-						<div class="ui label basic large" title="Proposal Status"><i class="icon ion-flag"></i>{{proposal.status}}</div>
+						<div title="Proposal Status" :class="(proposal.status=='accepted'?'ui label large green':'ui label basic large')">
+							<i v-if="proposal.status=='pending'" class="icon ion-flag"></i>
+							<i v-if="proposal.status=='accepted'" class="icon ion-checkmark"></i>
+							{{capitalizeFirstLetter(proposal.status)}}
+						</div>
 						<div class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{proposal.votingCycle}}</div>
 						<div class="ui label basic large" title="Proposal Duration"><i class="ion-calendar icon"></i>{{getDuration(proposal.proposalDuration)}}</div>
 					</div>
@@ -170,7 +182,7 @@
 					    <sui-progress size="tiny" color="red" state="active" :percent="Math.round((proposal.votesNo/(proposal.votesYes+proposal.votesNo))*100,2)" :label="'%' + Math.round((proposal.votesNo/(proposal.votesYes+proposal.votesNo))*100,2)"/>
 					</div>
 					<div class="col-md-12" style="margin-top:10px;" title="Minimum Sum of Votes Per Voting Cycle">
-					    <sui-progress size="tiny" color="violet" state="active" :percent="(((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2)" :label="'%' + (((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2) + ' (' + (proposal.votesYes+proposal.votesNo) + '/' + cfundStats.consensus.minSumVotesPerVotingCycle + ')'"/>
+					    <sui-progress v-if="(proposal.votesYes+proposal.votesNo<cfundStats.consensus.minSumVotesPerVotingCycle)" size="tiny" color="violet" state="active" :percent="(((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2)" :label="'%' + (((proposal.votesYes+proposal.votesNo)*100)/cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2) + ' (' + (proposal.votesYes+proposal.votesNo) + '/' + cfundStats.consensus.minSumVotesPerVotingCycle + ')'"/>
 					</div>
 
 				</div>
@@ -181,43 +193,42 @@
 							<button title="Vote Yes" @click="proposalvote(proposal.hash,'yes')" class='ui green basic button'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i> Yes</button>
 							<button title="Vote No" class="ui red basic button" @click="proposalvote(proposal.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i> No</button>
 							<button title="Remove Vote" @click="proposalvote(proposal.hash, 'remove') " class='ui purple basic button'><i class='fa fa-close' aria-hidden='true'></i> Cancel</button>
-							<div v-show="proposal.status=='accepted'" class="ui labeled button tiny right floated" tabindex="0">
-								<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
-								<a class="ui basic purple left pointing label">
-								{{proposal.total_donation_amount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.total_donation}}
-								</a>
-							</div>
 						</div>
 					</div>
 					<div class="ui segment" v-if="proposal.paymentRequests">
 						<a class="ui purple ribbon label">Payment Requests</a>
-						<table class="ui striped table">
-							<thead>
-								<tr>
-									<th nowrap>Request ID</th>
-									<th nowrap>Amount ({{coin.symbol}})</th>
-									<th nowrap>Status</th>
-								</tr>
-							</thead>
-							<tbody>
-								<template v-for="paymentRequest in proposal.paymentRequests">
-									<tr>
-										<td nowrap style="width:100%">{{paymentRequest.description}}</td>
-										<td nowrap>{{paymentRequest.requestedAmount}}</td>
-										<td nowrap>{{paymentRequest.status}}</td>
-									</tr>
-									<tr>
-										<td colspan='6'>
-											<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
-											<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i></button>
-											<button title="Vote No" class="ui button tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i></button>
-											<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny gray'><i class='fa fa-close' aria-hidden='true'></i></button>
-											<i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}&nbsp;&nbsp;&nbsp;<i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
-										</td>
-									</tr>
-								</template>
-							</tbody>
-						</table>
+							<table class="ui striped table">
+								<tbody>
+									<template v-for="paymentRequest in proposal.paymentRequests">
+										<tr>
+											<td style="width:100%">{{paymentRequest.description}}</td>
+										</tr>
+										<tr>
+											<td colspan='6'>
+												<div class="row" style="margin-bottom:10px;">
+													<div class="col-md-12">
+														<div class="ui label basic large" title="Requested Amount"><i class="ion-archive icon"></i>{{paymentRequest.requestedAmount.slice(0, -3)}} NAV</div>
+														<div class="ui label basic large" title="Status"><i class="ion-flag icon"></i>{{capitalizeFirstLetter(paymentRequest.status)}}</div>
+														<div class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{paymentRequest.votingCycle}}</div>
+													</div>
+												</div>
+												<button title="Info" @click="showinfo('Payment Request','<div style=\'text-align:left\'><small>Hash:<br><code>'+paymentRequest.hash+'</code></small></div>','info')" class='circular ui icon button tiny teal'><i class='ion-information-circled' aria-hidden='true'></i></button>
+												<button title="Vote Yes" @click="paymentrequestvote(paymentRequest.hash,'yes')" class='ui button basic tiny olive'><i class='fa fa-thumbs-o-up' aria-hidden='true'></i> Yes</button>
+												<button title="Vote No" class="ui button basic tiny pink" @click="paymentrequestvote(paymentRequest.hash,'no')"><i class='fa fa-thumbs-o-down' aria-hidden='true'></i> No</button>
+												<button title="Remove Vote" @click="paymentrequestvote(paymentRequest.hash, 'remove') " class='ui button tiny basic purple'><i class='fa fa-close' aria-hidden='true'></i> Cancel</button>
+												<div class="row" style="margin-top:5px">
+													<div class="col-md-6"><i class="fa fa-thumbs-o-up text-success"></i>&nbsp;{{paymentRequest.votesYes}}
+														<sui-progress size="tiny" color="green" state="active" :percent="Math.round((paymentRequest.votesYes / (paymentRequest.votesYes+paymentRequest.votesNo)) * 100, 2)" :label="'%' + Math.round((paymentRequest.votesYes / (paymentRequest.votesYes+paymentRequest.votesNo)) * 100, 2)"/>
+													</div>
+													<div class="col-md-6"><i class="fa fa-thumbs-o-down text-danger"></i>&nbsp;{{paymentRequest.votesNo}}
+														<sui-progress size="tiny" color="red" state="active" :percent="Math.round((paymentRequest.votesNo / (paymentRequest.votesYes+paymentRequest.votesNo)) * 100, 2)" :label="'%' + Math.round((paymentRequest.votesNo / (paymentRequest.votesYes+paymentRequest.votesNo)) * 100, 2)"/>
+													</div>
+												</div>
+											</td>
+										</tr>
+									</template>
+								</tbody>
+							</table>
 					</div>
 				</div>
           </div>
@@ -279,16 +290,19 @@ export default {
   created: function() {
 	let vm=this;
 	var interval=3000;
+	var interval2=10000;
 	this.getCoin();
 	this.getCoins();
 	this.getPrice();
 	this.getCFundStats();
 	this.timer=setInterval(this.resync, interval);
+	this.timer2=setInterval(this.resync2, interval2);
 	//const toast=swal.mixin({toast: true,position: 'top-end',showConfirmButton: false,timer: 3000});
 	//toast({type:'success',title:'Welcome to NEXT'});
   },
   beforeDestroy() {
     clearInterval(this.timer);
+	clearInterval(this.timer2);
   },
   methods: {
     ...mapActions({
@@ -316,6 +330,10 @@ export default {
       }
       return r
     },
+	capitalizeFirstLetter: n => {
+		return n.charAt(0).toUpperCase() + n.slice(1);
+	},
+
     formatNumber: n => {
 		if (!n) return "0";
 		return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
@@ -385,14 +403,18 @@ export default {
 			this.getStakingInfo();
 			this.getStakeReport();
 		}
-		if (this.blockchainInfo.verificationprogress && vm.coin.bool_support_community_fund=="1")
-		{
-			if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0)=="100") this.getCombinedProposals();
-		}
+	  }
+    },
+    resync2: function() {
+	  let vm=this;
+	  if (this.blockchainInfo.verificationprogress && vm.coin.bool_support_community_fund=="1")
+	  {
+		 if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0)=="100") this.getCombinedProposals();
 	  }
     },
     switchnetwork: function(network) {
 	  clearInterval(this.timer);
+	  clearInterval(this.timer2);
       swal({
         onOpen: () => {
           swal.showLoading()

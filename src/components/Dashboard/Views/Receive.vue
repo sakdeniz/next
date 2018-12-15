@@ -6,6 +6,7 @@
 			<div class="col-md-12">
 			<button class="btn btn-success btn-fill" v-on:click="getnewaddress"><i class="ion-asterisk"></i>&nbsp;Get New Address</button>&nbsp;
 			<router-link v-if="coin.bool_support_open_alias=='1'" to="/admin/open-alias"><button class="btn btn-info btn-fill"><i class="ion-arrow-return-right"></i>&nbsp;Open Alias</button></router-link>
+			<router-link v-if="coin.bool_support_cold_staking=='1'" to="/admin/cold-staking"><button class="btn btn-info btn-fill"><i class="ion-ios-snowy"></i>&nbsp;Cold Staking</button></router-link>
 			</div>
 			<div class="col-md-12">
 			<div style="display:none">

@@ -74,6 +74,7 @@ const store = new Vuex.Store({
 	registersignmessage: '',
 	registerapimessage: '',
 	latestVersion: '',
+	coldStakingAddress:'',
 	coin:{},
 	coins:{},
   },
@@ -94,6 +95,7 @@ const store = new Vuex.Store({
 	  state.registerapimessage = arr["registerapimessage"];
     },
     error (state, error) { state.errorMessage = error.message; state.error = error },
+	addColdStakingAddress (state, coldStakingAddress) { state.coldStakingAddress = coldStakingAddress },
 	addCoin (state, coin) { state.coin = coin, state.errorMessage = '' },
 	addCoins (state, coins) { state.coins = coins, state.errorMessage = '' },
 	addInfo (state, info) { state.info = info, state.errorMessage = '' },
@@ -109,7 +111,7 @@ const store = new Vuex.Store({
     addBlockchainInfo (state, blockchainInfo) { state.blockchainInfo = blockchainInfo },
     addNetworkInfo (state, networkInfo) { state.networkInfo = networkInfo },
     addWalletInfo (state, walletInfo) { state.walletInfo = walletInfo },
-    addStakingInfo (state, stakingInfo) { state.stakingInfo = stakingInfo },
+	addStakingInfo (state, stakingInfo) { state.stakingInfo = stakingInfo },
     addStakeReport (state, stakeReport) { state.stakeReport = stakeReport },
     addProposals (state, proposals) { state.proposals = proposals || state.proposals },
     addCommunitySiteProposals (state, proposals) { state.communitySiteProposals = proposals },
@@ -191,6 +193,14 @@ const store = new Vuex.Store({
       API.getInfo()
         .then(info => context.commit('addInfo', info))
         .catch(err => context.commit('error', err))
+    },
+    async getColdStakingAddress(context,arr) {
+      context.commit('addColdStakingAddress', '')
+	  context.commit('error', '');
+	  API.getColdStakingAddress(arr["stakingaddress"],arr["spendingaddress"])
+        .then(coldStakingAddress => context.commit('addColdStakingAddress', coldStakingAddress))
+        .catch(err => context.commit('error', err))
+		console.log(arr);
     },
 	async getPrice(context) {
       API.getPrice()

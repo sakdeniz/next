@@ -481,13 +481,13 @@ server=http.createServer(function (req, res)
 				{
 					client.paymentrequestvotelist().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/getcoldstakingaddress")
+				{
+					client.getcoldstakingaddress(post.stakingaddress,post.spendingaddress).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/getstakereport")
 				{
 					client.command('getstakereport').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
-				}
-				if (req.url=="/cfundstats")
-				{
-					client.command('cfundstats').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/listtransactions")
 				{

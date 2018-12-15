@@ -28,6 +28,7 @@
 				"bool_support_staking":"1",
 				"bool_support_community_fund":"1",
 				"bool_support_open_alias":"1",
+				"bool_support_cold_staking":"1",
 				"bootstrap_file_url_mainnet":"https://s3.amazonaws.com/navcoin-bootstrap/bootstrap-navcoin_mainnet.tar",
 				"bootstrap_file_url_testnet":"https://navcommunity.net/bootstrap/testnet.tar",
 				"social_youtube_url":"https://www.youtube.com/channel/UCjDs4JceVSsaeCyvkA9cWCg",

@@ -718,7 +718,7 @@ function startProcess()
 					if (!stderr.toString().startsWith("Warning"))
 					{
 						bDaemonError=true;
-						displayDaemonError(stderr,false);
+						displayError("Daemon start failed",stderr.toString());
 					}			
 				});
 			}
@@ -787,7 +787,7 @@ function startProcess()
 				if (!stderr.toString().startsWith("Warning"))
 				{
 					bDaemonError=true;
-					displayDaemonError(stderr,false);
+					displayError("Daemon start failed",stderr.toString());
 				}			
 			});
 		}
@@ -1080,8 +1080,8 @@ function displayError(title,message)
 	});
 	eWindow.loadURL(`file://${__dirname}/dist/static/error.html`);
 	eWindow.webContents.on('did-finish-load', ()=>{
-		eWindow.webContents.executeJavaScript(`document.getElementById('title').innerHTML='`+title+`';`);
-		eWindow.webContents.executeJavaScript(`document.getElementById('error').innerHTML='`+message+`';`);
+		eWindow.webContents.executeJavaScript(`document.getElementById('title').innerHTML="`+title+`";`);
+		eWindow.webContents.executeJavaScript(`document.getElementById('error').innerHTML="`+message+`";`);
 	});
 	eWindow.webContents.on('new-window', function(event, url)
 	{
