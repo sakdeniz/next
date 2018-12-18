@@ -1,5 +1,5 @@
-# Next - NavCoin Wallet
-http://next.navcommunity.net
+# NEXT - NavCoin Wallet
+http://www.nextwallet.org
 
 Installation Instructions for Ubuntu 16.04
 ==========================================

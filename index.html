@@ -30,7 +30,8 @@
 </html>
 <script>
 
-function sortByKey(array, key) {
+function sortByKey(array, key)
+{
     return array.sort(function(a, b) {
         var x = a[key]; var y = b[key];
         return ((x < y) ? -1 : ((x > y) ? 1 : 0));
@@ -39,14 +40,13 @@ function sortByKey(array, key) {
 
 function secondsToDhms(seconds)
 {
-seconds = Number(seconds);
-var d = Math.floor(seconds / (3600*24));
-var h = Math.floor(seconds % (3600*24) / 3600);
-var m = Math.floor(seconds % 3600 / 60);
-var s = Math.floor(seconds % 3600 % 60);
-
-var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
-return dDisplay;
+	seconds=Number(seconds);
+	var d=Math.floor(seconds / (3600*24));
+	var h=Math.floor(seconds % (3600*24) / 3600);
+	var m=Math.floor(seconds % 3600 / 60);
+	var s=Math.floor(seconds % 3600 % 60);
+	var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
+	return dDisplay;
 }
 
 function copy(selector)
