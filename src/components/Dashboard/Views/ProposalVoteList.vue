@@ -23,18 +23,18 @@
       <tr>
         <th nowrap>Your Vote</th>
         <th>View</th>
-        <th nowrap>Proposal Title</th>
-        <th nowrap>Amount</th>
-        <th nowrap>Positive Votes</th>
-        <th nowrap>Negative Votes</th>
-        <th nowrap>Status</th>
+        <th>Proposal Title</th>
+        <th>Amount</th>
+        <th>Positive</th>
+        <th>Negative</th>
+        <th>Status</th>
       </tr>
       <tr v-for="proposal_vote in array_proposal_votes">
         <td nowrap>
           <center><i v-bind:class="proposal_vote.voteType"></i></center>
         </td>
-        <td nowrap><a target="_blank" class="btn btn-sm btn-fill btn-primary" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal_vote.hash"><i class="fa fa-eye" aria-hidden="true"></i>&nbsp;View</a></td>
-        <td nowrap>{{proposal_vote.strDZeel}}</td>
+        <td nowrap><a target="_blank" class="ui button gray" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal_vote.hash"><i class="fa fa-eye" aria-hidden="true"></i></a></td>
+        <td>{{proposal_vote.strDZeel}}</td>
         <td nowrap>{{proposal_vote.nAmount}} NAV</td>
         <td nowrap>{{proposal_vote.nVotesYes}}</td>
         <td nowrap>{{proposal_vote.nVotesNo}}</td>
@@ -47,17 +47,17 @@
         <th nowrap>Proposal Title</th>
         <th nowrap>Request ID</th>
         <th nowrap>Amount</th>
-        <th nowrap>Positive Votes</th>
-        <th nowrap>Negative Votes</th>
+        <th nowrap>Positive</th>
+        <th nowrap>Negative</th>
         <th nowrap>Status</th>
       </tr>
       <tr v-for="proposal_payment_request in array_payment_request_votes">
-        <td nowrap>{{proposal_payment_request.sProposalTitle}}</td>
-        <td nowrap>{{proposal_payment_request.strDZeel}}</td>
-        <td nowrap>{{proposal_payment_request.nAmount}} NAV</td>
-        <td nowrap>{{proposal_payment_request.nVotesYes}}</td>
-        <td nowrap>{{proposal_payment_request.nVotesNo}}</td>
-        <td nowrap style='width:100%'>{{proposal_payment_request.fState}}</td>
+        <td>{{proposal_payment_request.sProposalTitle}}</td>
+        <td>{{proposal_payment_request.strDZeel}}</td>
+        <td>{{proposal_payment_request.nAmount}} NAV</td>
+        <td>{{proposal_payment_request.nVotesYes}}</td>
+        <td>{{proposal_payment_request.nVotesNo}}</td>
+        <td style='width:100%'>{{proposal_payment_request.fState}}</td>
       </tr>
     </table>
   </div>
@@ -70,8 +70,8 @@ import moment from 'moment';
 import Vue from 'vue';
 
 function numberWithCommas(n) {
-  var parts = n.toString().split(".");
-  return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+	var number=Math.round(n,2);
+	return String(number).replace(/(.)(?=(\d{3})+$)/g,'$1,');
 }
 
 var proposal_info = "";

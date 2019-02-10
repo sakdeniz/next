@@ -21,11 +21,11 @@ const config={headers: {'Content-Type': 'application/x-www-form-urlencoded'},res
 const randomBytes=crypto.randomBytes(256);
 const rpcuser=crypto.createHash('sha256').update(randomBytes, 'utf8').digest('hex');
 const rpcpassword=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
-const zmq=require('zeromq');
+//const zmq=require('zeromq');
 const bitcore=require('bitcore-lib'); // npm install encrypt-s/bitcore-lib
 const clock=require('human-readable-time');
 const printf=require('printf');
-const sock=zmq.socket('sub');
+//const sock=zmq.socket('sub');
 const hrt=new clock('%D%/%M%/%YY% %hh%:%mm%:%ss%');
 const Block=bitcore.Block;
 const Transaction=bitcore.Transaction;
@@ -35,6 +35,7 @@ var appDataPath;
 var executablePath;
 var daemonPath;
 var welcomeWin;
+var lwWin;
 var bswin;
 var downloadWin;
 var eWindow;
@@ -647,7 +648,7 @@ function startProcess()
 	{
 		ntp=" -ntpservers=pool.ntp.org -ntpminmeasures=1";
 	}
-	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + zmq + " -debug=0 -server -rpcbind=127.0.0.1 -rpcallowip=127.0.0.1 -uacomment=NEXT" + addnode + ntp];
+	var parameters = ["-rpcuser=" + rpcuser + " -rpcport=" + rpcport +" -rpcpassword=" + rpcpassword + testnet + reindex + reindexchainstate + zapwallettxes + printtoconsole + bootstrap + zmq + " -listen=0 -debug=1 -server -rpcbind=127.0.0.1 -rpcallowip=127.0.0.1 -uacomment=NEXT" + addnode + ntp];
 	console.log("Daemon Parameters : [" + parameters + "]");
 	const defaults = {cwd:binDir,env:process.env,shell:bShell,windowsVerbatimArguments:true};
 	console.log("App Path : "+app.getAppPath());
@@ -1065,6 +1066,11 @@ function handleCommand(line)
 		updateGlobals();
 		welcomeWin.hide();
 		Init(true);
+	}
+	if (line.startsWith("next:start_lw:")) 
+	{
+		var server=require("./server-lw");
+		welcomeWin.loadURL(`file://${__dirname}/dist/static/lw/index.html?version=${version}&coins=`+JSON.stringify(coins)+`&coin=`+store.get('coin')+`&update_preference=`+store.get('update_preference')+`&update_daemon_preference=`+store.get('update_daemon_preference'));
 	}
 }
 

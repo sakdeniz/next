@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>NEXT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link href="../plugins/semantic/semantic.min.css" rel="stylesheet" type="text/css" />
+<link href="../plugins/ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css"/>
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<script src="../plugins/vuejs/vue.min.js"></script>
+<script src="../plugins/jquery/jquery.min.js"></script>
+<script src="../plugins/semantic/semantic.min.js"></script>
+<script src="../plugins/axios/axios.min.js"></script>
+<script src="../plugins/moment/moment-with-locales.js"></script>
+<script src="../plugins/feathericons/feather.min.js"></script>
+<style>
+.svg-icon {
+    height: 5em;
+    margin-top: -4px;
+    pointer-events: none;
+    vertical-align: middle;
+    width: 5em;
+}
+.svg-icon-small {
+    height: 2em;
+    margin-top: -4px;
+    pointer-events: none;
+    vertical-align: middle;
+    width: 2em;
+}
+.item
+{
+	margin-top:15px;
+	vertical-align:center;
+}
+</style>
+</head>
+<body>
+<div id="app">
+	<br/>
+	<div class="ui container" v-show="walletExist">
+		<div class="ui grid">
+			<div class="fourteen wide column">
+				<h4>
+					<span class="ui label "><i data-feather="feather" class="text-violet"></i></span>
+					&nbsp;NEXT Light Wallet
+				</h4>
+			</div>
+			<div class="two wide column">
+				<div class="right floated" style="text-align:right">Build 0.0.1</div>
+			</div>
+		</div>
+  
+		<div class="ui top attached tabular menu">
+			<a class="item active" data-tab="first">Balance</a>
+			<a class="item" data-tab="second">Receive</a>
+			<a class="item" data-tab="third">Send</a>
+			<a class="item" data-tab="four">Community Fund</a>
+			<a class="item" data-tab="five">Sign Message</a>
+			<a class="item" data-tab="six">Verify Message</a>
+			<a class="item" data-tab="seven">Tools</a>
+		</div>
+		
+		<div class="ui bottom attached tab segment active" data-tab="first">
+			<h1>{{balance}} {{unit}}</h1>
+			<h5>Height {{height}}</h5>
+		</div>
+		
+		<div class="ui bottom attached tab segment" data-tab="second">
+			<h3>Receive</h3>
+			<p v-if="addressList">{{addressList}}</p>
+		</div>
+		<div class="ui bottom attached tab segment" data-tab="third">
+			<h3>Send</h3>
+			<form class="ui form">
+				  <div class="field">
+					<label>Address</label>
+					<input type="text" name="send_address" placeholder="Address" v-model="send_address">
+				  </div>
+				  <div class="field">
+					<label>Amount</label>
+					<input type="text" name="send_amount" placeholder="Amount" v-model="send_amount">
+				  </div>
+				  <a class="ui button" v-on:click="send()">Send</a>
+				  <p>{{result_send}}</p>
+			</form>
+			<div class="ui accordion">
+				<div class="title">
+					<i class="dropdown icon"></i>
+					UTXOs
+				</div>
+				<div class="content">
+					<pre>{{utxo}}</pre>
+				</div>
+			</div>
+		</div>
+		
+		<div class="ui bottom attached tab segment" data-tab="four">
+			<h3>Community Fund</h3>
+			<form class="ui form">
+			  <div class="field">
+				<label>Required Amount</label>
+				<input type="text" name="strdzeel_n" placeholder="Amount" v-model="strdzeel_n">
+			  </div>
+			  <div class="field">
+				<label>Address</label>
+				<input type="text" name="strdzeel_a" placeholder="Address" v-model="strdzeel_a">
+			  </div>
+  			  <div class="field">
+				<label>Deadline</label>
+				<input type="text" name="strdzeel_d" placeholder="Deadline" v-model="strdzeel_d">
+			  </div>
+   			  <div class="field">
+				<label>Proposal Description</label>
+				<input type="text" name="strdzeel_s" placeholder="Description" v-model="strdzeel_s">
+			  </div>
+			  <a class="ui button" v-on:click="createProposal()">Create Proposal</a>
+			  <p>{{result_create_proposal}}</p>
+			</form>
+		</div>
+		
+		<div class="ui bottom attached tab segment" data-tab="five">
+			<h3>Sign Message</h3>
+			<form class="ui form">
+				  <div class="field">
+					<label>Message</label>
+					<input type="text" name="message" placeholder="Message" v-model="message">
+				  </div>
+				  <div class="field">
+					<label>Private Key</label>
+					<input type="text" name="privateKey" placeholder="Private Key" v-model="privateKey">
+				  </div>
+				  <a class="ui button" v-on:click="sign()">Sign</a>
+				  <p>{{result_signature}}</p>
+			</form>
+		</div>
+		
+		<div class="ui bottom attached tab segment" data-tab="six">
+			<h3>Verify Message</h3>
+			<form class="ui form">
+				  <div class="field">
+					<label>Message</label>
+					<input type="text" name="verify_message" placeholder="Message" v-model="verify_message">
+				  </div>
+				  <div class="field">
+					<label>Address</label>
+					<input type="text" name="verify_address" placeholder="Address" v-model="verify_address">
+				  </div>
+				  <div class="field">
+					<label>Signature</label>
+					<input type="text" name="verify_signature" placeholder="Signature" v-model="verify_signature">
+				  </div>
+				  <a class="ui button" v-on:click="verify()">Verify</a>
+				  <p>{{result_verify}}</p>
+			</form>
+		</div>
+
+		<div class="ui bottom attached tab segment" data-tab="seven">
+			<button class="ui button gray right floated" v-on:click="getnewaddress()">Show Private Key & Mnemonics</button>
+			<h3>Private Key</h3>
+			<div v-if="address" class="ui message">
+				<h5>Public Address</h5><p>{{address}}</p>
+				<h5>Private Key</h5><p>{{privateKey}}</p>
+			</div>
+			<h3>Mnemonics</h3>
+			<div v-if="address" class="ui message">
+				<p>{{mnemonics}}</p>
+			</div>
+		</div>
+	</div>
+	<div class="ui container" v-show="!walletExist">
+		<i data-feather="feather" class="text-violet svg-icon" style="color:#6435c9;"></i>
+			<h4>&nbsp;Welcome to the NEXT wallet</h4>
+			<div class="ui list">
+				<div class="item">
+					<div class="content">
+						<i data-feather="coffee" class="icon text-violet"></i>
+						The NEXT Lite Wallet allows you to quickly interact with the NavCoin blockchain.
+					</div>
+				</div>
+				<div class="item">
+					<i data-feather="key" class="icon text-violet"></i>
+					All your private keys are stored locally and you have all the control.
+				</div>
+				<div class="item">
+					<i data-feather="watch" class="icon text-violet"></i>
+					There is no need to synchronize with the network. Open the wallet and you're ready to go.
+				</div>
+			</div>
+		<button class="ui button violet large" v-on:click="createWallet()"><i data-feather="chevron-right" class="svg-icon-small"></i>Create My Wallet</button>
+	</div>
+</div>
+<script>
+$(document).ready(function(){
+    $('.menu .item').tab({history:false});
+	$('.accordion').accordion();
+});
+var app = new Vue({
+  el: '#app',
+  data: {
+  	config:{headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'},
+    walletExist:false,
+	balance: '0.00',
+	height:'',
+	unit: 'NAV',
+	address: '',
+	addressList:'',
+	mnemonics:'',
+	message:'',
+	privateKey:'',
+	signature:'',
+	verify_message:'',
+	verify_address:'',
+	verify_signature:'',
+	result_signature:'',
+	result_verify:'',
+	send_address:'',
+	send_amount:'',
+	result_send:'',
+	strdzeel_v:2,
+	strdzeel_n:'',
+	strdzeel_a:'',
+	strdzeel_d:'',
+	strdzeel_s:'',
+	result_create_proposal:'',
+	utxo:[],
+  },
+  created: function()
+  {
+	this.isWalletExist();
+	this.refresh();
+	this.strdzeel_n=1;
+	this.strdzeel_d=moment().unix()+1000000;
+	this.strdzeel_s="NEXT Light Wallet Test Proposal";
+  },
+  methods:{
+    refresh: function ()
+	{
+		if (this.walletExist)
+		{
+			this.getBalance();
+			this.getHeight();
+			this.listAddr();
+			this.getUTXO();
+		}
+	},
+	isWalletExist: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/iswalletexist', {})
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.walletExist=response.data.exist;
+			vm.refresh();
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+    createWallet: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/createwallet', {})
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.walletExist=true;
+			vm.refresh();
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+    getBalance: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/balance', {})
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.balance=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+	getHeight: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/height', {})
+		.then(function (response)
+		{
+			console.log(response.data);
+			vm.height=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+	getUTXO: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/utxo', {})
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.utxo=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+	listAddr: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/listaddr', {})
+		.then(function (response)
+		{
+			vm.addressList=response.data;
+			vm.strdzeel_a=vm.addressList;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+    getnewaddress: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/generate', {})
+		.then(function (response)
+		{
+			console.log(response.data);
+			vm.address=response.data.address;
+			vm.privateKey=response.data.privateKey;
+			vm.mnemonics=response.data.mnemonics;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+	sign: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/sign', {message: this.message, privateKey:this.privateKey},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			if (!response.data.error)
+			{
+				vm.result_signature=response.data.signature;
+			}
+			else
+			{
+				vm.result_signature=response.data.message;
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+	verify: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/verify', {message: this.verify_message, address:this.verify_address, signature:this.verify_signature},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			if (!response.data.error)
+			{
+				vm.result_verify=response.data.result;
+			}
+			else
+			{
+				vm.result_verify=response.data.message;
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+	send: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/send', {to: this.send_address, amount:this.send_amount},this.config)
+		.then(function (response)
+		{
+			console.log(response.data);
+			if (!response.data.error)
+			{
+				vm.result_send=response.data.hex;
+			}
+			else
+			{
+				vm.result_send=response.data.message;
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		}); 
+	},
+	createProposal: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/createproposal', {v:this.strdzeel_v,n: this.strdzeel_n,a:this.strdzeel_a,d:this.strdzeel_d,s:this.strdzeel_s},this.config)
+		.then(function (response)
+		{
+			console.log(response.data);
+			if (!response.data.error)
+			{
+				vm.result_create_proposal=response.data.hex;
+			}
+			else
+			{
+				vm.result_create_proposal=response.data.message;
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		}); 
+	}
+  }
+})
+</script>
+<script>
+	feather.replace();
+</script>
+</html>

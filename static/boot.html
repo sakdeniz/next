@@ -25,6 +25,7 @@ var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82ac
 			<img class="ui tiny image" v-bind:src=getlogo(coins['Coins'][c_coin][0].logo)>
 			<br/><br/><br/>
 			<button class="ui labeled icon button huge blue" v-on:click="start()">Start Wallet<i class="right chevron icon"></i></button><br/><br/><br/>
+			<button class="ui labeled icon button huge green" v-on:click="start_lw()">Light Wallet<i class="right chevron icon"></i></button><br/><br/><br/>
 			<button class="ui labeled icon button large teal" v-on:click="change_asset()" style="margin-left:10px;">Change Asset<i class="right ion-navicon-round icon"></i></button>
 			<button class="ui labeled icon button large violet" v-on:click="settings()" style="margin-left:10px;">Settings<i class="right cog icon"></i></button>
 			<button class="ui labeled icon button large violet" v-on:click="help()" style="margin-left:10px;">Help<i class="right help icon"></i></button>
@@ -343,6 +344,11 @@ var app = new Vue({
 	{
 		let vm=this;
 		console.log("next:coin_m:"+vm.coinkey);
+	},
+	start_lw:function()
+	{
+		let vm=this;
+		console.log("next:start_lw:"+vm.coinkey);
 	},
 	getlogo: function(logo) {
 		return "../"+logo;

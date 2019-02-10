@@ -237,19 +237,19 @@
 					<td>
 						<i class="ion-android-time"></i> Pending
 					</td>
-					<td class="right aligned collapsing">{{array_proposals.filter(item => item.status=="Pending").length}}</td>
+					<td class="right aligned collapsing">{{array_proposals.filter(item => item.status=="pending").length}}</td>
 				</tr>
 				<tr>
 					<td>
 						<i class="ion-android-done-all"></i> Accepted
 					</td>
-					<td class="right aligned">{{array_proposals.filter(item => item.status=="Accepted").length}}</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="accepted").length}}</td>
 				</tr>
 				<tr>
 					<td>
 						<i class="ion-android-done"></i> Accepted waiting for enough coins in fund
 					</td>
-					<td class="right aligned">{{array_proposals.filter(item => item.status=="Accepted waiting for enough coins in fund").length}}</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="accepted waiting for enough coins in fund").length}}</td>
 				</tr>
 				<tr>
 					<td>
@@ -259,27 +259,33 @@
 				</tr>
 				<tr>
 					<td>
-						<i class="ion-android-done"></i> Rejected waiting for end of voting period
+						<i class="ion-close"></i> Rejected
+					</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="rejected").length}}</td>
+				</tr>
+				<tr>
+					<td>
+						<i class="ion-close"></i> Rejected waiting for end of voting period
 					</td>
 					<td class="right aligned">{{array_proposals.filter(item => item.status=="rejected waiting for end of voting period").length}}</td>
 				</tr>
 				<tr>
 					<td>
-						<i class="ion-android-done"></i> Expired waiting for end of voting period
+						<i class="ion-close"></i> Expired waiting for end of voting period
 					</td>
 					<td class="right aligned">{{array_proposals.filter(item => item.status=="expired waiting for end of voting period").length}}</td>
 				</tr>
 				<tr>
 					<td>
-						<i class="ion-android-close"></i> Rejected
+						<i class="ion-close"></i> Expired pending voting of payment requests
 					</td>
-					<td class="right aligned">{{array_proposals.filter(item => item.status=="Rejected").length}}</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="expired pending voting of payment requests").length}}</td>
 				</tr>
 				<tr>
 					<td>
-						<i class="ion-android-delete"></i> Expired
+						<i class="ion-trash-b"></i> Expired
 					</td>
-					<td class="right aligned">{{array_proposals.filter(item => item.status=="Expired").length}}</td>
+					<td class="right aligned">{{array_proposals.filter(item => item.status=="expired").length}}</td>
 				</tr>
 				<tr>
 					<td>
@@ -320,7 +326,7 @@
 						<div class="col-md-12">
 						<div v-show="proposal.bAuthor" class="ui purple button tiny pull-right" style="margin-bottom:10px;">&nbsp;<i class="ion-person text-default"></i>&nbsp;{{proposal.author}}</div>
 						<div v-show="proposal.textfeatured=='Featured'" v-bind:class="proposal.classfeatured">&nbsp;{{proposal.textfeatured}}</div>
-						<div v-show="proposal.status=='Accepted'" class="ui labeled button tiny pull-right" tabindex="0">
+						<div v-show="proposal.status=='accepted'" class="ui labeled button tiny pull-right" tabindex="0">
 						<div class="ui purple button tiny" @click="proposaldonate(proposal.hash,proposal.paymentAddress)"><i class="heart icon"></i> Donate</div>
 							<a class="ui basic left pointing label">
 								{{proposal.totaldonationamount}}&nbsp;&nbsp;&nbsp;<i class="ion-person"></i>&nbsp;{{proposal.totaldonation}}
@@ -333,13 +339,13 @@
 				<br/>
 				<div class="row">
 					<div class="col-md-12" style="margin-bottom:10px;">
-						<div title="Proposal Status" :class="(proposal.status=='Accepted'?'ui label large green':'ui label basic large')">
-							<i v-if="proposal.status=='Pending'" class="icon ion-flag"></i>
-							<i v-if="proposal.status=='Accepted'" class="icon ion-checkmark"></i>
-							{{proposal.status}}
+						<div style="margin-top:5px;" title="Proposal Status" :class="(proposal.status=='accepted'?'ui label large green':'ui label basic large')">
+							<i v-if="proposal.status=='pending'" class="icon ion-flag"></i>
+							<i v-if="proposal.status=='accepted'" class="icon ion-checkmark"></i>
+							{{capitalizeFirstLetter(proposal.status)}}
 						</div>
-						<div class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{proposal.votingCycle}}</div>
-						<div class="ui label basic large" title="Proposal Duration"><i class="ion-calendar icon"></i>{{proposal.proposalDuration}}</div>
+						<div style="margin-top:5px;" class="ui label basic large" title="Voting Cycle"><i class="ion-loop icon"></i>Cycle {{proposal.votingCycle}}</div>
+						<div style="margin-top:5px;" class="ui label basic large" title="Proposal Duration"><i class="ion-calendar icon"></i>{{proposal.proposalDuration}}</div>
 					</div>
 					<div class="col-md-12">
 						<a target="_blank" class="ui button small gray" v-bind:href="'http://navcommunity.net/view-proposal/'+proposal.hash"><i class='ion-android-open icon'></i>View</a>
@@ -741,12 +747,6 @@ export default {
                 if (bCategory && proposal_category_id) {
                   if (category_id == proposal_category_id) bAdd = true;
                 }
-                if (status == "pending") status = "Pending";
-                if (status == "accepted") status = "Accepted";
-                if (status == "rejected") status = "Rejected";
-                if (status == "rejected waiting for end of voting period") status = "Rejected waiting for end of voting period";
-                if (status == "accepted waiting for enough coins in fund") status = "Accepted waiting for enough coins in fund";
-				//
                 var total_votes = votesYes + votesNo;
                 var yes_votes_proportion = Math.round((votesYes / total_votes) * 100, 2);
                 var no_votes_proportion = Math.round((votesNo / total_votes) * 100, 2);
