@@ -18,37 +18,71 @@ var Message = require('bitcore-message');
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
-const ENCRYPTION_KEY = crypto.createHash('md5').update("password").digest("hex"); // Must be 256 bytes (32 characters)
+var ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
-
+const walletFileName='wallet.db';
+const apiURL='https://navcommunity.net/api/lw/';
 var adapter;
 var db;
 
-adapter=new FileSync('db.json', {serialize: (data) => encrypt(JSON.stringify(data)),deserialize: (data) => JSON.parse(decrypt(data))});
-db=low(adapter);
-var code = new Mnemonic(Mnemonic.Words.ENGLISH);
-db.defaults({addr:[],mnemonics:code.toString(),count:0}).write();
-
-function encrypt(text) {
- let iv = crypto.randomBytes(IV_LENGTH);
- let cipher = crypto.createCipheriv('aes-256-cbc', new Buffer(ENCRYPTION_KEY), iv);
- let encrypted = cipher.update(text);
-
- encrypted = Buffer.concat([encrypted, cipher.final()]);
-
- return iv.toString('hex') + ':' + encrypted.toString('hex');
+function initWallet(password,res)
+{
+	console.log("Init Wallet");
+	console.log("Password:"+password);
+	ENCRYPTION_KEY=crypto.createHash('md5').update(password).digest("hex"); // Must be 256 bytes (32 characters)
+	adapter=new FileSync(walletFileName, {serialize: (data) => encrypt(JSON.stringify(data)),deserialize: (data) => JSON.parse(decrypt(data))});
+	db=low(adapter);
+	var code = new Mnemonic(Mnemonic.Words.ENGLISH);
+	db.defaults({addr:[],mnemonics:code.toString(),count:0}).write();
+	generate(res);
 }
 
-function decrypt(text) {
- let textParts = text.split(':');
- let iv = new Buffer(textParts.shift(), 'hex');
- let encryptedText = new Buffer(textParts.join(':'), 'hex');
- let decipher = crypto.createDecipheriv('aes-256-cbc', new Buffer(ENCRYPTION_KEY), iv);
- let decrypted = decipher.update(encryptedText);
+function unlockWallet(password)
+{
+	console.log("Unlock Wallet");
+	console.log("Password:"+password);
+	ENCRYPTION_KEY=crypto.createHash('md5').update(password).digest("hex"); // Must be 256 bytes (32 characters)
+	adapter=new FileSync(walletFileName, {serialize: (data) => encrypt(JSON.stringify(data)),deserialize: (data) => JSON.parse(decrypt(data))});
+	db=low(adapter);
+	if (db.getState()==false) return false; else return true;
+}
 
- decrypted = Buffer.concat([decrypted, decipher.final()]);
+function encrypt(text)
+{
+	try
+	{
+		let iv = crypto.randomBytes(IV_LENGTH);
+		let cipher = crypto.createCipheriv('aes-256-cbc', new Buffer(ENCRYPTION_KEY), iv);
+		let encrypted = cipher.update(text);
+		encrypted = Buffer.concat([encrypted, cipher.final()]);
+		return iv.toString('hex') + ':' + encrypted.toString('hex');
+		console.log("Encrypt");
+	}
+	catch (e)
+	{
+		console.log("Encryption failed.");
+		return false;
+	}
+}
 
- return decrypted.toString();
+function decrypt(text)
+{
+	try
+	{
+		let textParts = text.split(':');
+		let iv = new Buffer(textParts.shift(), 'hex');
+		let encryptedText = new Buffer(textParts.join(':'), 'hex');
+		let decipher = crypto.createDecipheriv('aes-256-cbc', new Buffer(ENCRYPTION_KEY), iv);
+		let decrypted = decipher.update(encryptedText);
+		decrypted = Buffer.concat([decrypted, decipher.final()]);
+		console.log("Decrypt");
+		return decrypted.toString();
+	}
+	catch (e)
+	{
+		console.log("Decryption failed.");
+		return false;
+	}
 }
 
   
@@ -68,45 +102,43 @@ function sendError(res, statusCode, body)
 	res.end();
 }
 
-
 function generate(res)
 {
-	
-			code = new Mnemonic(db.get('mnemonics').value());
-			var xpriv = code.toHDPrivateKey();
-			var value = Buffer.from(code.toString());
-			var hash = bitcore.crypto.Hash.sha256(value);
-			var bn = bitcore.crypto.BN.fromBuffer(hash);
-			var privateKey = new bitcore.PrivateKey(bn);
-			var address = privateKey.toAddress();
-			var exported = privateKey.toWIF();
-			/*console.log("Mnemonics\r\n" + code);
-			console.log("Private Key\r\n" + privateKey);
-			console.log("HD Private Key\r\n" + xpriv);
-			console.log("Public Address\r\n" + address);*/
-			const addrExist = db
-			.get('addr')
-			.find({ publicAddress: address.toString() })
-			.value()
-			if (!addrExist)
-			{
-				db.get('addr')
-				.push(
-				{
-					publicAddress: address.toString(),
-					privateKey: privateKey.toWIF(),
-					xpriv: xpriv.toString()
-				})
-				.write()
-			}
-			sendResponse(res,200,JSON.stringify(
-			{
-				"mnemonics":code.toString(),
-				"address":address.toString(),
-				"privateKey":privateKey.toWIF(),
-				"xpriv":xpriv.toString(),
-			}
-			));
+	code = new Mnemonic(db.get('mnemonics').value());
+	var xpriv = code.toHDPrivateKey();
+	var value = Buffer.from(code.toString());
+	var hash = bitcore.crypto.Hash.sha256(value);
+	var bn = bitcore.crypto.BN.fromBuffer(hash);
+	var privateKey = new bitcore.PrivateKey(bn);
+	var address = privateKey.toAddress();
+	var exported = privateKey.toWIF();
+	/*console.log("Mnemonics\r\n" + code);
+	console.log("Private Key\r\n" + privateKey);
+	console.log("HD Private Key\r\n" + xpriv);
+	console.log("Public Address\r\n" + address);*/
+	const addrExist = db
+	.get('addr')
+	.find({ publicAddress: address.toString() })
+	.value()
+	if (!addrExist)
+	{
+		db.get('addr')
+		.push(
+		{
+			publicAddress: address.toString(),
+			privateKey: privateKey.toWIF(),
+			xpriv: xpriv.toString()
+		})
+		.write()
+	}
+	sendResponse(res,200,JSON.stringify(
+	{
+		"mnemonics":code.toString(),
+		"address":address.toString(),
+		"privateKey":privateKey.toWIF(),
+		"xpriv":xpriv.toString(),
+	}
+	));
 }
 
 server=http.createServer(function (req, res)
@@ -123,12 +155,13 @@ server=http.createServer(function (req, res)
 	req.on('end', function ()
 	{
 		var post= body ? JSON.parse(body) : {}
-		if (req.url=="/generate")
+		
+		if (req.url=="/initwallet")
 		{
-			generate(res);
+			initWallet(post.password,res);
 		}
 		
-		if (req.url=="/createwallet")
+		if (req.url=="/generate")
 		{
 			generate(res);
 		}
@@ -136,25 +169,45 @@ server=http.createServer(function (req, res)
 		if (req.url=="/iswalletexist")
 		{
 			console.log("Checking wallet exist...");
-			if (db.get('addr').value()[0].publicAddress)
+			try
 			{
-				console.log("Wallet exist.");
-				console.log("Public address:"+db.get('addr').value()[0].publicAddress);
-				sendResponse(res,200,JSON.stringify(
+
+				if (fs.existsSync(walletFileName))
 				{
-					"exist":true,
+					console.log("Wallet exist.");
+					sendResponse(res,200,JSON.stringify(
+					{
+						"exist":true,
+					}));
 				}
-				));
+				else
+				{
+					console.log("Wallet not exist.");
+					sendResponse(res,200,JSON.stringify(
+					{
+						"exist":false,
+					}));
+				}
 			}
-			else
+			catch(e)
 			{
-				console.log("Wallet not exist " + db.get('addr').value());
+				console.log("Wallet not exist.");
 				sendResponse(res,200,JSON.stringify(
 				{
 					"exist":false,
-				}
-				));
+					"error":e
+				}));
 			}
+		}
+
+		if (req.url=="/unlockwallet")
+		{
+			console.log("Unlocking wallet...");
+			retval=unlockWallet(post.password,res);
+			sendResponse(res,200,JSON.stringify(
+			{
+				"isUnlocked":retval
+			}));
 		}
 		
 		if (req.url=="/sign")
@@ -177,8 +230,55 @@ server=http.createServer(function (req, res)
 					{
 						"error":false,
 						"signature":signature.toString()
-					}
-					));
+					}));
+				}
+				catch(err)
+				{
+					sendResponse(res,200,JSON.stringify(
+					{
+						"error":true,
+						"errno":err.errno,
+						"code":err.code,
+						"path":err.path,
+						"message":err.message
+					}));
+				}
+			}
+		}
+		
+		if (req.url=="/send")
+		{
+		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'utxo', {
+				params: {
+				  a: publicAddress
+				}
+			})
+			.then(function (response)
+			{
+				var utxo=response.data;	  
+			    try
+				{
+					console.log("To:"+post.to);
+					console.log("Amount:"+post.amount);
+					const publicAddress=db.get('addr').value()[0].publicAddress;
+					const privateKey=db.get('addr').value()[0].privateKey;
+					var tx = new bitcore.Transaction()
+					.from(utxo)
+					.to(post.to, parseInt(post.amount))
+					.settime(moment().unix())
+					.change(publicAddress)
+					.sign(privateKey);
+					console.log(tx.toObject());
+					console.log(tx.serialize());
+					axios.post(apiURL+'sendrawtransaction', "a="+tx.serialize().toString(),config)
+						.then((retval) => 
+						sendResponse(res,200,JSON.stringify(
+						{
+							"hex":retval.data
+						}
+						))
+						).catch((e) => {sendError(res, 200,e);})
 				}
 				catch(err)
 				{
@@ -192,133 +292,88 @@ server=http.createServer(function (req, res)
 					}
 					));
 				}
-			}
-		}
-		
-		if (req.url=="/send")
-		{
-		    const publicAddress=db.get('addr').value()[0].publicAddress;
-			axios.get('https://navcommunity.net/api/lw/utxo', {
-				params: {
-				  a: publicAddress
-				}
-			  })
-			  .then(function (response) {
-			var utxo=response.data;	  
-		    try
+			})
+			.catch(function (error)
 			{
-				console.log("To:"+post.to);
-				console.log("Amount:"+post.amount);
-				const publicAddress=db.get('addr').value()[0].publicAddress;
-				const privateKey=db.get('addr').value()[0].privateKey;
-				var tx = new bitcore.Transaction()
-				.from(utxo)
-				.to(post.to, parseInt(post.amount))
-				.settime(moment().unix())
-				.change(publicAddress)
-				.sign(privateKey);
-				console.log(tx.toObject());
-				console.log(tx.serialize());
-		  	  
-				axios.post("https://navcommunity.net/api/lw/sendrawtransaction", "a="+tx.serialize().toString(),config)
-					.then((retval) => 
-					sendResponse(res,200,JSON.stringify(
-					{
-						"hex":retval.data
-					}
-					))
-					).catch((e) => {sendError(res, 200,e);})
-			}
-			catch(err)
-			{
-				sendResponse(res,200,JSON.stringify(
-				{
-					"error":true,
-					"errno":err.errno,
-					"code":err.code,
-					"path":err.path,
-					"message":err.message
-				}
-				));
-			}
-				  
-				  
-			  })
-			  .catch(function (error) {
 				console.log(error);
-			  })
-			  .then(function ()
-			  {
-			 });
-			
-
+			})
+			.then(function ()
+			{
+			});
 		}
-		
+
 		if (req.url=="/createproposal")
 		{
 		    const publicAddress=db.get('addr').value()[0].publicAddress;
-			axios.get('https://navcommunity.net/api/lw/utxo', {
+			axios.get(apiURL+'utxo', {
 				params: {
 				  a: publicAddress
 				}
-			  })
-			  .then(function (response) {
-			var utxo=response.data;	  
-		    try
+			})
+			.then(function (response)
 			{
-				var script = new bitcore.Script()
-				.add('OP_RETURN')
-				.add('OP_CFUND')
-				var strdzeel="{v:'"+post.v+"',n:'"+post.n*100000000+"',a:'"+post.a+"',d:"+post.d+",s:'"+post.s+"'}";
-				const publicAddress=db.get('addr').value()[0].publicAddress;
-				const privateKey=db.get('addr').value()[0].privateKey;
-				var tx = new bitcore.Transaction()
-				.from(utxo)
-				.addOutput(new bitcore.Transaction.Output({
-					script: script,
-					satoshis: 50000000
-				}))
-				.settime(moment().unix())
-				.change(publicAddress)
-				.setversion("4")
-				.anondest(strdzeel)
-				.sign(privateKey);
-				console.log(tx.toObject());
-				console.log(tx.serialize());
-				axios.post("https://navcommunity.net/api/lw/sendrawtransaction", "a="+tx.serialize().toString(),config)
-				.then((retval) =>
+				var utxo=response.data;	 
+				console.log(utxo);
+			    try
 				{
-					console.log(retval.data);
+					var script = new bitcore.Script()
+					.add('OP_RETURN')
+					.add('OP_CFUND')
+					var strdzeel='{\"n\":'+(post.n*100000000)+',\"a\":\"'+post.a+'\",\"d\":'+post.d+',\"s\":\"'+post.s+'\",\"v\":'+post.v+'}';
+					console.log("strdzeel:"+strdzeel);
+					const publicAddress=db.get('addr').value()[0].publicAddress;
+					const privateKey=db.get('addr').value()[0].privateKey;
+					var tx=new bitcore.Transaction()
+					.from(utxo)
+					.addOutput(new bitcore.Transaction.Output({
+						script: script,
+						satoshis: 50*100000000
+					}))
+					.settime(moment().unix())
+					.change(publicAddress)
+					.setversion("4")
+					.anondest(strdzeel)
+					.sign(privateKey);
+					console.log("-----------");
+					console.log("TRANSACTION");
+					console.log("-----------");
+					console.log(tx.toObject());
+					console.log("----------");
+					console.log("SERIALIZED");
+					console.log("----------");
+					console.log(tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}));
+					console.log("-----------");
+					axios.post(apiURL+'sendrawtransaction', "a="+tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}).toString(),config)
+					.then((retval) =>
+					{
+						console.log(retval.data);
+						sendResponse(res,200,JSON.stringify(
+						{
+							"hex":retval.data
+						}))
+					}
+					).catch((e) => {sendError(res, 200,e);})
+				}
+				catch(err)
+				{
 					sendResponse(res,200,JSON.stringify(
 					{
-						"hex":retval.data
-					}))
+						"error":true,
+						"errno":err.errno,
+						"code":err.code,
+						"path":err.path,
+						"message":err.message
+					}
+					));
 				}
-				).catch((e) => {sendError(res, 200,e);})
-			}
-			catch(err)
+			})
+			.catch(function (error)
 			{
-				sendResponse(res,200,JSON.stringify(
-				{
-					"error":true,
-					"errno":err.errno,
-					"code":err.code,
-					"path":err.path,
-					"message":err.message
-				}
-				));
-			}
-				  
-				  
-			  })
-			  .catch(function (error) {
 				console.log(error);
-			  })
-			  .then(function ()
-			  {
-			 });
-			
-
+			})
+			.then(function ()
+			{
+			});
 		}
 		
 		if (req.url=="/listaddr")
@@ -335,53 +390,55 @@ server=http.createServer(function (req, res)
 				  a: publicAddress
 				}
 			  })
-			  .then(function (response) {
+			.then(function (response) {
 				sendResponse(res,200,response.data.toString());
-				//console.log(response.data);
-			  })
-			  .catch(function (error) {
+			})
+			.catch(function (error)
+			{
 				console.log(error);
-			  })
-			  .then(function ()
-			  {
-			  });  
+			})
+			.then(function ()
+			{
+			});  
 		}
 		
 		if (req.url=="/utxo")
 		{
  		    const publicAddress=db.get('addr').value()[0].publicAddress;
-			axios.get('https://navcommunity.net/api/lw/utxo', {
+			axios.get(apiURL+'utxo', {
 				params: {
 				  a: publicAddress
 				}
-			  })
-			  .then(function (response) {
+			})
+			.then(function (response)
+			{
 				sendResponse(res,200,JSON.stringify(response.data));
 				console.log(JSON.stringify(response.data));
-			  })
-			  .catch(function (error) {
+			})
+			.catch(function (error)
+			{
 				console.log(error);
-			  })
-			  .then(function ()
-			  {
-			  });  
+			})
+		    .then(function ()
+			{
+			});  
 		}
 				
 		if (req.url=="/height")
 		{
 			axios.get('https://chainz.cryptoid.info/nav/api.dws?q=getblockcount')
-			  .then(function (response) {
+			.then(function (response)
+			{
 				sendResponse(res,200,response.data.toString());
-				//console.log(response.data);
-			  })
-			  .catch(function (error) {
+			})
+			.catch(function (error)
+			{
 				console.log(error);
-			  })
-			  .then(function ()
-			  {
-			  });  
+			})
+			.then(function ()
+			{
+			});  
 		}
-		
 		
 		if (req.url=="/verify")
 		{
@@ -399,8 +456,7 @@ server=http.createServer(function (req, res)
 					sendResponse(res,200,JSON.stringify(
 					{
 						"result":result
-					}
-					));
+					}));
 				}
 				catch(err)
 				{
@@ -411,8 +467,7 @@ server=http.createServer(function (req, res)
 						"code":err.code,
 						"path":err.path,
 						"message":err.message
-					}
-					));
+					}));
 				}
 			}
 		}

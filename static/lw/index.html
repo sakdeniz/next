@@ -14,7 +14,13 @@
 <script src="../plugins/axios/axios.min.js"></script>
 <script src="../plugins/moment/moment-with-locales.js"></script>
 <script src="../plugins/feathericons/feather.min.js"></script>
+<script src="../plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <style>
+.top
+{
+	margin-bottom:50px;
+}
+
 .svg-icon {
     height: 5em;
     margin-top: -4px;
@@ -22,6 +28,44 @@
     vertical-align: middle;
     width: 5em;
 }
+
+.logo-icon {
+    height: 5em;
+    margin-top: -4px;
+    pointer-events: none;
+    vertical-align: middle;
+    width: 5em;
+	color:#6435c9;
+	display:inline-block;
+	float: left;
+}
+
+.logo-text {
+	display:inline-block;
+	font-size:18pt;
+    vertical-align: middle;
+	margin-top:20px;
+}
+
+.item-icon {
+    height: 3em;
+    margin-top: 15px;
+	margin-left: 15px;
+    pointer-events: none;
+    vertical-align: middle;
+    width: 3em;
+	color:#ffffff;
+}
+
+.circle
+{
+	border-radius: 50%;
+    width: 5em;
+    height: 5em;
+	background:#6435c9;
+	display:inline-block;
+}
+
 .svg-icon-small {
     height: 2em;
     margin-top: -4px;
@@ -29,26 +73,41 @@
     vertical-align: middle;
     width: 2em;
 }
+
+.svg-icon-tiny {
+    height: 1em;
+    pointer-events: none;
+    vertical-align: middle;
+    width: 1em;
+}
+
 .item
 {
 	margin-top:15px;
 	vertical-align:center;
+}
+.item-desc
+{
+	margin-left:15px;
+	font-size:12pt;
 }
 </style>
 </head>
 <body>
 <div id="app">
 	<br/>
-	<div class="ui container" v-show="walletExist">
+	<div class="ui container" v-show="walletExist && walletUnlocked">
 		<div class="ui grid">
-			<div class="fourteen wide column">
+			<div class="twelve wide column">
 				<h4>
 					<span class="ui label "><i data-feather="feather" class="text-violet"></i></span>
 					&nbsp;NEXT Light Wallet
 				</h4>
 			</div>
-			<div class="two wide column">
-				<div class="right floated" style="text-align:right">Build 0.0.1</div>
+			<div class="four wide column">
+				<div class="right floated" style="text-align:right">
+					<button type="button" class="ui button gray tiny" title="Lock Wallet" v-on:click="lockWallet()"><i data-feather="lock" class="svg-icon-tiny"></i></button>&nbsp;Build 0.0.1
+				</div>
 			</div>
 		</div>
   
@@ -100,7 +159,7 @@
 			<h3>Community Fund</h3>
 			<form class="ui form">
 			  <div class="field">
-				<label>Required Amount</label>
+				<label>Required Amount (NAV)</label>
 				<input type="text" name="strdzeel_n" placeholder="Amount" v-model="strdzeel_n">
 			  </div>
 			  <div class="field">
@@ -169,26 +228,84 @@
 			</div>
 		</div>
 	</div>
-	<div class="ui container" v-show="!walletExist">
-		<i data-feather="feather" class="text-violet svg-icon" style="color:#6435c9;"></i>
-			<h4>&nbsp;Welcome to the NEXT wallet</h4>
-			<div class="ui list">
+	<div class="ui container" v-show="!walletExist && step==0">
+			<div class="top">
+				<div>
+					<i data-feather="feather" class="logo-icon"></i>
+				</div>
+				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+			</div>
+			<div class="ui list" style="margin-top:50px;">
 				<div class="item">
 					<div class="content">
-						<i data-feather="coffee" class="icon text-violet"></i>
-						The NEXT Lite Wallet allows you to quickly interact with the NavCoin blockchain.
+						<div class="circle">
+							<i data-feather="layers" class="item-icon"></i>
+						</div>
+						<span class="item-desc">
+							The NEXT Lite Wallet allows you to quickly interact with the NavCoin blockchain.
+						</span>
 					</div>
 				</div>
 				<div class="item">
-					<i data-feather="key" class="icon text-violet"></i>
-					All your private keys are stored locally and you have all the control.
+					<div class="circle">
+						<i data-feather="shield" class="item-icon"></i>
+					</div>
+					<span class="item-desc">
+						All your private keys are stored locally and you have all the control.
+					</span>
 				</div>
 				<div class="item">
-					<i data-feather="watch" class="icon text-violet"></i>
-					There is no need to synchronize with the network. Open the wallet and you're ready to go.
+					<div class="circle">
+						<i data-feather="watch" class="item-icon"></i>
+					</div>
+					<span class="item-desc">
+						There is no need to synchronize with the network. Open the wallet and you're ready to go.
+					</span>
 				</div>
 			</div>
-		<button class="ui button violet large" v-on:click="createWallet()"><i data-feather="chevron-right" class="svg-icon-small"></i>Create My Wallet</button>
+		<div style="margin-top:50px;">
+			<button class="ui button blue large" v-on:click="nextStep()"><i data-feather="chevron-right" class="svg-icon-small"></i>Get Started</button>
+		</div>
+	</div>
+	<div class="ui container" v-show="!walletExist && step==1">
+			<div class="top">
+				<div>
+					<i data-feather="feather" class="logo-icon"></i>
+				</div>
+				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+			</div>
+			<form class="ui form">
+				<h4 class="ui dividing header">Create Wallet</h4>
+				<label>Please provide a password for your wallet</label>				
+				<br/><br/>
+			  <div class="field">
+			    <label>Password</label>
+			    <input type="password" name="password" v-model="password" placeholder="" autofocus>
+			  </div>
+			  <div class="field">
+			    <label>Password (Again)</label>
+			    <input type="password" name="password_again" v-model="password_again" placeholder="">
+			  </div>
+			  <button type="button" class="ui button gray large" v-on:click="createWallet()"><i data-feather="database" class="svg-icon-small"></i>&nbsp;Create My Wallet</button>
+			</form>
+	</div>
+	<div class="ui container" v-show="walletExist && !walletUnlocked">
+		<div class="top">
+			<div>
+				<i data-feather="feather" class="logo-icon"></i>
+			</div>
+			<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+		</div>
+		<div class="ui form">
+			<h4 class="ui dividing header">Unlock Wallet</h4>
+			<label>Please enter your wallet password</label>				
+			<br/><br/>
+		  <div class="field">
+		    <label>Password</label>
+		    <input type="password" name="password" v-model="password" placeholder="" autofocus>
+		  </div>
+		  <button type="button" class="ui button gray large" v-on:click="unlockWallet()"><i data-feather="unlock" class="svg-icon-small"></i>&nbsp;Unlock Wallet</button>
+		</div>
 	</div>
 </div>
 <script>
@@ -200,6 +317,10 @@ var app = new Vue({
   el: '#app',
   data: {
   	config:{headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'},
+  	step:0,
+  	password:'',
+  	password_again:'',
+  	walletUnlocked:false,
     walletExist:false,
 	balance: '0.00',
 	height:'',
@@ -231,13 +352,13 @@ var app = new Vue({
 	this.isWalletExist();
 	this.refresh();
 	this.strdzeel_n=1;
-	this.strdzeel_d=moment().unix()+1000000;
+	this.strdzeel_d=5184180;
 	this.strdzeel_s="NEXT Light Wallet Test Proposal";
   },
   methods:{
     refresh: function ()
 	{
-		if (this.walletExist)
+		if (this.walletExist && this.walletUnlocked)
 		{
 			this.getBalance();
 			this.getHeight();
@@ -246,12 +367,11 @@ var app = new Vue({
 		}
 	},
 	isWalletExist: function ()
-	{	
+	{
 		let vm=this;
 		axios.post('http://127.0.0.1:3001/iswalletexist', {})
 		.then(function (response)
 		{
-			//console.log(response.data);
 			vm.walletExist=response.data.exist;
 			vm.refresh();
 		})
@@ -263,23 +383,90 @@ var app = new Vue({
 		{
 		});  
     },
-    createWallet: function ()
+    unlockWallet: function ()
+	{
+		if (!this.password)
+		{
+			swal({title:"Unlock Wallet",type:"warning",html:"Please specify a password for unlock."});
+		}
+		else
+		{
+			let vm=this;
+			axios.post('http://127.0.0.1:3001/unlockwallet', {password: vm.password},this.config)
+			.then(function (response)
+			{
+				if (!response.data.isUnlocked)
+				{
+					swal({title:"Unlock Wallet",type:"error",html:"Your password is not verified."});
+				}
+				else
+				{
+					const Toast = Swal.mixin({
+					  toast: true,
+					  showConfirmButton: false,
+					  timer: 3000
+					});
+
+					Toast.fire({
+					  type: 'success',
+					  title: 'Your wallet is unlocked'
+					})
+				}
+				vm.walletUnlocked=response.data.isUnlocked;
+				vm.refresh();
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});
+		}
+    },
+	lockWallet:function()
+	{
+		this.password=null;
+		this.walletUnlocked=false;
+	},
+    nextStep: function ()
 	{	
-		let vm=this;
-		axios.post('http://127.0.0.1:3001/createwallet', {})
-		.then(function (response)
+		this.step++;
+    },
+    createWallet: function ()
+	{
+		if (!this.password)
 		{
-			//console.log(response.data);
-			vm.walletExist=true;
-			vm.refresh();
-		})
-		.catch(function (error)
+			swal({title:"Create Wallet",type:"warning",html:"Please specify a password"});
+		}
+		else if (this.password.length<6)
 		{
-			console.log(error);
-		})
-		.then(function ()
+			swal({title:"Create Wallet",type:"warning",html:"Password minimum length is 6"});
+		}
+		else if (this.password!=this.password_again)
 		{
-		});  
+			swal({title:"Create Wallet",type:"warning",html:"Your passwords did not match"});
+		}
+		else
+		{
+			let vm=this;
+			axios.post('http://127.0.0.1:3001/initwallet', {password: vm.password},this.config)
+			.then(function (response)
+			{
+				//console.log(response.data);
+				vm.walletExist=true;
+				vm.walletUnlocked=true;
+				vm.refresh();
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});  
+		}
+
     },
     getBalance: function ()
 	{	
