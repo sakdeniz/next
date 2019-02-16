@@ -6,6 +6,7 @@ var argv=require('minimist')(process.argv.slice(2));
 var qs=require('querystring');
 var axios=require('axios');
 var moment = require('moment');
+var sb = require('satoshi-bitcoin');
 var server;
 const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const bitcore = require('bitcore-lib') ;
@@ -22,6 +23,7 @@ var ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
 const walletFileName='wallet.db';
 const apiURL='https://navcommunity.net/api/lw/';
+const network='dev';
 var adapter;
 var db;
 
@@ -251,6 +253,7 @@ server=http.createServer(function (req, res)
 		    const publicAddress=db.get('addr').value()[0].publicAddress;
 			axios.get(apiURL+'utxo', {
 				params: {
+				  network: network,
 				  a: publicAddress
 				}
 			})
@@ -271,7 +274,7 @@ server=http.createServer(function (req, res)
 					.sign(privateKey);
 					console.log(tx.toObject());
 					console.log(tx.serialize());
-					axios.post(apiURL+'sendrawtransaction', "a="+tx.serialize().toString(),config)
+					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize().toString(),config)
 						.then((retval) => 
 						sendResponse(res,200,JSON.stringify(
 						{
@@ -307,7 +310,8 @@ server=http.createServer(function (req, res)
 		    const publicAddress=db.get('addr').value()[0].publicAddress;
 			axios.get(apiURL+'utxo', {
 				params: {
-				  a: publicAddress
+					network: network,
+					a: publicAddress
 				}
 			})
 			.then(function (response)
@@ -319,7 +323,7 @@ server=http.createServer(function (req, res)
 					var script = new bitcore.Script()
 					.add('OP_RETURN')
 					.add('OP_CFUND')
-					var strdzeel='{\"n\":'+(post.n*100000000)+',\"a\":\"'+post.a+'\",\"d\":'+post.d+',\"s\":\"'+post.s+'\",\"v\":'+post.v+'}';
+					var strdzeel='{\"n\":'+sb.toSatoshi(post.n)+',\"a\":\"'+post.a+'\",\"d\":'+post.d+',\"s\":\"'+post.s+'\",\"v\":'+post.v+'}';
 					console.log("strdzeel:"+strdzeel);
 					const publicAddress=db.get('addr').value()[0].publicAddress;
 					const privateKey=db.get('addr').value()[0].privateKey;
@@ -327,7 +331,7 @@ server=http.createServer(function (req, res)
 					.from(utxo)
 					.addOutput(new bitcore.Transaction.Output({
 						script: script,
-						satoshis: 50*100000000
+						satoshis: sb.toSatoshi(50)
 					}))
 					.settime(moment().unix())
 					.change(publicAddress)
@@ -343,7 +347,7 @@ server=http.createServer(function (req, res)
 					console.log("----------");
 					console.log(tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}));
 					console.log("-----------");
-					axios.post(apiURL+'sendrawtransaction', "a="+tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}).toString(),config)
+					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}).toString(),config)
 					.then((retval) =>
 					{
 						console.log(retval.data);
@@ -351,6 +355,87 @@ server=http.createServer(function (req, res)
 						{
 							"hex":retval.data
 						}))
+					}
+					).catch((e) => {sendError(res, 200,e);})
+				}
+				catch(err)
+				{
+					sendResponse(res,200,JSON.stringify(
+					{
+						"error":true,
+						"errno":err.errno,
+						"code":err.code,
+						"path":err.path,
+						"message":err.message
+					}
+					));
+				}
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});
+		}
+
+		if (req.url=="/createpaymentrequest")
+		{
+		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'utxo', {
+				params: {
+					network: network,
+					a: publicAddress
+				}
+			})
+			.then(function (response)
+			{
+				var randomString=moment().unix();
+				var signString=randomString+"I kindly ask to withdraw "+sb.toSatoshi(post.n)+"NAV from the proposal "+post.h+". Payment request id: " + post.i;
+				console.log("String");
+				console.log("======");
+				console.log(signString);
+
+				var privateKey = bitcore.PrivateKey.fromWIF(db.get('addr').value()[0].privateKey.toString());
+				var signature = Message(signString).sign(privateKey);
+				console.log(signature.toString());
+				var utxo=response.data;
+				console.log(utxo);
+			    try
+				{
+					var script = new bitcore.Script()
+					.add('OP_RETURN')
+					.add('OP_CFUND')
+					var strdzeel='{\"h\":\"'+post.h+'\",\"n\":'+sb.toSatoshi(post.n)+',\"s\":\"'+signature.toString()+'\",\"r\":\"'+randomString+'\",\"i\":\"'+post.i+'\",\"v\":2}';
+					console.log("strdzeel:"+strdzeel);
+					const publicAddress=db.get('addr').value()[0].publicAddress;
+					//const privateKey=db.get('addr').value()[0].privateKey;
+					var tx=new bitcore.Transaction()
+					.from(utxo)
+					.addOutput(new bitcore.Transaction.Output({
+						script: script,
+						satoshis: 10000
+					}))
+					.settime(moment().unix())
+					.change(publicAddress)
+					.setversion("5")
+					.anondest(strdzeel)
+					.sign(privateKey);
+					console.log("-----------");
+					console.log("TRANSACTION");
+					console.log("-----------");
+					console.log(tx.toObject());
+					console.log("----------");
+					console.log("SERIALIZED");
+					console.log("----------");
+					console.log(tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}));
+					console.log("-----------");
+					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}).toString(),config)
+					.then((retval) =>
+					{
+						console.log(retval.data);
+						sendResponse(res,200,retval.data);
 					}
 					).catch((e) => {sendError(res, 200,e);})
 				}
@@ -385,29 +470,77 @@ server=http.createServer(function (req, res)
 		if (req.url=="/balance")
 		{
  		    const publicAddress=db.get('addr').value()[0].publicAddress;
-			axios.get('https://chainz.cryptoid.info/nav/api.dws?q=getbalance', {
+			axios.get(apiURL+'balance', {
 				params: {
-				  a: publicAddress
+					network: network,
+					a: publicAddress
 				}
-			  })
-			.then(function (response) {
-				sendResponse(res,200,response.data.toString());
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
 			})
 			.catch(function (error)
 			{
 				console.log(error);
 			})
-			.then(function ()
+		    .then(function ()
+			{
+			});  
+		}
+
+		if (req.url=="/listproposals")
+		{
+ 		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'listproposals', {
+				params: {
+					network: network
+				}
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+		    .then(function ()
 			{
 			});  
 		}
 		
+				if (req.url=="/listpaymentrequests")
+		{
+ 		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'listpaymentrequests', {
+				params: {
+					network: network
+				}
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+		    .then(function ()
+			{
+			});  
+		}
+
 		if (req.url=="/utxo")
 		{
  		    const publicAddress=db.get('addr').value()[0].publicAddress;
 			axios.get(apiURL+'utxo', {
 				params: {
-				  a: publicAddress
+					network: network,
+					a: publicAddress
 				}
 			})
 			.then(function (response)
@@ -426,16 +559,23 @@ server=http.createServer(function (req, res)
 				
 		if (req.url=="/height")
 		{
-			axios.get('https://chainz.cryptoid.info/nav/api.dws?q=getblockcount')
+ 		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'blockcount', {
+				params: {
+					network: network,
+					a: publicAddress
+				}
+			})
 			.then(function (response)
 			{
-				sendResponse(res,200,response.data.toString());
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
 			})
 			.catch(function (error)
 			{
 				console.log(error);
 			})
-			.then(function ()
+		    .then(function ()
 			{
 			});  
 		}
@@ -474,7 +614,15 @@ server=http.createServer(function (req, res)
 	});
 });
 console.log("NEXT Light Wallet NodeJS Server started...");
-bitcore.Networks.defaultNetwork = bitcore.Networks.livenet;
+console.log("Network : " + network);
+if (network=="main")
+{
+	bitcore.Networks.defaultNetwork = bitcore.Networks.livenet;
+}
+else
+{
+	bitcore.Networks.defaultNetwork = bitcore.Networks.testnet;
+}
 process.on('uncaughtException', function(err)
 {
   console.log('Caught exception: ' + err);

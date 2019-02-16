@@ -1070,7 +1070,8 @@ function handleCommand(line)
 	if (line.startsWith("next:start_lw:")) 
 	{
 		var server=require("./server-lw");
-		welcomeWin.loadURL(`file://${__dirname}/dist/static/lw/index.html?version=${version}&coins=`+JSON.stringify(coins)+`&coin=`+store.get('coin')+`&update_preference=`+store.get('update_preference')+`&update_daemon_preference=`+store.get('update_daemon_preference'));
+		welcomeWin.setSize(1020,720);
+		welcomeWin.loadURL(`file://${__dirname}/dist/static/lw.html?version=${version}&coins=`+JSON.stringify(coins)+`&coin=`+store.get('coin')+`&update_preference=`+store.get('update_preference')+`&update_daemon_preference=`+store.get('update_daemon_preference'));
 	}
 }
 
