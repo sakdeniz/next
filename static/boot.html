@@ -7,8 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <link href="plugins/semantic/semantic.min.css" rel="stylesheet" type="text/css" />
 <link href="plugins/ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css"/>
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 <script type="text/javascript" src="plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script type="text/javascript" src="plugins/vuejs/vue.min.js"></script>
+<script type="text/javascript" src="plugins/semantic/semantic.min.js"></script>
+<script type="text/javascript" src="plugins/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="plugins/feathericons/feather.min.js"></script>
 <script>
 var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82acc0a523'};
 </script>
@@ -24,8 +28,18 @@ var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82ac
 			<center>
 			<img class="ui tiny image" v-bind:src=getlogo(coins['Coins'][c_coin][0].logo)>
 			<br/><br/><br/>
-			<button class="ui labeled icon button huge blue" v-on:click="start()">Start Wallet<i class="right chevron icon"></i></button><br/><br/><br/>
-			<button class="ui labeled icon button huge green" v-on:click="start_lw()">Light Wallet<i class="right chevron icon"></i></button><br/><br/><br/>
+			<div class="ui buttons" v-if="coin.bool_support_lite_wallet=='1'">
+  				<button class="ui labeled icon button large blue" v-on:click="start()">Full Wallet<i class="right ion-cube icon"></i></button>
+  				<div class="or"></div>
+  				<button class="ui labeled icon button large green" v-on:click="start_lw()"><i class="right ion-leaf icon"></i>&nbsp;Lite Wallet</button>
+			</div>
+			<div v-if="coin.bool_support_lite_wallet=='1'">
+				<button class="ui labeled icon button large violet tiny" v-on:click="help_wallet_types()" style="margin-top:20px;">Help me choose<i class="right ion-ios-help-outline icon"></i></button>
+			</div>
+			<div v-else>
+				<button class="ui labeled icon button large huge blue" v-on:click="start()">Start Wallet<i class="right chevron icon"></i></button>
+			</div>
+			<div style="margin-top:50px;"></div>
 			<button class="ui labeled icon button large teal" v-on:click="change_asset()" style="margin-left:10px;">Change Asset<i class="right ion-navicon-round icon"></i></button>
 			<button class="ui labeled icon button large violet" v-on:click="settings()" style="margin-left:10px;">Settings<i class="right cog icon"></i></button>
 			<button class="ui labeled icon button large violet" v-on:click="help()" style="margin-left:10px;">Help<i class="right help icon"></i></button>
@@ -42,6 +56,7 @@ var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82ac
 	<span v-if="step==1 && !coin">Please choose an asset...</span>
 	<span v-if="step==2">Settings</span>
 	<span v-if="step==3">Help</span>
+	<span v-if="step==4">Wallet Types</span>
 	</p>
   </div>
   <div class="right">
@@ -111,6 +126,7 @@ var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82ac
 <div style="height:150px"></div>
 <a class="ui button labeled gray icon big" v-on:click="home()"><i class="ion-arrow-left-c icon"></i>Back</a>
 </div>
+
 <div v-if="step==3" style="margin-left:20px;margin-right:20px;margin-top:10px;">
 <h1>Help</h1>
 <div><a class="ui button labeled icon" href="javascript:confirmReindex();"><i class="ion-wrench icon"></i>Try repair wallet with '-reindex' argument</a></div>
@@ -122,6 +138,45 @@ var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82ac
 <br/>
 <a class="ui button labeled gray icon big" v-on:click="home()"><i class="ion-arrow-left-c icon"></i>Back</a>
 </div>
+
+
+<div v-if="step==4" style="margin-left:20px;margin-right:20px;margin-top:10px;">
+<h1>Wallet Types</h1>
+NEXT Provides two wallet types for NavCoin. Below you can see what you can do with each wallet type.
+<h4>Full Wallet</h4>
+<ul>
+	<li>
+		You will need to synchronize with the network
+	</li>
+	<li>
+		Staking is available (Earn %4 NavCoin Yearly)
+	</li>
+	<li>
+		Community Fund fully supported
+	</li>
+</ul>
+
+<h4>Lite Wallet</h4>
+<ul>
+	<li>
+		Fast and lightweight
+	</li>
+	<li>
+		You can send and receive NavCoin easily
+	</li>
+	<li>
+		You don't need synchronize with the network
+	</li>
+	<li>
+		You can create Community Fund proposals and payment requests
+	</li>
+</ul>
+
+<br/>
+<a class="ui button labeled gray icon big" v-on:click="home()"><i class="ion-arrow-left-c icon"></i>Back</a>
+</div>
+
+
 </div>
 </div>
 </body>
@@ -305,7 +360,11 @@ var app = new Vue({
 }*/
   },
   methods: {
-      updatePreference: function(up) {
+  	showModal:function()
+  	{
+		$('.ui.modal').modal('show');
+  	},
+    updatePreference: function(up) {
 		console.log("next:update_preference_m:"+this.update_preference);
 	},
     updateDaemonPreference: function(up) {
@@ -340,6 +399,11 @@ var app = new Vue({
 		let vm=this;
 		vm.step=3;
 	},
+	help_wallet_types:function()
+	{
+		let vm=this;
+		vm.step=4;
+	},
 	start:function()
 	{
 		let vm=this;
@@ -361,8 +425,6 @@ var app = new Vue({
   font-family: 'neo';
   src: url('https://next.navcommunity.net/fonts/neo-latina.ttf');
 }
-
-
 
 * {
   -webkit-font-smoothing: antialiased;
@@ -405,6 +467,11 @@ body
 	margin-right:10px;
 	min-width:40px;
 	display:inline-block;
+}
+
+.svg-icon-tiny {
+    height: 16px;
+    width: 16px;
 }
 
 .left
@@ -495,3 +562,6 @@ function confirmReindexChainstate()
 }
 </script>
 <script src="plugins/chainanimation/chainanimation.js"></script>
+<script>
+	feather.replace();
+</script>

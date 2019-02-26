@@ -8,6 +8,8 @@ var axios=require('axios');
 var moment = require('moment');
 var sb = require('satoshi-bitcoin');
 var server;
+var walletFileName;
+var token="";
 const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const bitcore = require('bitcore-lib') ;
 const crypto=require('crypto');
@@ -21,9 +23,9 @@ const FileSync = require('lowdb/adapters/FileSync')
 
 var ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
-const walletFileName='wallet.db';
 const apiURL='https://navcommunity.net/api/lw/';
-const network='dev';
+const apiExplorerURL='https://api.navexplorer.com/api/';
+const network='main';
 var adapter;
 var db;
 
@@ -157,7 +159,28 @@ server=http.createServer(function (req, res)
 	req.on('end', function ()
 	{
 		var post= body ? JSON.parse(body) : {}
-		
+
+		if (req.url=="/generatetoken")
+		{
+			if (!token)
+			{
+				const randomBytes=crypto.randomBytes(256);
+				token=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
+				sendResponse(res,200,JSON.stringify({"error":false,"token":token}));
+			}
+			else
+			{
+				console.log("Token already generated");
+			}
+		}
+
+		if (post.token!=token)
+		{
+			console.log("Invalid token");
+			sendResponse(res,200,JSON.stringify({"error":true,"message":"Invalid App Token"}));
+			return;
+		}
+
 		if (req.url=="/initwallet")
 		{
 			initWallet(post.password,res);
@@ -168,8 +191,11 @@ server=http.createServer(function (req, res)
 			generate(res);
 		}
 		
+
+		
 		if (req.url=="/iswalletexist")
 		{
+			console.log(post.token);
 			console.log("Checking wallet exist...");
 			try
 			{
@@ -215,16 +241,15 @@ server=http.createServer(function (req, res)
 		if (req.url=="/sign")
 		{
 			console.log(post.message);
-			console.log(post.privateKey);
-			if (!post.message || !post.privateKey)
+			if (!post.message)
 			{
-				sendResponse(res,200,JSON.stringify({"error":true,"message":"Please enter a message and private key"}));
+				sendResponse(res,200,JSON.stringify({"error":true,"message":"Please specify a message"}));
 			}
 			else
 			{
 				try
 				{
-					var privateKey = new bitcore.PrivateKey(post.privateKey);
+					var privateKey = bitcore.PrivateKey.fromWIF(db.get('addr').value()[0].privateKey.toString());
 					var message = new Message(post.message);
 					var signature = message.sign(privateKey);
 					console.log(signature.toString());
@@ -259,6 +284,7 @@ server=http.createServer(function (req, res)
 			})
 			.then(function (response)
 			{
+				console.log("Amount:"+sb.toSatoshi(post.amount));
 				var utxo=response.data;	  
 			    try
 				{
@@ -268,20 +294,19 @@ server=http.createServer(function (req, res)
 					const privateKey=db.get('addr').value()[0].privateKey;
 					var tx = new bitcore.Transaction()
 					.from(utxo)
-					.to(post.to, parseInt(post.amount))
+					.to(post.to, sb.toSatoshi(post.amount))
 					.settime(moment().unix())
 					.change(publicAddress)
 					.sign(privateKey);
 					console.log(tx.toObject());
 					console.log(tx.serialize());
 					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize().toString(),config)
-						.then((retval) => 
-						sendResponse(res,200,JSON.stringify(
-						{
-							"hex":retval.data
-						}
-						))
-						).catch((e) => {sendError(res, 200,e);})
+					.then((retval) =>
+					{
+						console.log(retval.data);
+						sendResponse(res,200,retval.data);
+					}
+					).catch((e) => {sendError(res, 200,e);})
 				}
 				catch(err)
 				{
@@ -351,10 +376,7 @@ server=http.createServer(function (req, res)
 					.then((retval) =>
 					{
 						console.log(retval.data);
-						sendResponse(res,200,JSON.stringify(
-						{
-							"hex":retval.data
-						}))
+						sendResponse(res,200,retval.data);
 					}
 					).catch((e) => {sendError(res, 200,e);})
 				}
@@ -490,6 +512,67 @@ server=http.createServer(function (req, res)
 			});  
 		}
 
+		if (req.url=="/price")
+		{
+			axios.get("https://api.coinmarketcap.com/v1/ticker/"+post.symbol+"/?convert=EUR", {
+				params: {}
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+		    .then(function ()
+			{
+			});  
+		}
+
+		if (req.url=="/txhistory")
+		{
+ 		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiExplorerURL+'address/'+publicAddress+'/tx?size=50&page=1', {
+				params: {}
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+		    .then(function ()
+			{
+			});  
+		}
+
+		if (req.url=="/cfundstats")
+		{
+ 		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'cfundstats', {
+				params: {
+					network: network
+				}
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+		    .then(function ()
+			{
+			});  
+		}
+
 		if (req.url=="/listproposals")
 		{
  		    const publicAddress=db.get('addr').value()[0].publicAddress;
@@ -512,7 +595,7 @@ server=http.createServer(function (req, res)
 			});  
 		}
 		
-				if (req.url=="/listpaymentrequests")
+		if (req.url=="/listpaymentrequests")
 		{
  		    const publicAddress=db.get('addr').value()[0].publicAddress;
 			axios.get(apiURL+'listpaymentrequests', {
@@ -613,8 +696,17 @@ server=http.createServer(function (req, res)
 		}
 	});
 });
+if (network=="dev")
+{
+	walletFileName="wallet.db.dev";
+}
+if (network=="main")
+{
+	walletFileName="wallet.db";
+}
 console.log("NEXT Light Wallet NodeJS Server started...");
 console.log("Network : " + network);
+console.log("Wallet Filename : " + walletFileName);
 if (network=="main")
 {
 	bitcore.Networks.defaultNetwork = bitcore.Networks.livenet;

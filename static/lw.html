@@ -13,10 +13,15 @@
 <script src="plugins/semantic/semantic.min.js"></script>
 <script src="plugins/axios/axios.min.js"></script>
 <script src="plugins/moment/moment-with-locales.js"></script>
+<script src="plugins/qrcode/qrcode.js"></script>
 <script src="plugins/feathericons/feather.min.js"></script>
 <script src="plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script src="plugins/sb/sb.js"></script>
 <style>
+body
+{
+	background: #fcfcfc;
+}
 .top
 {
 	margin-bottom:50px;
@@ -49,20 +54,20 @@
 }
 
 .item-icon {
-    height: 3em;
+    height: 2em;
     margin-top: 15px;
 	margin-left: 15px;
     pointer-events: none;
     vertical-align: middle;
-    width: 3em;
+    width: 2em;
 	color:#ffffff;
 }
 
 .circle
 {
 	border-radius: 50%;
-    width: 5em;
-    height: 5em;
+    width: 4em;
+    height: 4em;
 	background:#6435c9;
 	display:inline-block;
 }
@@ -83,15 +88,27 @@
     margin-top: -4px;    
 }
 
-.item
+.mt15
 {
 	margin-top:15px;
 	vertical-align:center;
 }
-.item-desc
+
+.list-item-desc
 {
+	display:inline-block;
 	margin-left:15px;
 	font-size:12pt;
+	color:#343434;
+	line-height:60px;
+	vertical-align:bottom;
+}
+
+.word-wrap
+{
+	word-break: break-all;
+	word-wrap: break-word;
+	color:#232323;
 }
 </style>
 </head>
@@ -99,41 +116,250 @@
 <div id="app">
 	<br/>
 	<div class="ui container" v-show="walletExist && walletUnlocked">
-		<div class="ui grid">
-			<div class="twelve wide column">
-				<h4>
-					<span class="ui label "><i data-feather="feather" class="text-violet"></i></span>
-					&nbsp;NEXT Lite
-				</h4>
+		<div class="ui menu">
+			<div class="header item" v-on:click="route('overview')">
+				<i data-feather="feather"></i>
 			</div>
-			<div class="four wide column">
-				<div class="right floated" style="text-align:right">
-					<button type="button" class="ui button gray tiny" title="Refresh" v-on:click="refresh()"><i data-feather="refresh-cw" class="svg-icon-tiny"></i></button>
-					<button type="button" class="ui button gray tiny" title="Lock Wallet" v-on:click="lockWallet()"><i data-feather="lock" class="svg-icon-tiny"></i></button>&nbsp;Build 0.0.1
+			<a class="active item" v-on:click="route('overview')">Overview</a>
+			<a class="item" v-on:click="route('receive')">Receive</a>
+			<a class="item" v-on:click="route('send')">Send</a>
+			<a class="item" v-on:click="route('sign')">Sign</a>
+			<a class="item" v-on:click="route('verify')">Verify</a>
+			<a class="item" v-on:click="route('tools')">Tools</a>
+			<div class="ui dropdown item" tabindex="0">
+				Community Fund
+				<i class="dropdown icon"></i>
+				<div class="menu" tabindex="-1">
+					<a class="item" v-on:click="route('cfund-introduction')">Introduction</a>
+					<a class="item" v-on:click="route('cfund-stats')">Fund Stats</a>
+					<a class="item" v-on:click="route('cfund-proposals')">Community Proposals</a>
+					<a class="item" v-on:click="route('cfund-payment-requests')">Payment Requests</a>
+					<div class="divider"></div>
+					<a class="item" v-on:click="route('cfund-create-proposal')">Create Proposal</a>
+					<a class="item" v-on:click="route('cfund-my-proposals')">My Proposals</a>
+				</div>
+			</div>
+			<div class="right menu">
+				<div class="item">
+					<div class="ui action left">
+					<button type="button" class="ui button basic tiny" title="Refresh" v-on:click="refresh()"><i data-feather="refresh-cw" class="svg-icon-tiny"></i></button>
+					<button type="button" class="ui button basic tiny" title="Lock Wallet" v-on:click="lockWallet()"><i data-feather="lock" class="svg-icon-tiny"></i></button>
+	      			</div>
+	    		</div>
+	  		</div>
+		</div>
+
+		<div class="ui segment active" v-show="currentPage=='overview'">
+			<a class="ui violet ribbon label">Balance</a>
+			<h1 v-if='balance'>
+				{{formatBalance(balance.balance)}} {{coin.symbol}}
+			</h1>
+			<h5 v-else>
+				<div class="ui column active inline indeterminate loader"></div>
+			</h5>
+			<h5 v-if='height'>
+				Height {{height}}
+			</h5>
+			<h5 v-else>
+				<div class="ui column active inline indeterminate loader"></div>
+			<h5>
+		</div>
+
+		<div class="ui three column grid" v-show="currentPage=='overview'">
+			  
+			  <div class="column">
+				<div class="ui fluid card">
+					<div class="content">
+						<div class="header"><i class="ion-flag icon"></i>Getting Started</div>
+						<div class="description" style="min-height:45px">
+							Find out what the Community Fund is and how it works.
+						</div>
+						<br/><button v-on:click="route('cfund-introduction')" class="ui right labeled icon button violet">Read More<i class="right chevron icon"></i></button>
+					</div>
+				</div>
+			</div>
+			
+			<div class="column">
+				<div class="ui fluid card">
+					<div class="content">
+						<div class="header"><i class="ion-plus icon"></i>Create Your Proposal</div>
+						<div class="description" style="min-height:45px">
+							Learn how to create and submit your proposal to NavCoin blockchain.
+						</div>
+						<br/><button v-on:click="route('cfund-create-proposal')" class="ui right labeled icon button green"><i class="right chevron icon"></i>Create a Proposal</button>
+					</div>
+				</div>
+			</div>
+
+		  	<div class="column">
+				<div class="ui fluid card">
+					<div class="content">
+						<div class="header"><i class="ion-person-add icon"></i>Join The Community</div>
+						<div class="description" style="min-height:45px">
+							You can collaborate with other people in the Community to bring your ideas to life.
+						</div>
+						<br/><button v-on:click="route('meet-community')" class="ui right labeled icon button orange"><i class="right chevron icon"></i>Meet The Community</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="content" v-show="currentPage=='meet-community'">
+			<h4>Meet The Community</h4>
+			<h3>Social Media</h3>
+			<span style="font-size:24px;color:#bbbbbb;">
+			<a v-if="coin.social_youtube_url" class="external" style="color:red;margin-right:30px;" title="Youtube" target="_blank" v-bind:href="coin.social_youtube_url"><i class="ion-social-youtube" style="font-size:120px"></i></a>
+			<a v-if="coin.social_facebook_url" class="external" style="color:#3B5998;margin-right:30px;" title="Facebook" target="_blank" v-bind:href="coin.social_facebook_url"><i class="ion-social-facebook" style="font-size:120px"></i></a>
+			<a v-if="coin.social_twitter_url" class="external" style="color:#1da1f2;margin-right:30px;" title="Twitter" target="_blank" v-bind:href="coin.social_twitter_url"><i class="ion-social-twitter" style="font-size:120px"></i></a>
+			<a v-if="coin.social_github_url" style="color:#333;margin-right:30px;" title="Github" target="_blank" v-bind:href="coin.social_github_url"><i class="ion-social-github" style="font-size:120px"></i></a>
+			<a v-if="coin.social_reddit_url" style="color:#ff4500;margin-right:30px;" title="Reddit" target="_blank" v-bind:href="coin.social_reddit_url"><i class="ion-social-reddit" style="font-size:120px"></i></a>
+			<a v-if="coin.social_instagram_url" class="external" style="color:#405de6;margin-right:30px;" title="Instagram" target="_blank" v-bind:href="coin.social_instagram_url"><i class="ion-social-instagram" style="font-size:120px"></i></a>
+			<a v-if="coin.social_discord" class="external" style="color:#405de6;margin-right:30px;" title="Instagram" target="_blank" v-bind:href="coin.social_discord"><i class="ion-social-discord" style="font-size:120px"></i></a>
+			</span>
+			<h3>Other Resources</h3>
+			<div class="ui massive nowrap vertical menu" style="width:400px">
+				<a href="http://collab.navcoin.org" class="external item" target="_blank"><i class="ion-android-open"></i>&nbsp;NavCoin Collaboration Platform</a>
+				<a href="http://forum.navcommunity.net" class="external item" target="_blank"><i class="ion-android-open"></i>&nbsp;NavCoin Community Forum</a>
+				<a href="https://discord.gg/y4Vu9jw" class="external item" target="_blank"><i class="ion-android-open"></i>&nbsp;Discord</a>
+				<a href="https://t.me/navcoin" class="external item" target="_blank"><i class="ion-android-open"></i>&nbsp;Telegram</a>
+				<a href="http://medium.com/nav-coin" class="external item" target="_blank"><i class="ion-android-open"></i>&nbsp;Medium</a>
+			</div>
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='overview'">
+			<a class="ui teal ribbon label">Featured Community Proposals</a>
+			<p></p>
+			<div class="ui one column grid" v-if="proposals.length>0 && featuredProposalCount()==0">
+				<div class="content">
+					<p>
+					</p>
+					<p>
+						There are no featured proposal.
+					</p>
+					<p>
+					</p>
+				</div>
+			</div>
+			<div class="ui three column grid" v-if="proposals.length>0">
+			  <div class="column" v-for="proposal in proposals" v-if="proposal.featured=='1'">
+			  <div class="ui fluid card">
+			    <div class="image">
+			      <img v-bind:src="(proposal.image?proposal.image:'img/placeholder.png')">
+			    </div>
+			    <div class="content">
+			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
+			      <div class="meta">
+			        <a>{{proposal.status}}</a>
+			      </div>
+			      <div v-html="linkify(proposal.description)" class="description" style="word-break: break-all; word-wrap: break-word;">
+			      </div>
+			    </div>
+			    <div class="extra content">
+			    	<span class="right floated" style="margin-left:10px" title="Proposal Duration">
+			     	<i class="ion-calendar"></i>
+			        	{{secondsToDhms(proposal.proposalDuration)}}
+			      	</span>
+   			      	<span class="right floated" title="Voting Cycle">
+			        <i class="ion-loop"></i>
+			        	{{proposal.votingCycle}}
+			      	</span>
+			      	<span>
+			        <i class="ion-thumbsup"></i>
+			      	  {{proposal.votesYes}}
+			      	</span>
+			      	<span>
+				        <i class="ion-thumbsdown"></i>
+			        	{{proposal.votesNo}}
+			      	</span>
+				  	<br/>
+				  	<br/>
+				  	<div class="ui three column grid">
+						
+						<div class="column">
+					  		<div class="ui tiny active progress green" @data-percent="getYesVotesProportion(proposal)">
+	        					<div class="bar" :style="{width: getYesVotesProportion(proposal)+'%'}"></div>
+	        					<div class="label">
+	        						<i class="fa fa-thumbs-o-up text-success"></i>
+	        						%{{getYesVotesProportion(proposal)}}
+	        					</div>
+	      					</div>
+					  	</div>
+					  
+					  	<div class="column">
+					  		<div class="ui tiny active progress red" @data-percent="getNoVotesProportion(proposal)">
+	        					<div class="bar" :style="{width: getNoVotesProportion(proposal)+'%'}"></div>
+	        					<div class="label">
+	        						<i class="fa fa-thumbs-o-up text-success"></i>
+	        						%{{getNoVotesProportion(proposal)}}
+	        					</div>
+	      					</div>
+					  	</div>
+
+					  	<div class="column">
+					  		<div class="ui tiny active progress violet" @data-percent="getRequiredVotesProportion(proposal)">
+	        					<div class="bar" :style="{width: getRequiredVotesProportion(proposal)+'%'}"></div>
+	        					<div class="label">
+	        						<i class="fa fa-thumbs-o-up text-success"></i>%{{getRequiredVotesProportion(proposal)}}
+	        					</div>
+	      					</div>
+					  	</div>
+				 	</div>
+					<div class="ui accordion">
+						<div class="title">
+							<i class="dropdown icon"></i>
+						</div>
+						<div class="content">
+							<h5>Proposal Hash</h5>
+							<p class="word-wrap">
+								{{proposal.hash}}
+							</p>
+							<h5>Payment Address</h5>
+							<p class="word-wrap">
+								{{proposal.paymentAddress}}
+							</p>
+							<h5>User Paid Fee</h5>
+							<p class="word-wrap">
+								{{proposal.userPaidFee}} {{coin.symbol}}
+							</p>
+						</div>
+					</div>
+			    </div>
+			  </div>
+			</div>
+			</div>
+			<div v-else>
+				<div class="ui active inline indeterminate loader"></div>
+			</div>
+		</div>
+		
+		<div class="ui segment" v-show="currentPage=='receive'">
+			<a class="ui violet ribbon label">Receive</a>
+			<p></p>
+			<p v-if="addressList">{{addressList}}</p>
+			<p v-html="qrcode"></p>
+			<div class="ui middle aligned divided list">
+				<div class="item" v-for="tx in txs">
+					<div class="left floated content">
+						<a title="Show Transaction on Explorer" target="_blank" v-bind:href="coin.block_explorers['NavExplorer'].url+'/tx/'+tx.transaction">
+			    			<i class="ui avatar ion-android-arrow-up" style="color:orange" v-if="tx.type=='SEND'"></i>
+			    			<i class="ui avatar ion-android-arrow-down" style="color:green" v-if="tx.type=='RECEIVE'"></i>
+			    		</a>
+					</div>
+			    	<div class="content">
+			      		<span style="color:#cc6600" v-if="tx.type=='SEND'">-{{sb.toBitcoin(tx.sent)}}</span>
+						<span style="color:#669900" v-if="tx.type=='RECEIVE'">+{{sb.toBitcoin(tx.received)}}</span>
+			    	</div>
+			    	<div class="content">
+			    		<small style="margin-top:15px;color:#676767;" v-bind:title="'Block Number : ' + tx.height">{{moment(tx.time).format('MM/DD/YYYY HH:MM:ss')}}</small>
+			    	</div>
 				</div>
 			</div>
 		</div>
-  
-		<div class="ui top attached tabular menu">
-			<a class="item active" data-tab="first">Balance</a>
-			<a class="item" data-tab="second">Receive</a>
-			<a class="item" data-tab="third">Send</a>
-			<a class="item" data-tab="four">Sign Message</a>
-			<a class="item" data-tab="five">Verify Message</a>
-			<a class="item" data-tab="six">Tools</a>
-		</div>
-		
-		<div class="ui bottom attached tab segment active" data-tab="first">
-			<h1>{{formatBalance(balance.balance)}} {{unit}}</h1>
-			<h5>Height {{height}}</h5>
-		</div>
-		
-		<div class="ui bottom attached tab segment" data-tab="second">
-			<h3>Receive</h3>
-			<p v-if="addressList">{{addressList}}</p>
-		</div>
-		<div class="ui bottom attached tab segment" data-tab="third">
-			<h3>Send</h3>
+
+		<div class="ui segment" v-show="currentPage=='send'">
+			<a class="ui violet ribbon label">Send</a>
+			<p></p>
 			<form class="ui form">
 				  <div class="field">
 					<label>Address</label>
@@ -144,7 +370,6 @@
 					<input type="text" name="send_amount" placeholder="Amount" v-model="send_amount">
 				  </div>
 				  <a class="ui button" v-on:click="send()">Send</a>
-				  <p>{{result_send}}</p>
 			</form>
 			<div class="ui accordion">
 				<div class="title">
@@ -157,24 +382,22 @@
 			</div>
 		</div>
 		
-		<div class="ui bottom attached tab segment" data-tab="four">
-			<h3>Sign Message</h3>
+		<div class="ui segment" v-show="currentPage=='sign'">
+			<a class="ui violet ribbon label">Sign Message</a>
+			<p></p>
 			<form class="ui form">
 				  <div class="field">
 					<label>Message</label>
 					<input type="text" name="message" placeholder="Message" v-model="message">
-				  </div>
-				  <div class="field">
-					<label>Private Key</label>
-					<input type="text" name="privateKey" placeholder="Private Key" v-model="privateKey">
 				  </div>
 				  <a class="ui button" v-on:click="sign()">Sign</a>
 				  <p>{{result_signature}}</p>
 			</form>
 		</div>
 		
-		<div class="ui bottom attached tab segment" data-tab="five">
-			<h3>Verify Message</h3>
+		<div class="ui segment" v-show="currentPage=='verify'">
+			<a class="ui violet ribbon label">Verify Message</a>
+			<p></p>
 			<form class="ui form">
 				  <div class="field">
 					<label>Message</label>
@@ -193,34 +416,22 @@
 			</form>
 		</div>
 
-		<div class="ui bottom attached tab segment" data-tab="six">
-			<button class="ui button gray right floated" v-on:click="getnewaddress()">Show Private Key & Mnemonics</button>
-			<h3>Private Key</h3>
+		<div class="ui segment" v-show="currentPage=='tools'">
+			<a class="ui violet ribbon label">Tools</a>
+			<p></p>
+			<button class="ui button gray" v-on:click="getnewaddress()">Show Private Key & Mnemonics</button>
 			<div v-if="address" class="ui message">
 				<h5>Public Address</h5><p>{{address}}</p>
 				<h5>Private Key</h5><p>{{privateKey}}</p>
-			</div>
-			<h3>Mnemonics</h3>
-			<div v-if="address" class="ui message">
-				<p>{{mnemonics}}</p>
+				<h5>Mnemonics</h5><p>{{mnemonics}}</p>
 			</div>
 		</div>
-	</div>
 
-	<div class="ui container" v-show="walletExist && walletUnlocked">
-		<div class="ui top attached tabular menu">
-			<a class="item active" data-tab="cf_one">Community Fund</a>
-			<a class="item" data-tab="cf_two">Community Proposals</a>
-			<a class="item" data-tab="cf_three">My Proposals</a>
-			<a class="item" data-tab="cf_four">Payment Requests</a>
-			<a class="item" data-tab="cf_five">Create Proposal</a>
-		</div>
-		
-		<div class="ui bottom attached tab segment active" data-tab="cf_one">
+		<div class="ui segment" v-show="currentPage=='cfund-introduction'">
+			<a class="ui violet ribbon label">Community Fund</a>
+			<p></p>
 			<div class="content">
 				<div class="container-fluid">
-					<h3 class="card-title">Community Fund</h3>
-					
 					<h3 class="ui violet header">Why was the NavCoin Community Fund created?</h3>
 
 					<p>NavCoin is a decentralised project, which relies on the efforts of individuals all over the world to secure, maintain and grow its network. The NavCoin Community Fund aims to help strengthen the network by encouraging and incentivising more people to get involved.</p>
@@ -284,95 +495,295 @@
 			</div>
 		</div>
 		
-		<div class="ui bottom attached tab segment" data-tab="cf_two">
-			<h3>Community Proposals</h3>
-			<div class="ui link cards">
-			  <div class="card" v-for="proposal in proposals">
+		<div class="ui bottom attached tab segment active" data-tab="first" v-if="Object.keys(cfundStats).length>0 && currentPage=='cfund-stats'">
+		    <a class="ui violet ribbon label">Fund Stats</a>
+			<br/><br/>
+		    <div class="ui top pointing attached menu">
+			  <a class="item active" data-tab="cfund-stats-1">Fund</a>
+			  <a class="item" data-tab="cfund-stats-2">Current Period</a>
+			  <a class="item" data-tab="cfund-stats-3">Consensus</a>
+			</div>
+			<div class="ui bottom attached tab segment active" data-tab="cfund-stats-1">
+			  	<table class="ui celled striped table">
+				  <thead>
+				    <tr><th colspan="2">
+				      Fund
+				    </th>
+				  </tr></thead>
+				  <tbody>
+					<tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Available in NAV
+				      </td>
+				      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.available)}} NAV</td>
+				    </tr>
+					<tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Available in USD
+				      </td>
+				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_usd).toFixed(2))}} USD</td>
+				    </tr>
+					<tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Available in EUR
+				      </td>
+				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_eur).toFixed(2))}} EURO</td>
+				    </tr>
+					<tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Available in BTC
+				      </td>
+				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_btc).toFixed(2))}} BTC</td>
+				    </tr>
+				    <tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Locked
+				      </td>
+				      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.locked)}} NAV</td>
+				    </tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="ui bottom attached tab segment" data-tab="cfund-stats-2">
+			  	<table class="ui celled striped table">
+				  <thead>
+				    <tr><th colspan="2">
+				      Current Period
+				    </th>
+				  </tr></thead>
+				  <tbody>
+					<tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Starting Block Number
+				      </td>
+				      <td class="right aligned collapsing"><span v-if="cfundStats.votingPeriod.starting">{{cfundStats.votingPeriod.starting}}</span></td>
+				    </tr>
+				    <tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Ending Block Number
+				      </td>
+				      <td class="right aligned"><span v-if="cfundStats.votingPeriod.ending">{{cfundStats.votingPeriod.ending}}</span></td>
+				    </tr>
+				    <tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Current Block Number
+				      </td>
+				      <td class="right aligned"><span v-if="cfundStats.votingPeriod.current">{{cfundStats.votingPeriod.current}}</span></td>
+				    </tr>
+				    <tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Remaining Blocks
+				      </td>
+				      <td nowrap class="right aligned"><span v-if="cfundStats.votingPeriod.current">{{cfundStats.votingPeriod.ending-cfundStats.votingPeriod.current}} ({{roundnumber((cfundStats.votingPeriod.ending-cfundStats.votingPeriod.current)*100/cfundStats.consensus.blocksPerVotingCycle)}}%)</span></td>
+				    </tr>
+				    <tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Voted Proposals
+				      </td>
+				      <td class="right aligned">{{cfundStats.votingPeriod.votedProposals.length}}</td>
+				    </tr>
+				    <tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Voted Payment Requests
+				      </td>
+				      <td class="right aligned">{{cfundStats.votingPeriod.votedPaymentrequests.length}}</td>
+				    </tr>
+				  </tbody>
+				</table>
+			</div>
+			<div class="ui bottom attached tab segment" data-tab="cfund-stats-3">
+				<table class="ui celled striped table">
+					<thead>
+					    <tr><th colspan="2">
+					      Consensus
+					    </th>
+					  </tr></thead>
+					 <tbody>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Minimum Fee For Create a Proposal
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.proposalMinimalFee}}</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Blocks Per Voting Cycle
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.blocksPerVotingCycle}}</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Minimum Sum of Votes Per Voting Cycle
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.minSumVotesPerVotingCycle}}</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Maximum Count Voting Cycle / Proposals
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.maxCountVotingCycleProposals}}</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Maximum Count Voting Cycle / Payment Requests
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{cfundStats.consensus.maxCountVotingCyclePaymentRequests}}</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-success text-white">Accept</span> Proposals
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesAcceptProposalPercentage)}}%</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-danger text-white">Reject</span> Proposals
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesRejectProposalPercentage)}}%</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-success text-white">Accept</span> Payment Requests
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesAcceptPaymentRequestPercentage)}}%</span></td>
+					    </tr>
+						<tr>
+					      <td>
+					        <i class="ion-android-arrow-dropright"></i> Required % to <span class="badge bg-danger text-white">Reject</span> Payment Requests
+					      </td>
+					      <td class="right aligned collapsing"><span v-if="cfundStats">{{roundnumber(cfundStats.consensus.votesRejectPaymentRequestPercentage)}}%</span></td>
+					    </tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='cfund-proposals'">
+			<a class="ui teal ribbon label">Community Proposals</a>
+			<p></p>
+			<div class="ui three column grid" v-if="proposals.length>0">
+			  <div class="column" v-for="proposal in proposals">
+			  <div class="ui fluid card">
 			    <div class="image">
-			      <img src="/images/avatar2/large/matthew.png">
+			      <img v-bind:src="(proposal.image?proposal.image:'img/placeholder.png')">
 			    </div>
 			    <div class="content">
-			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{unit}}</div>
+			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
 			      <div class="meta">
 			        <a>{{proposal.status}}</a>
 			      </div>
-			      <div class="description" style="word-break: break-all; word-wrap: break-word;">
-			        {{proposal.description}}
+			      <div v-html="linkify(proposal.description)" class="description" style="word-break: break-all; word-wrap: break-word;">
 			      </div>
 			    </div>
 			    <div class="extra content">
-			      <span class="right floated">
-			        {{proposal.proposalDuration}}
-			      </span>
-			      <span>
+			    	<span class="right floated" style="margin-left:10px" title="Proposal Duration">
+			     	<i class="ion-calendar"></i>
+			        	{{secondsToDhms(proposal.proposalDuration)}}
+			      	</span>
+   			      	<span class="right floated" title="Voting Cycle">
+			        <i class="ion-loop"></i>
+			        	{{proposal.votingCycle}}
+			      	</span>
+			      	<span>
 			        <i class="ion-thumbsup"></i>
-			        {{proposal.votesYes}}
-			      </span>
-			      <span>
-			        <i class="ion-thumbsdown"></i>
-			        {{proposal.votesNo}}
-			      </span>
+			      	  {{proposal.votesYes}}
+			      	</span>
+			      	<span>
+				        <i class="ion-thumbsdown"></i>
+			        	{{proposal.votesNo}}
+			      	</span>
+				  	<br/>
+				  	<br/>
+				  	<div class="ui three column grid">
+						
+						<div class="column">
+					  		<div class="ui tiny active progress green" @data-percent="getYesVotesProportion(proposal)">
+	        					<div class="bar" :style="{width: getYesVotesProportion(proposal)+'%'}"></div>
+	        					<div class="label">
+	        						<i class="fa fa-thumbs-o-up text-success"></i>
+	        						%{{getYesVotesProportion(proposal)}}
+	        					</div>
+	      					</div>
+					  	</div>
+					  
+					  	<div class="column">
+					  		<div class="ui tiny active progress red" @data-percent="getNoVotesProportion(proposal)">
+	        					<div class="bar" :style="{width: getNoVotesProportion(proposal)+'%'}"></div>
+	        					<div class="label">
+	        						<i class="fa fa-thumbs-o-up text-success"></i>
+	        						%{{getNoVotesProportion(proposal)}}
+	        					</div>
+	      					</div>
+					  	</div>
+
+					  	<div class="column">
+					  		<div class="ui tiny active progress violet" @data-percent="getRequiredVotesProportion(proposal)">
+	        					<div class="bar" :style="{width: getRequiredVotesProportion(proposal)+'%'}"></div>
+	        					<div class="label">
+	        						<i class="fa fa-thumbs-o-up text-success"></i>%{{getRequiredVotesProportion(proposal)}}
+	        					</div>
+	      					</div>
+					  	</div>
+
+				  </div>
+			  	<div class="ui accordion">
+					<div class="title">
+						<i class="dropdown icon"></i>
+					</div>
+					<div class="content">
+						<h5>Proposal Hash</h5>
+						<p class="word-wrap">
+							{{proposal.hash}}
+						</p>
+						<h5>Payment Address</h5>
+						<p class="word-wrap">
+							{{proposal.paymentAddress}}
+						</p>
+						<h5>User Paid Fee</h5>
+						<p class="word-wrap">
+							{{proposal.userPaidFee}} {{coin.symbol}}
+						</p>
+					</div>
+			 	</div>
 			    </div>
 			  </div>
 			</div>
-		</div>
-		
-		<div class="ui bottom attached tab segment" data-tab="cf_three">
-			<h3>My Proposals</h3>
-			<div class="ui link cards">
-			  <div class="card" v-for="proposal in proposals" v-if="proposal.paymentAddress==addressList">
-			    <div class="image">
-			      <img src="/images/avatar2/large/matthew.png">
-			    </div>
-			    <div class="content">
-			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{unit}}</div>
-			      <div class="meta">
-			        <a>{{proposal.status}}</a>
-			      </div>
-			      <div class="description" style="word-break: break-all; word-wrap: break-word;">
-			        {{proposal.description}}
-			      </div>
-			    </div>
-			    <div class="extra content">
-			      <span class="right floated">
-			        {{proposal.proposalDuration}}
-			      </span>
-			      <span>
-			        <i class="ion-thumbsup"></i>
-			        {{proposal.votesYes}}
-			      </span>
-			      <span>
-			        <i class="ion-thumbsdown"></i>
-			        {{proposal.votesNo}}
-			      </span>
-			    </div>
-			        <div class="ui bottom attached button violet" v-if="proposal.status=='accepted'" v-on:click="showModalCreatePaymentRequest(proposal.hash)">
-      					<i class="add icon"></i>
-      					Create Payment Request
-    				</div>
-			  </div>
+			</div>
+			<div v-else>
+				<div class="ui active inline indeterminate loader"></div>
 			</div>
 		</div>
-		<div class="ui bottom attached tab segment" data-tab="cf_four">
-			<h3>Payment Requests</h3>
-			<div class="ui link cards">
-				<div class="card" v-for="paymentRequest in paymentRequests['null']">
-			    <div class="image">
-			      <img src="/images/avatar2/large/matthew.png">
-			    </div>
+
+		<div class="ui segment" v-show="currentPage=='cfund-payment-requests'">
+			<a class="ui violet ribbon label">Payment Requests</a>
+			<p></p>
+			<div class="ui link cards" v-if="paymentRequests.length>0">
+				<div class="card" v-for="paymentRequest in paymentRequests">
 			    <div class="content">
-			      <div class="header">{{formatNumber(paymentRequest.requestedAmount.slice(0, -3))}} {{unit}}</div>
+			      <div class="header">{{formatNumber(paymentRequest.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
 			      <div class="meta">
 			        <a>{{paymentRequest.status}}</a>
 			      </div>
-			      <div class="description" style="word-break: break-all; word-wrap: break-word;">
-			        {{paymentRequest.description}}
+			      <div v-html="linkify(paymentRequest.description)" class="description" style="word-break: break-all; word-wrap: break-word;">
 			      </div>
-			      <div class="description" style="word-break: break-all; word-wrap: break-word;">
-			        {{paymentRequest.hash}}
-			      </div>
+			      <div class="ui accordion">
+						<div class="title">
+							<i class="dropdown icon"></i>
+						</div>
+						<div class="content">
+							<h5>Payment Request Hash</h5>
+							<p class="word-wrap">
+								{{paymentRequest.hash}}
+							</p>
+						</div>
+					</div>
 			    </div>
 			    <div class="extra content">
+   			      <span class="right floated" title="Voting Cycle">
+			        <i class="ion-loop"></i>
+			        	{{paymentRequest.votingCycle}}
+			    	</i>
+			      </span>
 			      <span>
 			        <i class="ion-thumbsup"></i>
 			        {{paymentRequest.votesYes}}
@@ -384,52 +795,122 @@
 			    </div>
 			  	</div>
 			</div>
+			<div v-else>
+				No payment request.
+			</div>
 		</div>
 
-		<div class="ui bottom attached tab segment" data-tab="cf_five">
-			<h3>Create Proposal</h3>
+		<div class="ui segment" v-show="currentPage=='cfund-my-proposals'">
+			<a class="ui violet ribbon label">My Proposals
+			</a>
+			<p></p>
+			<h5 v-if="myProposalCount()>0">
+			 	You have {{myProposalCount()}} proposal.
+			</h5>
+			<div class="ui link cards" v-if="myProposalCount()>0">
+			  <div class="card" v-for="proposal in proposals" v-if="proposal.paymentAddress==addressList">
+			    <div class="image">
+					<img v-bind:src="(proposal.image?proposal.image:'img/placeholder.png')">
+			    </div>
+			    <div class="content">
+			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
+			      <div class="meta">
+			        <a>{{proposal.status}}</a>
+			      </div>
+			      <div class="description" style="word-break: break-all; word-wrap: break-word;">
+			        {{proposal.description}}
+			      </div>
+			    </div>
+			    <div class="extra content">
+			      <span class="right floated" style="margin-left:10px" title="Proposal Duration">
+			      	<i class="ion-calendar"></i>
+			        	{{secondsToDhms(proposal.proposalDuration)}}
+			      </span>
+   			      <span class="right floated" title="Voting Cycle">
+			        <i class="ion-loop"></i>
+			        	{{proposal.votingCycle}}
+			    	</i>
+			      </span>
+			      <span>
+			        <i class="ion-thumbsup"></i>
+			        {{proposal.votesYes}}
+			      </span>
+			      <span>
+			        <i class="ion-thumbsdown"></i>
+			        {{proposal.votesNo}}
+			      </span>
+			    </div>
+		        <div class="ui bottom attached button violet" v-if="proposal.status=='accepted'" v-on:click="showModalCreatePaymentRequest(proposal.hash)">
+  					<i class="add icon"></i>
+  					Create Payment Request
+				</div>
+			  </div>
+			</div>
+			<div v-else>
+				You don't have any proposal.
+			</div>
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='cfund-create-proposal'">
+			<a class="ui violet ribbon label">Create Proposal</a>
+			<p></p>
 			<form class="ui form">
-			  <div class="field">
-				<label>Required Amount (NAV)</label>
-				<input type="text" name="strdzeel_n" placeholder="Amount" v-model="strdzeel_n">
-			  </div>
-			  <div class="field">
-				<label>Address</label>
-				<input type="text" name="strdzeel_a" placeholder="Address" v-model="strdzeel_a">
-			  </div>
-  			  <div class="field">
-				<label>Deadline</label>
-				<input type="text" name="strdzeel_d" placeholder="Deadline" v-model="strdzeel_d">
-			  </div>
-   			  <div class="field">
+			 <div class="field">
 				<label>Proposal Description</label>
 				<input type="text" name="strdzeel_s" placeholder="Description" v-model="strdzeel_s">
 			  </div>
-			  <a class="ui button" v-on:click="createProposal()">Create Proposal</a>
-			  <p>{{result_create_proposal}}</p>
+			  <div class="field">
+				<label>Required Amount ({{coin.symbol}})</label>
+				<input type="text" name="strdzeel_n" placeholder="Amount" v-model="strdzeel_n">
+			  </div>
+			  <div class="field">
+				<label>Payment Address</label>
+				<input type="text" name="strdzeel_a" placeholder="Address" v-model="strdzeel_a">
+			  </div>
+			  <div class="field">
+				<label>Proposal Duration</label>
+			  </div>
+  			  <div class="fields">
+	  			  <div class="two wide field">
+		  			<select class="ui dropdown" v-model="day" value="1"><option v-for="index in 32" :key="index" v-bind:value="index-1">{{index-1}} Days</option></select>
+				  </div>
+	  			  <div class="two wide field">
+					<select class="ui dropdown" v-model="month"><option v-for="index in 13" :key="index" v-bind:value="index-1">{{index-1}} Months</option></select>
+				  </div>
+	  			  <div class="two wide field">
+					<select class="ui dropdown" v-model="year"><option v-for="index in 6" :key="index" v-bind:value="index-1">{{index-1}} Years</option></select>
+				  </div>
+				</div>
+				
+				<div v-if="Object.keys(cfundStats).length>0">
+					<div class="ui label gray" style="margin-bottom: 10px;">
+						<h4>Warning!</h4>
+						<p>{{cfundStats.consensus.proposalMinimalFee}} NAV from your account will be transferred to the Community Fund as a Proposal Fee.</p>
+					</div>
+				</div>
+			  <a class="ui button green" v-on:click="createProposal()">Create Proposal</a>
 			</form>
 		</div>
 	</div>
 	
-	<div class="ui container" v-show="!walletExist && step==0">
+	<div class="ui container" style="width:720px" v-show="!walletExist && step==0">
 			<div class="top">
-				<div>
-					<i data-feather="feather" class="logo-icon"></i>
-				</div>
-				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+				<center>
+				<div class="logo-text"><i data-feather="feather" class="svg-icon-small"></i>&nbsp;Welcome to the NEXT Lite Wallet</div>
+				</center>
 			</div>
-			<div class="ui list" style="margin-top:50px;">
-				<div class="item">
+			<div class="ui item" style="margin-top:50px;">
+				<div class="item mt15">
 					<div class="content">
 						<div class="circle">
 							<i data-feather="layers" class="item-icon"></i>
 						</div>
 						<span class="item-desc">
-							The NEXT Lite Wallet allows you to quickly interact with the NavCoin blockchain.
+							The NEXT Lite Wallet allows you to quickly interact with the {{coin.name}} blockchain.
 						</span>
 					</div>
 				</div>
-				<div class="item">
+				<div class="item mt15">
 					<div class="circle">
 						<i data-feather="shield" class="item-icon"></i>
 					</div>
@@ -437,7 +918,7 @@
 						All your private keys are stored locally and you have all the control.
 					</span>
 				</div>
-				<div class="item">
+				<div class="item mt15">
 					<div class="circle">
 						<i data-feather="watch" class="item-icon"></i>
 					</div>
@@ -446,9 +927,11 @@
 					</span>
 				</div>
 			</div>
-		<div style="margin-top:50px;">
-			<button class="ui button blue large" v-on:click="nextStep()"><i data-feather="chevron-right" class="svg-icon-tiny"></i>Get Started</button>
-		</div>
+			<div style="margin-top:50px;">
+				<center>
+					<button class="ui right labeled icon button large blue" v-on:click="nextStep()">Get Started<i class="right chevron icon"></i></button>
+				</center>
+			</div>
 	</div>
 
 	<div class="ui container" v-show="!walletExist && step==1">
@@ -471,6 +954,54 @@
 			    <input type="password" name="password_again" v-model="password_again" placeholder="">
 			  </div>
 			  <button type="button" class="ui button gray large" v-on:click="createWallet()"><i data-feather="database" class="svg-icon-tiny"></i>&nbsp;Create My Wallet</button>
+			</form>
+	</div>
+
+	<div class="ui container" v-show="!walletExist && step==2">
+			<div class="top">
+				<div>
+					<i data-feather="feather" class="logo-icon"></i>
+				</div>
+				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+			</div>
+			<form class="ui form">
+			  <h4 class="ui dividing header">Create Wallet</h4>
+			  <h4>
+				  Pass Phrase
+				</h4>
+			  <p>
+				  {{mnemonics}}
+			  </p>
+			  <h4>
+				  Private Key
+				</h4>
+			  <p>
+				  {{privateKey}}
+			  </p>
+  			  <div class="ui red inverted segment">
+				  <h4>Warning!</h4>
+				  <p>Your passphrase and private key will not be shown again.
+				  Without it you will lose access to your wallet.</p>
+			  </div>
+  			  <div class="ui black inverted segment">
+			  	The NEXT Lite Wallet is an experimental wallet.<br/>
+			  	It is still in alpha stage.<br/>
+			  	We recommend that you don't keep your coins in the wallet until a stable version is obtained.
+			  </div>
+			  <div class="field">
+			  	<div class="ui checkbox">
+					<input type="checkbox" tabindex="0" class="hidden" v-model="acceptRecoveryPhrase">
+      				<label>I have written down or otherwise securely stored my passphrase</label>
+    			</div>
+			  </div>
+			  <div class="field">
+			  	<div class="ui checkbox">
+					<input type="checkbox" tabindex="0" class="hidden" v-model="acceptTerms">
+      				<label>I agree to the Terms and Conditions</label>
+    		  	</div>
+			  </div>
+
+			  <button type="button" class="ui button gray large" v-on:click="loadWallet()"><i data-feather="log-in" class="svg-icon-tiny"></i>&nbsp;Finish</button>
 			</form>
 	</div>
 
@@ -506,7 +1037,7 @@
 				<label>Requested Amount</label>
 				<input type="number" min="0" name="paymentRequestAmount" id="paymentRequestAmount">
 			</div>
-			<button type="button" class="ui button" onclick="app.submitPaymentRequest()">Create Payment Request</button>
+			<button type="button" class="ui button violet" onclick="app.submitPaymentRequest()">Create Payment Request</button>
 		</form>
 	</div>
 </div>
@@ -518,15 +1049,21 @@ $(document).ready(function(){
 var app = new Vue({
   el: '#app',
   data: {
+  	currentPage:'overview',
   	config:{headers: {'Content-Type': 'application/x-www-form-urlencoded'},responseType: 'text'},
+  	day:0,
+  	month:0,
+  	year:0,
   	step:0,
-  	password:'123456',
+  	token:'',
+  	acceptTerms:false,
+  	acceptRecoveryPhrase:false,
+  	password:'',
   	password_again:'',
   	walletUnlocked:false,
     walletExist:false,
-	balance: '0.00',
+	balance: '',
 	height:'',
-	unit: 'NAV',
 	address: '',
 	addressList:'',
 	mnemonics:'',
@@ -540,44 +1077,174 @@ var app = new Vue({
 	result_verify:'',
 	send_address:'',
 	send_amount:'',
-	result_send:'',
 	strdzeel_v:2,
 	strdzeel_n:'',
 	strdzeel_a:'',
 	strdzeel_d:'',
 	strdzeel_s:'',
-	result_create_proposal:'',
 	paymentRequestProposalHash:'',
+	qrcode:'',
 	utxo:[],
+	txs:[],
 	proposals:[],
-	paymentRequests:[]
+	paymentRequests:[],
+	cfundStats:{},
+	price:{},
+    coin:{
+		"name":"NAVCoin",
+		"symbol":"NAV",
+		"icon_class":"cc NAV-alt",
+		"logo":"static/img/coins/nav.png",
+		"bgcolor":"purple",
+		"bgimage":"static/img/sidebar/sidebar-4.jpg",
+		"url":"https://navcoin.org",
+		"description":"Proof of Stake, Private Payment, Staking, Community Fund",
+		"cmc_symbol":"nav-coin",
+		"qrcode_prefix":"navcoin",
+		"bool_support_community_fund":"1",
+		"bool_support_open_alias":"1",
+		"bool_support_cold_staking":"1",
+		"social_youtube_url":"https://www.youtube.com/channel/UCjDs4JceVSsaeCyvkA9cWCg",
+		"social_facebook_url":"https://www.facebook.com/navcoin",
+		"social_twitter_url":"https://www.twitter.com/navcoin",
+		"social_github_url":"https://www.github.com/navcoin",
+		"social_reddit_url":"https://www.reddit.com/r/NavCoin/",
+		"social_instagram_url":"https://www.instagram.com/navcore",
+		"social_discord":"https://discord.gg/y4Vu9jw",
+		"block_explorers":
+		{
+			"CryptoID":
+			{
+				"name":"CryptoID",
+				"url":"https://chainz.cryptoid.info/nav/"
+			},
+			"NavExplorer":
+			{
+				"name":"NavExplorer",
+				"url":"https://navexplorer.com"
+			}
+		}
+	}
   },
   created: function()
   {
-	this.isWalletExist();
+  	if (this.token=='') this.generateToken();
 	this.refresh();
-	this.strdzeel_n=1;
-	this.strdzeel_d=5184180;
-	this.strdzeel_s="NEXT Lite Wallet Test Proposal";
-	this.strdzeel_ps="NEXT Lite Wallet Test Payment Request";
+	this.strdzeel_n='';
+	this.strdzeel_d='';
+	this.strdzeel_s='';
+	this.strdzeel_ps='';
+  },
+  mounted:function()
+  {
+
+  }
+  ,updated:function()
+  {
+  	$('.accordion').accordion();
+	$('.menu .item').tab();
+	$('.ui.checkbox').checkbox();
   },
   methods:{
+    route: function (currentPage)
+	{
+		this.currentPage=currentPage;
+	},
+	formatnumbers: function(n) {
+	  if (n==undefined) return;
+      var parts = n.toString().split(".");
+      return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+    },
+   	roundnumber: n => {
+      if (!n) {
+        return "0.00"
+      }
+	  return Math.round(n).toFixed(2);
+    },
     refresh: function ()
 	{
 		if (this.walletExist && this.walletUnlocked)
 		{
+			this.getPrice();
 			this.getBalance();
 			this.getHeight();
+			this.getCFundStats();
 			this.listAddr();
 			this.listProposals();
 			this.listPaymentRequests();
 			this.getUTXO();
+			this.getTXHistory();
 		}
+	},
+	getYesVotesProportion: function (proposal)
+	{
+        var total_votes = proposal.votesYes + proposal.votesNo;
+        return Math.round((proposal.votesYes / total_votes) * 100, 2);
+	},
+	getNoVotesProportion: function (proposal)
+	{
+        var total_votes = proposal.votesYes + proposal.votesNo;
+        return Math.round((proposal.votesNo / total_votes) * 100, 2);
+	},
+	getRequiredVotesProportion: function (proposal)
+	{
+		if (this.cfundStats.length==undefined) return;
+		var requiredVotesProportion=(((proposal.votesYes+proposal.votesNo)*100)/this.cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2);
+        if (requiredVotesProportion>100) return 100; else return requiredVotesProportion;
+	},
+	total_in_seconds: function ()
+	{
+		let vm=this;
+		var tis=0;
+		if (vm.day) tis=vm.day*86400;
+		if (vm.month) tis+=vm.month*2592000;
+		if (vm.year) tis+=vm.year*31536000;
+		return tis;
+	},
+	linkify:function(inputText)
+	{
+	    var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+	    //URLs starting with http://, https://, or ftp://
+	    replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+	    replacedText = inputText.replace(replacePattern1, '<a title="Open Link on Browser" class="link" href="$1" target="_blank" style="margin-top:5px;"><i class="ion-android-open icon"></i>&nbsp;$1</a>');
+
+	    //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+	    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+	    replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+	    //Change email addresses to mailto:: links.
+	    replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+	    replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+	    return replacedText;
+	},
+	myProposalCount:function()
+	{
+		let vm=this;
+		var proposalCount=0;
+		this.proposals.forEach(function(element)
+		{
+  			if (element.paymentAddress==vm.addressList) proposalCount++;
+		});
+		return proposalCount;
+	},
+	featuredProposalCount:function()
+	{
+		let vm=this;
+		var featuredProposalCount=0;
+		this.proposals.forEach(function(element)
+		{
+  			if (element.featured==1) featuredProposalCount++;
+		});
+		return featuredProposalCount;
 	},
 	showModalCreatePaymentRequest:function(paymentRequestProposalHash)
 	{
 		this.paymentRequestProposalHash=paymentRequestProposalHash;
 		console.log(this.paymentRequestProposalHash);
+		$("#paymentRequestID").val('');
+		$("#paymentRequestAmount").val('');
 		$('#modalPaymentRequest').modal('show');
 	},
 	submitPaymentRequest:function()
@@ -588,7 +1255,7 @@ var app = new Vue({
 		console.log(paymentRequestID);
 		console.log(paymentRequestAmount);
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/createpaymentrequest', {h: this.paymentRequestProposalHash, i: paymentRequestID, n:paymentRequestAmount},this.config)
+		axios.post('http://127.0.0.1:3001/createpaymentrequest', {token:vm.token, h: this.paymentRequestProposalHash, i: paymentRequestID, n:paymentRequestAmount},this.config)
 		.then(function (response)
 		{
 			console.log(response.data);
@@ -609,8 +1276,19 @@ var app = new Vue({
 		{
 		}); 
 	},
+	secondsToDhms:function(seconds)
+	{
+		seconds=Number(seconds);
+		var d=Math.floor(seconds / (3600*24));
+		var h=Math.floor(seconds % (3600*24) / 3600);
+		var m=Math.floor(seconds % 3600 / 60);
+		var s=Math.floor(seconds % 3600 % 60);
+		var dDisplay = d > 0 ? d + (d == 1 ? " day " : " days ") : "";
+		return dDisplay;
+	},
     formatBalance: n => {
-		if (n) return sb.toBitcoin(n);
+    	if (n==0) return n;
+		if (n) return sb.toBitcoin(n); else return "";
 	},
     formatNumber: n => {
 		if (!n) return "0";
@@ -630,7 +1308,7 @@ var app = new Vue({
 	isWalletExist: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/iswalletexist', {})
+		axios.post('http://127.0.0.1:3001/iswalletexist', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			vm.walletExist=response.data.exist;
@@ -653,7 +1331,7 @@ var app = new Vue({
 		else
 		{
 			let vm=this;
-			axios.post('http://127.0.0.1:3001/unlockwallet', {password: vm.password},this.config)
+			axios.post('http://127.0.0.1:3001/unlockwallet', {token:vm.token, password: vm.password},this.config)
 			.then(function (response)
 			{
 				if (!response.data.isUnlocked)
@@ -711,13 +1389,12 @@ var app = new Vue({
 		else
 		{
 			let vm=this;
-			axios.post('http://127.0.0.1:3001/initwallet', {password: vm.password},this.config)
+			axios.post('http://127.0.0.1:3001/initwallet', {token:vm.token, password: vm.password},this.config)
 			.then(function (response)
 			{
-				//console.log(response.data);
-				vm.walletExist=true;
-				vm.walletUnlocked=true;
-				vm.refresh();
+				vm.privateKey=response.data.privateKey;
+				vm.mnemonics=response.data.mnemonics;
+				vm.step++;
 			})
 			.catch(function (error)
 			{
@@ -729,13 +1406,42 @@ var app = new Vue({
 		}
 
     },
+    loadWallet: function ()
+	{
+		if (!this.acceptRecoveryPhrase||!this.acceptTerms)
+		{
+			swal({title:"Create Wallet",type:"info",html:"Please confirm you have accept terms and conditions."});
+			return;
+		}
+		this.step++;
+		this.walletExist=true;
+		this.walletUnlocked=true;
+		this.refresh();
+    },
+    generateToken: function ()
+	{	
+		let vm=this;
+		axios.get('http://127.0.0.1:3001/generatetoken', {},this.config)
+		.then(function (response)
+		{
+			vm.token=response.data.token;
+		  	vm.isWalletExist();
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
     getBalance: function ()
 	{	
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/balance', {})
+		axios.post('http://127.0.0.1:3001/balance', {token:vm.token},this.config)
 		.then(function (response)
 		{
-			//console.log(response.data);
+			console.log(response.data);
 			vm.balance=response.data;
 		})
 		.catch(function (error)
@@ -746,10 +1452,50 @@ var app = new Vue({
 		{
 		});  
     },
+    getPrice: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/price', {token:vm.token, symbol: this.coin.cmc_symbol, convert:"EUR"},this.config)
+		.then(function (response)
+		{
+			if (!response.data.error)
+			{
+				vm.price=response.data;
+			}
+			else
+			{
+				//
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});
+	},
+    getCFundStats: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/cfundstats', {token:vm.token},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.cfundStats=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});
+    },
     listProposals: function ()
 	{	
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/listproposals', {})
+		axios.post('http://127.0.0.1:3001/listproposals', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			//console.log(response.data);
@@ -766,11 +1512,11 @@ var app = new Vue({
     listPaymentRequests: function ()
 	{	
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/listpaymentrequests', {})
+		axios.post('http://127.0.0.1:3001/listpaymentrequests', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			//console.log(response.data);
-			vm.paymentRequests=response.data;
+			vm.paymentRequests=response.data.null;
 		})
 		.catch(function (error)
 		{
@@ -783,7 +1529,7 @@ var app = new Vue({
 	getHeight: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/height', {})
+		axios.post('http://127.0.0.1:3001/height', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			console.log(response.data);
@@ -800,7 +1546,7 @@ var app = new Vue({
 	getUTXO: function ()
 	{	
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/utxo', {})
+		axios.post('http://127.0.0.1:3001/utxo', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			//console.log(response.data);
@@ -814,13 +1560,34 @@ var app = new Vue({
 		{
 		});  
     },
+	getTXHistory: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/txhistory', {token:vm.token},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.txs=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
 	listAddr: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/listaddr', {})
+		axios.post('http://127.0.0.1:3001/listaddr', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			vm.addressList=response.data;
+			var prefix="navcoin:";
+			var qrcode=new QRCode(prefix+response.data);
+			vm.qrcode=qrcode.svg();
+
 			vm.strdzeel_a=vm.addressList;
 		})
 		.catch(function (error)
@@ -834,7 +1601,7 @@ var app = new Vue({
     getnewaddress: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/generate', {})
+		axios.post('http://127.0.0.1:3001/generate', {token:vm.token},this.config)
 		.then(function (response)
 		{
 			console.log(response.data);
@@ -853,7 +1620,7 @@ var app = new Vue({
 	sign: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/sign', {message: this.message, privateKey:this.privateKey},this.config)
+		axios.post('http://127.0.0.1:3001/sign', {token:vm.token, message: this.message},this.config)
 		.then(function (response)
 		{
 			//console.log(response.data);
@@ -877,7 +1644,7 @@ var app = new Vue({
 	verify: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/verify', {message: this.verify_message, address:this.verify_address, signature:this.verify_signature},this.config)
+		axios.post('http://127.0.0.1:3001/verify', {token:vm.token, message: this.verify_message, address:this.verify_address, signature:this.verify_signature},this.config)
 		.then(function (response)
 		{
 			//console.log(response.data);
@@ -901,17 +1668,21 @@ var app = new Vue({
 	send: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/send', {to: this.send_address, amount:this.send_amount},this.config)
+		axios.post('http://127.0.0.1:3001/send', {token:vm.token, to: this.send_address, amount:this.send_amount},this.config)
 		.then(function (response)
 		{
 			console.log(response.data);
-			if (!response.data.error)
+			if (response.data.error)
 			{
-				vm.result_send=response.data.hex;
+				swal({title:"Send",type:"error",html:response.data.message});
+			}
+			else if (response.data.substring(0,5) == "error")
+			{
+				swal({title:"Send",type:"error",html:response.data});
 			}
 			else
 			{
-				vm.result_send=response.data.message;
+				swal({title:"Send",type:"success",html:"Transaction created successfully"});
 			}
 		})
 		.catch(function (error)
@@ -925,17 +1696,38 @@ var app = new Vue({
 	createProposal: function ()
 	{
 		let vm=this;
-		axios.post('http://127.0.0.1:3001/createproposal', {v:this.strdzeel_v,n: this.strdzeel_n,a:this.strdzeel_a,d:this.strdzeel_d,s:this.strdzeel_s},this.config)
+		if (!this.strdzeel_s)
+		{
+			swal({title:"Create Proposal",type:"warning",html:"Please specify a description for your proposal"});
+			return;
+		}
+		if (!this.strdzeel_n)
+		{
+			swal({title:"Create Proposal",type:"warning",html:"Please specify an amount for your proposal"});
+			return;
+		}
+		if (!this.strdzeel_a)
+		{
+			swal({title:"Create Proposal",type:"warning",html:"Please specify an payment address for your proposal"});
+			return;
+		}
+		if (vm.total_in_seconds()==0)
+		{
+			swal({title:"Create Proposal",type:"warning",html:"Please select a proposal duration"});
+			return;
+		}
+		this.strdzeel_d=vm.total_in_seconds();
+		axios.post('http://127.0.0.1:3001/createproposal', {token:vm.token, v:this.strdzeel_v,n: this.strdzeel_n,a:this.strdzeel_a,d:this.strdzeel_d,s:this.strdzeel_s},this.config)
 		.then(function (response)
 		{
 			console.log(response.data);
-			if (!response.data.error)
+			if (response.data.substring(0,5) == "error")
 			{
-				vm.result_create_proposal=response.data.hex;
+				swal({title:"Create Proposal",type:"error",html:response.data});
 			}
 			else
 			{
-				vm.result_create_proposal=response.data.message;
+				swal({title:"Create Proposal",type:"success",html:"Your proposal created successfully"});
 			}
 		})
 		.catch(function (error)
@@ -951,5 +1743,20 @@ var app = new Vue({
 </script>
 <script>
 	feather.replace();
+	  $(document)
+    .ready(function() {
+      $('.ui.menu .ui.dropdown').dropdown({
+        on: 'hover'
+      });
+      $('.ui.menu a.item')
+        .on('click', function() {
+          $(this)
+            .addClass('active')
+            .siblings()
+            .removeClass('active')
+          ;
+        })
+      ;
+    });
 </script>
 </html>
