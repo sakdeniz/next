@@ -74,7 +74,8 @@ fs=require('fs');
 json=JSON.parse(fs.readFileSync(__dirname+'/package.json', 'utf8'))
 version=json.version;
 console.log("NEXT "+version);
-console.log("OS Arch :"+process.arch);
+console.log("Platform:"+process.platform);
+console.log("OS Arch:"+process.arch);
 require('electron-context-menu')({
 	showInspectElement:false,
 	labels: {

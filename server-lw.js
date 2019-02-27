@@ -696,13 +696,14 @@ server=http.createServer(function (req, res)
 		}
 	});
 });
+walletFileName=__dirname+(process.platform == 'win32' ?'\\':'/');
 if (network=="dev")
 {
-	walletFileName="wallet.db.dev";
+	walletFileName+="wallet.db.dev";
 }
 if (network=="main")
 {
-	walletFileName="wallet.db";
+	walletFileName+="wallet.db";
 }
 console.log("NEXT Light Wallet NodeJS Server started...");
 console.log("Network : " + network);
