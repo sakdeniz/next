@@ -5,21 +5,21 @@ var http=require('http');
 var argv=require('minimist')(process.argv.slice(2));
 var qs=require('querystring');
 var axios=require('axios');
-var moment = require('moment');
-var sb = require('satoshi-bitcoin');
+var moment=require('moment');
+var sb=require('satoshi-bitcoin');
 var server;
 var walletFileName;
 var token="";
 const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
-const bitcore = require('bitcore-lib') ;
+const bitcore=require('bitcore-lib') ;
 const crypto=require('crypto');
 const Client=require('bitcoin-core');
 const stringifyObject=require('stringify-object');
-var Mnemonic = require('bitcore-mnemonic');
-var Message = require('bitcore-message');
+var Mnemonic=require('bitcore-mnemonic');
+var Message=require('bitcore-message');
 
-const low = require('lowdb')
-const FileSync = require('lowdb/adapters/FileSync')
+const low=require('lowdb');
+const FileSync=require('lowdb/adapters/FileSync');
 
 var ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
@@ -190,8 +190,6 @@ server=http.createServer(function (req, res)
 		{
 			generate(res);
 		}
-		
-
 		
 		if (req.url=="/iswalletexist")
 		{
@@ -594,6 +592,29 @@ server=http.createServer(function (req, res)
 			{
 			});  
 		}
+
+		if (req.url=="/listproposalrequestlist")
+		{
+ 		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'listproposalrequestlist', {
+				params: {
+					network: network,
+					a:publicAddress
+				}
+			})
+			.then(function (response)
+			{
+				sendResponse(res,200,JSON.stringify(response.data));
+				console.log(JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+		    .then(function ()
+			{
+			});  
+		}
 		
 		if (req.url=="/listpaymentrequests")
 		{
@@ -680,6 +701,40 @@ server=http.createServer(function (req, res)
 					{
 						"result":result
 					}));
+				}
+				catch(err)
+				{
+					sendResponse(res,200,JSON.stringify(
+					{
+						"error":true,
+						"errno":err.errno,
+						"code":err.code,
+						"path":err.path,
+						"message":err.message
+					}));
+				}
+			}
+		}
+
+		if (req.url=="/create_sponsorship_request")
+		{
+			if (!post.who || !post.email || !post.details || !post.timeline)
+			{
+				sendResponse(res,200,JSON.stringify({"error":true,"message":"Please fill all required fields"}));
+			}
+			else
+			{
+				try
+				{
+					axios.post(apiURL+'create_sponsorship_request', "network="+network+"&address="+post.address+"&who="+post.who+"&email="+post.email+"&details="+post.details+"&timeline="+post.timeline,config)
+					.then((retval) =>
+					{
+						sendResponse(res,200,JSON.stringify(
+						{
+							"result":retval.data
+						}));
+					}
+					).catch((e) => {sendError(res, 200,e);})
 				}
 				catch(err)
 				{

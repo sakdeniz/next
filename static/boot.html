@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <link href="plugins/semantic/semantic.min.css" rel="stylesheet" type="text/css" />
 <link href="plugins/ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css"/>
+<link href="plugins/fontawesome-free-5.8.1-web/css/all.min.css" rel="stylesheet" type="text/css"/>
 <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 <script type="text/javascript" src="plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script type="text/javascript" src="plugins/vuejs/vue.min.js"></script>
@@ -26,13 +27,16 @@ var _wappalyzerParams = {rootPath: '',view: 'index',siftScienceSnippetKey: '82ac
 		<center><h1 class="logo-text-big">NEXT</h1></center>
 		<div style="margin-top:5px;text-align:center">
 			<center>
-			<img class="ui tiny image" v-bind:src=getlogo(coins['Coins'][c_coin][0].logo)>
+			<img class="ui tiny image" v-bind:src="getlogo(coins['Coins'][c_coin][0].logo)"/>
 			<br/><br/><br/>
-			<div class="ui buttons" v-if="coin.bool_support_lite_wallet=='1'">
-  				<button class="ui labeled icon button large blue" v-on:click="start()">Full Wallet<i class="right ion-cube icon"></i></button>
-  				<div class="or"></div>
-  				<button class="ui labeled icon button large green" v-on:click="start_lw()"><i class="right ion-leaf icon"></i>&nbsp;Lite Wallet</button>
-			</div>
+			<button class="ui labeled icon large blue button" v-on:click="start()">
+			  <i class="ion-cube icon"></i>
+			  Full Wallet
+			</button>
+			<button class="ui labeled icon large green button" v-on:click="start_lw()">
+			  <i class="leaf icon"></i>
+			  Lite Wallet
+			</button>
 			<div v-if="coin.bool_support_lite_wallet=='1'">
 				<button class="ui labeled icon button large violet tiny" v-on:click="help_wallet_types()" style="margin-top:20px;">Help me choose<i class="right ion-ios-help-outline icon"></i></button>
 			</div>

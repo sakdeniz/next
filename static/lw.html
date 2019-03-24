@@ -18,21 +18,26 @@
 <script src="plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script src="plugins/sb/sb.js"></script>
 <style>
+
 body
 {
 	background: #fcfcfc;
 }
+
 .top
 {
 	margin-bottom:50px;
 }
 
-.svg-icon {
-    height: 5em;
-    margin-top: -4px;
+.logo-svg {
+    height: 3em;
+    margin-top: 4px;
     pointer-events: none;
     vertical-align: middle;
-    width: 5em;
+    width: 3em;
+	color:#6435c9;
+	display:inline-block;
+	float: left;
 }
 
 .logo-icon {
@@ -115,10 +120,10 @@ body
 <body>
 <div id="app">
 	<br/>
-	<div class="ui container" v-show="walletExist && walletUnlocked">
+	<div class="ui container" v-show="walletExist && walletUnlocked" style="display:none">
 		<div class="ui menu">
 			<div class="header item" v-on:click="route('overview')">
-				<i data-feather="feather"></i>
+				<div style="width:24px;height:24px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
 			</div>
 			<a class="active item" v-on:click="route('overview')">Overview</a>
 			<a class="item" v-on:click="route('receive')">Receive</a>
@@ -137,6 +142,9 @@ body
 					<div class="divider"></div>
 					<a class="item" v-on:click="route('cfund-create-proposal')">Create Proposal</a>
 					<a class="item" v-on:click="route('cfund-my-proposals')">My Proposals</a>
+					<div class="divider"></div>
+					<a class="item" v-on:click="route('cfund-request-nav')">Create Proposal Sponshorsip Request</a>
+					<a class="item" v-on:click="listProposalRequestList();route('cfund-request-nav-list');">Sponshorsip Request List</a>
 				</div>
 			</div>
 			<div class="right menu">
@@ -151,23 +159,24 @@ body
 
 		<div class="ui segment active" v-show="currentPage=='overview'">
 			<a class="ui violet ribbon label">Balance</a>
-			<h1 v-if='balance'>
-				{{formatBalance(balance.balance)}} {{coin.symbol}}
-			</h1>
-			<h5 v-else>
-				<div class="ui column active inline indeterminate loader"></div>
-			</h5>
-			<h5 v-if='height'>
-				Height {{height}}
-			</h5>
-			<h5 v-else>
-				<div class="ui column active inline indeterminate loader"></div>
-			<h5>
+			
+			<div class="ui middle aligned divided list">
+			  <div class="item">
+				<div class="right floated content" v-if='height'>
+					<small>Height {{height}}</small>
+				</div>
+				<div class="ui column active inline indeterminate loader right floated" v-else></div>
+				<div class="content" v-if='balance'>
+					<h3>{{formatBalance(balance.balance)}} {{coin.symbol}}</h3>
+				</div>
+				<div class="ui column active inline indeterminate loader" v-else></div>
+			  </div>
+			</div>
+			
 		</div>
 
 		<div class="ui three column grid" v-show="currentPage=='overview'">
-			  
-			  <div class="column">
+			<div class="column">
 				<div class="ui fluid card">
 					<div class="content">
 						<div class="header"><i class="ion-flag icon"></i>Getting Started</div>
@@ -203,6 +212,72 @@ body
 				</div>
 			</div>
 
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='cfund-request-nav'">
+			<h3>Proposal Sponsorship</h3>
+			If you have a proposal that you might be useful for NavCoin and you've just met NavCoin, we can sponsor the 50 NAV you need to easily create your proposal.
+			<h3>How does it work?</h3>
+			We will only ask you some information about your proposal. We will also ask you to introduce yourself briefly. Based on the information you provide, we will decide whether to sponsor your proposal creation fee.
+			<h3>So let's start</h3>
+			<form class="ui form">
+			   <div class="field">
+					<label>Who are you?</label>
+					<textarea rows="3" name="nav_request_who" placeholder="" v-model="nav_request_who"></textarea>
+				</div>
+			   <div class="field">
+					<label>E-Mail</label>
+					<input type="text" name="nav_request_email" placeholder="" v-model="nav_request_email">
+				</div>
+				<div class="field">
+					<label>Tell us briefly about your proposal and how to do it.</label>
+					<textarea rows="3" name="nav_request_details" placeholder="" v-model="nav_request_details"></textarea>
+				</div>
+				<div class="field">
+					<label>How long do you think you can complete your proposal?</label>
+					<input type="text" name="nav_request_timeline" placeholder="" v-model="nav_request_timeline">
+				</div>
+				<a class="ui button violet" v-on:click="create_sponsorship_request()">Create Request</a>
+			</form>
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='cfund-request-nav-list'">
+			<h3>Proposal Sponsorship Request List</h3>
+				<table class="ui celled table" v-if="sponsorshipRequestList.length>0">
+					<thead>
+						<tr>
+							<th>
+								Proposal Details
+							</th>
+							<th>
+								Timeline
+							</th>
+							<th>
+								Created On
+							</th>
+							<th>
+								Status
+							</th>
+						</tr>
+					</thead>
+					<tr v-for="sr in sponsorshipRequestList">
+						<td>
+							{{sr[3]}}
+						</td>
+						<td>
+							{{sr[4]}}
+						</td>
+						<td>
+							{{sr[6]}}
+						</td>
+						<td>
+							{{sr[8]}}
+						</td>
+					</tr>
+				</table>
+				<p v-if="sponsorshipRequestList.length<1">
+					No proposal sponsorship request found.
+				</p>
 		</div>
 
 		<div class="content" v-show="currentPage=='meet-community'">
@@ -242,91 +317,93 @@ body
 				</div>
 			</div>
 			<div class="ui three column grid" v-if="proposals.length>0">
-			  <div class="column" v-for="proposal in proposals" v-if="proposal.featured=='1'">
-			  <div class="ui fluid card">
-			    <div class="image">
-			      <img v-bind:src="(proposal.image?proposal.image:'img/placeholder.png')">
-			    </div>
-			    <div class="content">
-			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
-			      <div class="meta">
-			        <a>{{proposal.status}}</a>
-			      </div>
-			      <div v-html="linkify(proposal.description)" class="description" style="word-break: break-all; word-wrap: break-word;">
-			      </div>
-			    </div>
-			    <div class="extra content">
-			    	<span class="right floated" style="margin-left:10px" title="Proposal Duration">
-			     	<i class="ion-calendar"></i>
-			        	{{secondsToDhms(proposal.proposalDuration)}}
-			      	</span>
-   			      	<span class="right floated" title="Voting Cycle">
-			        <i class="ion-loop"></i>
-			        	{{proposal.votingCycle}}
-			      	</span>
-			      	<span>
-			        <i class="ion-thumbsup"></i>
-			      	  {{proposal.votesYes}}
-			      	</span>
-			      	<span>
-				        <i class="ion-thumbsdown"></i>
-			        	{{proposal.votesNo}}
-			      	</span>
-				  	<br/>
-				  	<br/>
-				  	<div class="ui three column grid">
-						
-						<div class="column">
-					  		<div class="ui tiny active progress green" @data-percent="getYesVotesProportion(proposal)">
-	        					<div class="bar" :style="{width: getYesVotesProportion(proposal)+'%'}"></div>
-	        					<div class="label">
-	        						<i class="fa fa-thumbs-o-up text-success"></i>
-	        						%{{getYesVotesProportion(proposal)}}
-	        					</div>
-	      					</div>
-					  	</div>
-					  
-					  	<div class="column">
-					  		<div class="ui tiny active progress red" @data-percent="getNoVotesProportion(proposal)">
-	        					<div class="bar" :style="{width: getNoVotesProportion(proposal)+'%'}"></div>
-	        					<div class="label">
-	        						<i class="fa fa-thumbs-o-up text-success"></i>
-	        						%{{getNoVotesProportion(proposal)}}
-	        					</div>
-	      					</div>
-					  	</div>
+				<div class="column" v-for="proposal in proposals" v-if="proposal.featured=='1'">
+					<div class="ui fluid card">
+					    <div class="image">
+					    	<img v-bind:src="(proposal.image?proposal.image:'img/placeholder.png')">
+					    </div>
+					    <div class="content">
+					    	<div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
+					      	<div v-html="linkify(proposal.description)" class="description" style="word-break: break-all; word-wrap: break-word;">
+					    	</div>
+					   		<div style="margin-top:5px;">
+	  			  				<span class="ui basic label" style="margin-top:3px">{{capitalize(proposal.status)}}</span>
+				   				<span v-if="proposal.paymentRequests" style="margin-top:3px" class="ui basic label">{{proposal.paymentRequests.length}} Payment Request(s)</span>
+				  			</div>
+					    </div>
+					    <div class="extra content">
+					    	<span class="right floated" style="margin-left:10px" title="Proposal Duration">
+					     	<i class="ion-calendar"></i>
+					        	{{secondsToDhms(proposal.proposalDuration)}}
+					      	</span>
+		   			      	<span class="right floated" title="Voting Cycle">
+					        <i class="ion-loop"></i>
+					        	{{proposal.votingCycle}}
+					      	</span>
+					      	<span>
+					        <i class="ion-thumbsup"></i>
+					      	  {{proposal.votesYes}}
+					      	</span>
+					      	<span>
+						        <i class="ion-thumbsdown"></i>
+					        	{{proposal.votesNo}}
+					      	</span>
+						  	<br/>
+						  	<br/>
+						  	<div class="ui three column grid">
+								
+								<div class="column">
+							  		<div class="ui tiny active progress green" @data-percent="getYesVotesProportion(proposal)">
+			        					<div class="bar" :style="{width: getYesVotesProportion(proposal)+'%'}"></div>
+			        					<div class="label">
+			        						<i class="fa fa-thumbs-o-up text-success"></i>
+			        						%{{getYesVotesProportion(proposal)}}
+			        					</div>
+			      					</div>
+							  	</div>
+							  
+							  	<div class="column">
+							  		<div class="ui tiny active progress red" @data-percent="getNoVotesProportion(proposal)">
+			        					<div class="bar" :style="{width: getNoVotesProportion(proposal)+'%'}"></div>
+			        					<div class="label">
+			        						<i class="fa fa-thumbs-o-up text-success"></i>
+			        						%{{getNoVotesProportion(proposal)}}
+			        					</div>
+			      					</div>
+							  	</div>
 
-					  	<div class="column">
-					  		<div class="ui tiny active progress violet" @data-percent="getRequiredVotesProportion(proposal)">
-	        					<div class="bar" :style="{width: getRequiredVotesProportion(proposal)+'%'}"></div>
-	        					<div class="label">
-	        						<i class="fa fa-thumbs-o-up text-success"></i>%{{getRequiredVotesProportion(proposal)}}
-	        					</div>
-	      					</div>
-					  	</div>
-				 	</div>
-					<div class="ui accordion">
-						<div class="title">
-							<i class="dropdown icon"></i>
-						</div>
-						<div class="content">
-							<h5>Proposal Hash</h5>
-							<p class="word-wrap">
-								{{proposal.hash}}
-							</p>
-							<h5>Payment Address</h5>
-							<p class="word-wrap">
-								{{proposal.paymentAddress}}
-							</p>
-							<h5>User Paid Fee</h5>
-							<p class="word-wrap">
-								{{proposal.userPaidFee}} {{coin.symbol}}
-							</p>
-						</div>
+							  	<div class="column">
+							  		<div class="ui tiny active progress violet" @data-percent="getRequiredVotesProportion(proposal)">
+			        					<div class="bar" :style="{width: getRequiredVotesProportion(proposal)+'%'}"></div>
+			        					<div class="label">
+			        						<i class="fa fa-thumbs-o-up text-success"></i>%{{getRequiredVotesProportion(proposal)}}
+			        					</div>
+			      					</div>
+							  	</div>
+						 	</div>
+							<div class="ui accordion">
+								<div class="title">
+									<i class="dropdown icon"></i>
+									Details
+								</div>
+								<div class="content">
+									<h5>Proposal Hash</h5>
+									<p class="word-wrap">
+										{{proposal.hash}}
+									</p>
+									<h5>Payment Address</h5>
+									<p class="word-wrap">
+										{{proposal.paymentAddress}}
+									</p>
+									<h5>User Paid Fee</h5>
+									<p class="word-wrap">
+										{{proposal.userPaidFee}} {{coin.symbol}}
+									</p>
+								</div>
+							</div>
+					    </div>
 					</div>
-			    </div>
-			  </div>
-			</div>
+				</div>
 			</div>
 			<div v-else>
 				<div class="ui active inline indeterminate loader"></div>
@@ -661,19 +738,59 @@ body
 		<div class="ui segment" v-show="currentPage=='cfund-proposals'">
 			<a class="ui teal ribbon label">Community Proposals</a>
 			<p></p>
+			<div class="ui floating proposal-filter right dropdown labeled icon button">
+			  <i class="filter icon"></i>
+			  <span class="text">Filter Proposals</span>
+			  <div class="menu">
+			    <div class="ui icon search input">
+			      <i class="search icon"></i>
+			      <input type="text" placeholder="Search...">
+			    </div>
+			    <div class="divider"></div>
+			    <div class="header">
+			      <i class="tags icon"></i>
+			      Status List
+			    </div>
+			    <div class="scrolling menu">
+			      <div class="item" v-on:click="setProposalFilter('')">
+			        <div class="ui gray empty circular label"></div>
+			        All Proposals
+			      </div>
+			      <div class="item" v-on:click="setProposalFilter('pending')">
+			        <div class="ui orange empty circular label"></div>
+			        Pending
+			      </div>
+			      <div class="item" v-on:click="setProposalFilter('accepted')">
+			        <div class="ui green empty circular label"></div>
+			        Accepted
+			      </div>
+			      <div class="item" v-on:click="setProposalFilter('rejected')">
+			        <div class="ui red empty circular label"></div>
+			        Rejected
+			      </div>
+			      <div class="item" v-on:click="setProposalFilter('expired pending voting of payment requests')">
+			        <div class="ui gray empty circular label"></div>
+			        Expired pending voting of payment requests
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			<br/>
+			<br/>
 			<div class="ui three column grid" v-if="proposals.length>0">
-			  <div class="column" v-for="proposal in proposals">
+			  <div class="column" v-for="proposal in filter(proposals)">
 			  <div class="ui fluid card">
 			    <div class="image">
 			      <img v-bind:src="(proposal.image?proposal.image:'img/placeholder.png')">
 			    </div>
 			    <div class="content">
 			      <div class="header">{{formatNumber(proposal.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
-			      <div class="meta">
-			        <a>{{proposal.status}}</a>
-			      </div>
 			      <div v-html="linkify(proposal.description)" class="description" style="word-break: break-all; word-wrap: break-word;">
 			      </div>
+  			      <div style="margin-top:5px;">
+	  			  	<span class="ui basic label" style="margin-top:3px">{{capitalize(proposal.status)}}</span>
+				   	<span v-if="proposal.paymentRequests" style="margin-top:3px" class="ui basic label">{{proposal.paymentRequests.length}} Payment Request(s)</span>
+				  </div>
 			    </div>
 			    <div class="extra content">
 			    	<span class="right floated" style="margin-left:10px" title="Proposal Duration">
@@ -728,7 +845,7 @@ body
 				  </div>
 			  	<div class="ui accordion">
 					<div class="title">
-						<i class="dropdown icon"></i>
+						<i class="dropdown icon"></i>Details
 					</div>
 					<div class="content">
 						<h5>Proposal Hash</h5>
@@ -896,7 +1013,10 @@ body
 	<div class="ui container" style="width:720px" v-show="!walletExist && step==0">
 			<div class="top">
 				<center>
-				<div class="logo-text"><i data-feather="feather" class="svg-icon-small"></i>&nbsp;Welcome to the NEXT Lite Wallet</div>
+				<div class="logo-text">
+				<div style="width:128px;height:128;margin-bottom:15px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
+				&nbsp;
+				Welcome to the NEXT Lite Wallet</div>
 				</center>
 			</div>
 			<div class="ui item" style="margin-top:50px;">
@@ -905,7 +1025,7 @@ body
 						<div class="circle">
 							<i data-feather="layers" class="item-icon"></i>
 						</div>
-						<span class="item-desc">
+						<span class="list-item-desc">
 							The NEXT Lite Wallet allows you to quickly interact with the {{coin.name}} blockchain.
 						</span>
 					</div>
@@ -914,7 +1034,7 @@ body
 					<div class="circle">
 						<i data-feather="shield" class="item-icon"></i>
 					</div>
-					<span class="item-desc">
+					<span class="list-item-desc">
 						All your private keys are stored locally and you have all the control.
 					</span>
 				</div>
@@ -922,7 +1042,7 @@ body
 					<div class="circle">
 						<i data-feather="watch" class="item-icon"></i>
 					</div>
-					<span class="item-desc">
+					<span class="list-item-desc">
 						There is no need to synchronize with the network. Open the wallet and you're ready to go.
 					</span>
 				</div>
@@ -936,9 +1056,7 @@ body
 
 	<div class="ui container" v-show="!walletExist && step==1">
 			<div class="top">
-				<div>
-					<i data-feather="feather" class="logo-icon"></i>
-				</div>
+				<div style="width:128px;height:128;margin-bottom:15px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
 				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
 			</div>
 			<form class="ui form">
@@ -1007,9 +1125,7 @@ body
 
 	<div class="ui container" v-show="walletExist && !walletUnlocked">
 		<div class="top">
-			<div>
-				<i data-feather="feather" class="logo-icon"></i>
-			</div>
+			<div style="width:128px;height:128;margin-bottom:15px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
 			<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
 		</div>
 		<div class="ui form">
@@ -1018,7 +1134,7 @@ body
 			<br/><br/>
 		  <div class="field">
 		    <label>Password</label>
-		    <input type="password" name="password" v-model="password" placeholder="" autofocus>
+		    <input type="password" name="password" v-model="password" placeholder="" autofocus v-on:keyup.enter="unlockWallet()">
 		  </div>
 		  <button type="button" class="ui button gray large" v-on:click="unlockWallet()"><i data-feather="unlock" class="svg-icon-tiny"></i>&nbsp;Unlock Wallet</button>
 		</div>
@@ -1055,6 +1171,11 @@ var app = new Vue({
   	month:0,
   	year:0,
   	step:0,
+  	nav_request_who:'',
+  	nav_request_email:'',
+  	nav_request_details:'',
+  	nav_request_timeline:'',
+  	proposalFilter:'',
   	token:'',
   	acceptTerms:false,
   	acceptRecoveryPhrase:false,
@@ -1087,6 +1208,7 @@ var app = new Vue({
 	utxo:[],
 	txs:[],
 	proposals:[],
+	sponsorshipRequestList:[],
 	paymentRequests:[],
 	cfundStats:{},
 	price:{},
@@ -1129,6 +1251,7 @@ var app = new Vue({
   created: function()
   {
   	if (this.token=='') this.generateToken();
+  	this.isWalletExist();
 	this.refresh();
 	this.strdzeel_n='';
 	this.strdzeel_d='';
@@ -1137,15 +1260,22 @@ var app = new Vue({
   },
   mounted:function()
   {
-
-  }
-  ,updated:function()
+  },
+  updated:function()
   {
   	$('.accordion').accordion();
 	$('.menu .item').tab();
 	$('.ui.checkbox').checkbox();
   },
   methods:{
+  	capitalize: function (s) 
+  	{
+  		if (typeof s !== 'string') return ''
+  		return s.charAt(0).toUpperCase() + s.slice(1)
+	},
+	setProposalFilter: function(filter) {
+		this.proposalFilter=filter;
+    },
     route: function (currentPage)
 	{
 		this.currentPage=currentPage;
@@ -1154,6 +1284,16 @@ var app = new Vue({
 	  if (n==undefined) return;
       var parts = n.toString().split(".");
       return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+    },
+	filter: function(proposals) {
+		if (!this.proposalFilter)
+		{
+			return proposals;
+		}
+		else
+		{
+			return proposals.filter(proposal => proposal.status==this.proposalFilter);
+		}
     },
    	roundnumber: n => {
       if (!n) {
@@ -1188,9 +1328,12 @@ var app = new Vue({
 	},
 	getRequiredVotesProportion: function (proposal)
 	{
-		if (this.cfundStats.length==undefined) return;
-		var requiredVotesProportion=(((proposal.votesYes+proposal.votesNo)*100)/this.cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2);
-        if (requiredVotesProportion>100) return 100; else return requiredVotesProportion;
+		try
+		{
+			var requiredVotesProportion=(((proposal.votesYes+proposal.votesNo)*100)/this.cfundStats.consensus.minSumVotesPerVotingCycle).toFixed(2);
+	   	if (requiredVotesProportion>100) return 100; else return requiredVotesProportion;
+        }
+        catch(err){}
 	},
 	total_in_seconds: function ()
 	{
@@ -1242,7 +1385,7 @@ var app = new Vue({
 	showModalCreatePaymentRequest:function(paymentRequestProposalHash)
 	{
 		this.paymentRequestProposalHash=paymentRequestProposalHash;
-		console.log(this.paymentRequestProposalHash);
+		//console.log(this.paymentRequestProposalHash);
 		$("#paymentRequestID").val('');
 		$("#paymentRequestAmount").val('');
 		$('#modalPaymentRequest').modal('show');
@@ -1252,13 +1395,13 @@ var app = new Vue({
 		$('#modalPaymentRequest').modal('hide');
 		var paymentRequestID=$("#paymentRequestID").val();
 		var paymentRequestAmount=$("#paymentRequestAmount").val();
-		console.log(paymentRequestID);
-		console.log(paymentRequestAmount);
+		//console.log(paymentRequestID);
+		//console.log(paymentRequestAmount);
 		let vm=this;
 		axios.post('http://127.0.0.1:3001/createpaymentrequest', {token:vm.token, h: this.paymentRequestProposalHash, i: paymentRequestID, n:paymentRequestAmount},this.config)
 		.then(function (response)
 		{
-			console.log(response.data);
+			//console.log(response.data);
 			if (response.data.substring(0,5) == "error")
 			{
 				swal({title:"Create Payment Request",type:"error",html:response.data});
@@ -1441,7 +1584,6 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/balance', {token:vm.token},this.config)
 		.then(function (response)
 		{
-			console.log(response.data);
 			vm.balance=response.data;
 		})
 		.catch(function (error)
@@ -1509,6 +1651,23 @@ var app = new Vue({
 		{
 		});  
     },
+    listProposalRequestList: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/listproposalrequestlist', {token:vm.token},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			vm.sponsorshipRequestList=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
     listPaymentRequests: function ()
 	{	
 		let vm=this;
@@ -1532,7 +1691,7 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/height', {token:vm.token},this.config)
 		.then(function (response)
 		{
-			console.log(response.data);
+			//console.log(response.data);
 			vm.height=response.data;
 		})
 		.catch(function (error)
@@ -1604,7 +1763,7 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/generate', {token:vm.token},this.config)
 		.then(function (response)
 		{
-			console.log(response.data);
+			//console.log(response.data);
 			vm.address=response.data.address;
 			vm.privateKey=response.data.privateKey;
 			vm.mnemonics=response.data.mnemonics;
@@ -1671,7 +1830,7 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/send', {token:vm.token, to: this.send_address, amount:this.send_amount},this.config)
 		.then(function (response)
 		{
-			console.log(response.data);
+			//console.log(response.data);
 			if (response.data.error)
 			{
 				swal({title:"Send",type:"error",html:response.data.message});
@@ -1683,6 +1842,38 @@ var app = new Vue({
 			else
 			{
 				swal({title:"Send",type:"success",html:"Transaction created successfully"});
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		}); 
+	},
+	create_sponsorship_request: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/create_sponsorship_request', {token:vm.token, address: this.addressList, who:this.nav_request_who, email:this.nav_request_email, details:this.nav_request_details, timeline:this.nav_request_timeline},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			if (response.data.error)
+			{
+				swal({title:"Create Request",type:"error",html:response.data.message});
+			}
+			else if (response.data.result.status)
+			{
+				vm.nav_request_who='';
+				vm.nav_request_email='';
+				vm.nav_request_details='';
+				vm.nav_request_timeline='';
+				swal({title:"Create Request",type:"success",html:"Your request successfully submitted."});
+			}
+			else
+			{
+				swal({title:"Create Request",type:"error",html:"Failed"});
 			}
 		})
 		.catch(function (error)
@@ -1720,7 +1911,7 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/createproposal', {token:vm.token, v:this.strdzeel_v,n: this.strdzeel_n,a:this.strdzeel_a,d:this.strdzeel_d,s:this.strdzeel_s},this.config)
 		.then(function (response)
 		{
-			console.log(response.data);
+			//console.log(response.data);
 			if (response.data.substring(0,5) == "error")
 			{
 				swal({title:"Create Proposal",type:"error",html:response.data});
@@ -1758,5 +1949,12 @@ var app = new Vue({
         })
       ;
     });
+</script>
+<script>
+	$('.proposal-filter')
+  .dropdown({
+    clearable: true
+  })
+;
 </script>
 </html>

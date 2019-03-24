@@ -1070,9 +1070,15 @@ function handleCommand(line)
 	}
 	if (line.startsWith("next:start_lw:")) 
 	{
+		welcomeWin.hide();
 		var server=require("./server-lw");
-		welcomeWin.setSize(1050,720);
-		welcomeWin.loadURL(`file://${__dirname}/dist/static/lw.html?version=${version}&coins=`+JSON.stringify(coins)+`&coin=`+store.get('coin')+`&update_preference=`+store.get('update_preference')+`&update_daemon_preference=`+store.get('update_daemon_preference'));
+		lwWin=new BrowserWindow({width: 1050, height: 720});
+		lwWin.setMenu(null);
+		lwWin.loadURL(`file://${__dirname}/dist/static/lw.html?version=${version}&coins=`+JSON.stringify(coins)+`&coin=`+store.get('coin')+`&update_preference=`+store.get('update_preference')+`&update_daemon_preference=`+store.get('update_daemon_preference'));
+		lwWin.on('close', function (event)
+		{
+			app.exit();
+		});
 	}
 }
 
