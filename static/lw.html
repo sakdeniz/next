@@ -874,8 +874,8 @@ body
 		<div class="ui segment" v-show="currentPage=='cfund-payment-requests'">
 			<a class="ui violet ribbon label">Payment Requests</a>
 			<p></p>
-			<div class="ui link cards" v-if="paymentRequests.length>0">
-				<div class="card" v-for="paymentRequest in paymentRequests">
+			<div class="ui link cards" v-if="Object.keys(paymentRequests).length>0">
+				<div class="card" v-for="paymentRequest in getPaymentRequests(paymentRequests)">
 			    <div class="content">
 			      <div class="header">{{formatNumber(paymentRequest.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
 			      <div class="meta">
@@ -1316,6 +1316,18 @@ var app = new Vue({
 			this.getTXHistory();
 		}
 	},
+    getPaymentRequests: function (paymentRequests)
+	{
+		var pR=[];
+		jQuery.each(paymentRequests, function(key, value) {
+			//console.log(value);
+			if (value.length>0)
+			{
+				pR.push(value[0]); 
+			}
+		});
+		return pR;
+	},
 	getYesVotesProportion: function (proposal)
 	{
         var total_votes = proposal.votesYes + proposal.votesNo;
@@ -1675,7 +1687,7 @@ var app = new Vue({
 		.then(function (response)
 		{
 			//console.log(response.data);
-			vm.paymentRequests=response.data.null;
+			vm.paymentRequests=response.data;
 		})
 		.catch(function (error)
 		{

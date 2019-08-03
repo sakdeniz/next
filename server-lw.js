@@ -590,7 +590,7 @@ server=http.createServer(function (req, res)
 			})
 		    .then(function ()
 			{
-			});  
+			});
 		}
 
 		if (req.url=="/listproposalrequestlist")
@@ -627,7 +627,10 @@ server=http.createServer(function (req, res)
 			.then(function (response)
 			{
 				sendResponse(res,200,JSON.stringify(response.data));
+				console.log("PAYMENT REQUESTS");
+				console.log("================");
 				console.log(JSON.stringify(response.data));
+				console.log("================");
 			})
 			.catch(function (error)
 			{
