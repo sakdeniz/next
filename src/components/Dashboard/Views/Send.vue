@@ -24,14 +24,14 @@
         </div>
       </div>
 
-      <div class="col-md-12" v-if="coin.bool_anon_send=='1'">
+      <div class="col-md-12" v-if="coin.bool_anon_send=='1'" style="display:none">
         <div class="card">
           <div class="card-header">
             <h4 class="card-title"><i class='ion-ios-bookmarks-outline'></i>&nbsp;NavTech Servers</h4></div>
           <div class="card-body">
             <div class="ui ignored warning message">List of NavTech servers currently configured in your wallet to process private payments.<br>When performing a private payment, a random server from this list will be used.</div>
-            <input type="text" class="form-control" style="width:100%;" name="node" id="node" value="" placeholder="IP:Port"></input>
-            <br><button class='btn btn-fill btn-success' v-on:click='addNode'><i class="ion-plus"></i>&nbsp;Add Node</button><br><br>
+            <input type="text" class="form-control" style="width:100%;" name="node" id="node" value="" placeholder="IP:Port"/>
+            <br/><button class='btn btn-fill btn-success' v-on:click='addNode'><i class="ion-plus"></i>&nbsp;Add Node</button><br/><br/>
             <table>
               <tr>
                 <th nowrap>Action</th>

@@ -62,6 +62,30 @@ function sendError(res, statusCode, body)
 	res.write(JSON.stringify(obj))
 	res.end();
 }
+
+function commandArgs2Array(text) {
+  const re = /^"[^"]*"$/; // Check if argument is surrounded with double-quotes
+  const re2 = /^([^"]|[^"].*?[^"])$/; // Check if argument is NOT surrounded with double-quotes
+
+  let arr = [];
+  let argPart = null;
+
+  text && text.split(" ").forEach(function(arg) {
+    if ((re.test(arg) || re2.test(arg)) && !argPart) {
+      arr.push(arg);
+    } else {
+      argPart = argPart ? argPart + " " + arg : arg;
+      // If part is complete (ends with a double quote), we can add it to the array
+      if (/"$/.test(argPart)) {
+        arr.push(argPart);
+        argPart = null;
+      }
+    }
+  });
+
+  return arr;
+}
+
 server=http.createServer(function (req, res)
 {
 	res.setHeader('Access-Control-Allow-Origin', "*");
@@ -76,7 +100,7 @@ server=http.createServer(function (req, res)
 	req.on('end', function ()
 	{
 		var post= body ? JSON.parse(body) : {}
-		if (post.rpcport) port=post.rpcport; else port=44445;
+		if (post.rpcport) port=post.rpcport; else port=44446;
 		if (post.rpcuser) rpcuser=post.rpcuser; else rpcuser="test";
 		if (post.token) rpcpassword=post.token; else rpcpassword="test";
 		const client = new Client({host:"localhost",port:port,username:rpcuser,password:rpcpassword});
@@ -103,23 +127,45 @@ server=http.createServer(function (req, res)
 					var strcmd=post.command;
 					var methodname="";
 					var params=[];
-					strcmd=strcmd.split(" ");
+					strcmd=commandArgs2Array(post.command);
+					console.log(strcmd);
 					for(var i=0; i<strcmd.length; i++)
 					{
 						if (i==0) methodname=strcmd[i];
-						if (strcmd[i]=="true" || strcmd[i]=="false")
+				        var mystring=strcmd[i];
+				        mystring=mystring.replace(/^"(.*)"$/, '$1');
+						var matches = mystring.match(/\[(.*?)\]/);
+						if (matches)
 						{
-							console.log(strcmd[i]+ " bool");
+    						var submatch = matches[1];
+							var sp = submatch.split(',');
+							var array=[];
+							sp.forEach(element => { 
+						        var s=element;
+						        s=s.replace(/^"(.*)"$/, '$1');
+					  			array.push(s);
+							}); 
+
+
+							if (i!=0) params.push(array);
+							console.log(array);
+							console.log(submatch + " is array");
+						}
+						else if (strcmd[i]=="true" || strcmd[i]=="false")
+						{
+							console.log(strcmd[i]+ " is bool");
 							if (i!=0)
 							{
 								if (strcmd[i]=="true") params.push(true);
 								if (strcmd[i]=="false") params.push(false);
 							}
 						}
-						else if (isNaN(strcmd[i]))
+						else if (!matches && isNaN(strcmd[i]))
 						{
-							console.log(strcmd[i]+ " not number");
-							if (i!=0) params.push(strcmd[i]);
+							console.log(strcmd[i]+ " is string");
+					        var s=strcmd[i];
+					        s=s.replace(/^"(.*)"$/, '$1');
+							if (i!=0) params.push(s);
 						}
 						else
 						{
@@ -388,10 +434,89 @@ server=http.createServer(function (req, res)
 						).catch((e) => {sendError(res, 200,e);});
 					}
 				}
+				if (req.url=="/createconsultation")
+				{
+					console.log("Question :"+post.question+"\r\nMin:"+post.min+"\r\nMax:"+post.max);
+					if (post.b_wallet_locked)
+					{
+						console.log("Wallet locked.");
+						console.log("Wallet password : " + post.wallet_password);
+						console.log("Unlocking wallet...");
+						client.walletPassphrase(post.wallet_password,5,false).then((retval) => 
+						{
+							client.createconsultation(post.question,parseInt(post.min),parseInt(post.max),true).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							console.log("Locking wallet...");
+							client.walletLock().then((retval) => client.walletPassphrase(post.wallet_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+					}
+					else
+					{
+						client.createconsultation(post.question,parseInt(post.min),parseInt(post.max),true).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
+				}
+				if (req.url=="/createconsultationwithanswers")
+				{
+					var answers="";
+					var arr=[];
+					post.answers.forEach(element => { 
+					  arr.push(element.title);
+					}); 
+					console.log(arr);
+					console.log("Question :"+post.question+"\r\nAnswers:"+post.answers+"\r\nMax Selection:"+post.max_selection+"\r\nAllow additional answers:"+post.allow_additional_answers);
+					if (post.b_wallet_locked)
+					{
+						console.log("Wallet locked.");
+						console.log("Wallet password : " + post.wallet_password);
+						console.log("Unlocking wallet...");
+						client.walletPassphrase(post.wallet_password,5,false).then((retval) => 
+						{
+							client.createconsultationwithanswers(post.question,arr,parseInt(post.max_selection),post.allow_additional_answers).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+							console.log("Locking wallet...");
+							client.walletLock().then((retval) => client.walletPassphrase(post.wallet_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
+						}).catch((e) => {sendError(res, 200,e);console.log("Wallet password incorrect.")});
+					}
+					else
+					{
+						client.createconsultationwithanswers(post.question,arr,parseInt(post.max_selection),post.allow_additional_answers).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
+				}
 				if (req.url=="/proposalvote")
 				{
 					console.log("Hash:"+post.proposal_hash+"\r\nVote:"+post.vote_type);
 					client.proposalvote(post.proposal_hash.toString(),post.vote_type.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/support")
+				{
+					console.log("Hash:"+post.hash.toString()+"\r\nVote:"+post.bool_vote_type);
+					client.support(post.hash.toString(),post.bool_vote_type).then((retval) => sendResponse(res, 200,'{"status":"ok"}')).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/getconsensusparameters")
+				{
+					console.log("Get consensus parameters");
+					client.getconsensusparameters(true).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/proposeconsensuschange")
+				{
+					console.log("Propose consensus change -> ID : " + post.id + " Value : " + post.value);
+					client.proposeconsensuschange(parseInt(post.id),parseInt(post.value)).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/consultationvote")
+				{
+					if (!post.value)
+					{
+						console.log("Vote option Hash:"+post.hash.toString()+"\r\nVote:"+post.vote_type);
+						client.consultationvote(post.hash.toString(),post.vote_type.toString()).then((retval) => sendResponse(res, 200,'{"status":"ok"}')).catch((e) => {sendError(res, 200,e);});
+					}
+					else
+					{
+						console.log("Vote value Hash:"+post.hash.toString()+"\r\nVote:"+post.vote_type);
+						client.consultationvote(post.hash.toString(),post.vote_type.toString(),parseInt(post.value)).then((retval) => sendResponse(res, 200,'{"status":"ok"}')).catch((e) => {sendError(res, 200,e);});
+					}
+				}
+				if (req.url=="/generate")
+				{
+					console.log("Generate " + post.amount);
+					client.generate(parseInt(post.amount));
 				}
 				if (req.url=="/paymentrequestvote")
 				{
@@ -453,6 +578,18 @@ server=http.createServer(function (req, res)
 				if (req.url=="/listproposals")
 				{
 					client.listproposals().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/listconsultations")
+				{
+					console.log("Consulation Filter : " + post.filter);
+					if (post.filter)
+					{
+						client.listconsultations(post.filter.toString()).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
+					else
+					{
+						client.listconsultations().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
 				}
 				if (req.url=="/donatefund")
 				{

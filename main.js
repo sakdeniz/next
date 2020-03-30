@@ -243,7 +243,7 @@ function Init(bStartDaemon)
 		}
 		else if (bDevnet)
 		{
-			rpcport=coin.rpc_port_testnet;
+			rpcport=coin.rpc_port_devnet;
 			testnet=" -devnet";
 		}
 		else

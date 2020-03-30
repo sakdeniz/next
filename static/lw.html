@@ -128,6 +128,7 @@ body
 			<a class="active item" v-on:click="route('overview')">Overview</a>
 			<a class="item" v-on:click="route('receive')">Receive</a>
 			<a class="item" v-on:click="route('send')">Send</a>
+			<a class="item" v-on:click="route('staking')">Staking</a>
 			<a class="item" v-on:click="route('sign')">Sign</a>
 			<a class="item" v-on:click="route('verify')">Verify</a>
 			<a class="item" v-on:click="route('tools')">Tools</a>
@@ -162,8 +163,13 @@ body
 			
 			<div class="ui middle aligned divided list">
 			  <div class="item">
-				<div class="right floated content" v-if='height'>
-					<small>Height {{height}}</small>
+				<div class="right floated content" v-if='height||height=="0"'>
+					<div>
+						<i class="ion-android-globe icon"></i> {{network}}
+					</div>
+					<div>
+						<i class="ion-android-funnel icon"></i> {{formatNumber(height)}}
+					</div>
 				</div>
 				<div class="ui column active inline indeterminate loader right floated" v-else></div>
 				<div class="content" v-if='balance'>
@@ -305,7 +311,7 @@ body
 		<div class="ui segment" v-show="currentPage=='overview'">
 			<a class="ui teal ribbon label">Featured Community Proposals</a>
 			<p></p>
-			<div class="ui one column grid" v-if="proposals.length>0 && featuredProposalCount()==0">
+			<div class="ui one column grid" v-if="proposals && featuredProposalCount()==0">
 				<div class="content">
 					<p>
 					</p>
@@ -316,7 +322,7 @@ body
 					</p>
 				</div>
 			</div>
-			<div class="ui three column grid" v-if="proposals.length>0">
+			<div class="ui three column grid" v-if="proposals">
 				<div class="column" v-for="proposal in proposals" v-if="proposal.featured=='1'">
 					<div class="ui fluid card">
 					    <div class="image">
@@ -415,22 +421,90 @@ body
 			<p></p>
 			<p v-if="addressList">{{addressList}}</p>
 			<p v-html="qrcode"></p>
+
+			<table class="ui table">
+			  <tbody>
+			    <tr>
+			      <td class="collapsing">
+			        <i class="ion-android-arrow-down"></i> Received
+			      </td>
+			      <td>{{balance.received?formatBalance(balance.received):0}} <span class="ui violet circular label">{{balance.receivedCount?balance.receivedCount:0}}</span></td>
+			    </tr>
+			    <tr>
+			      <td>
+			        <i class="ion-android-arrow-up"></i> Sent
+			      </td>
+			      <td>{{balance.sent?formatBalance(balance.sent):0}} <span class="ui violet circular label">{{balance.sentCount?balance.sentCount:0}}</span></td>
+			    </tr>
+			    <tr>
+			      <td>
+			        <i class="ion-android-add"></i> Staked
+			      </td>
+			      <td>{{balance.staked?formatBalance(balance.staked):0}} <span class="ui violet circular label">{{balance.stakedCount?balance.stakedCount:0}}</span></td>
+			    </tr>
+			    <tr>
+			      <td nowrap>
+			        <i class="ion-ios-snowy"></i> Cold Staked
+			      </td>
+			      <td>{{balance.coldStaked?formatBalance(balance.coldStaked):0}} <span class="ui violet circular label">{{balance.coldStakedCount?balance.coldStakedCount:0}}</span></td>
+			    </tr>
+			    <tr>
+			      <td nowrap>
+			        <i class="ion-ios-snowy"></i> Cold Staked Balance
+			      </td>
+			      <td>{{formatBalance(balance.coldStakedBalance)}}</td>
+			    </tr>
+			   	<tr>
+			      <td nowrap>
+			        <i class="ion-ios-snowy"></i> Staked Sent
+			      </td>
+			      <td>{{formatBalance(balance.stakedSent)}}</td>
+			    </tr>
+			   	<tr>
+			      <td nowrap>
+			        <i class="ion-ios-snowy"></i> Staked Received
+			      </td>
+			      <td>{{formatBalance(balance.stakedReceived)}}</td>
+			    </tr>
+			    <tr>
+			      <td nowrap>
+			        <i class="ion-connection-bars"></i> Rich List Position
+			      </td>
+			      <td>{{balance.richListPosition}}</td>
+			    </tr>
+			  </tbody>
+			</table>
 			<div class="ui middle aligned divided list">
-				<div class="item" v-for="tx in txs">
-					<div class="left floated content">
+				<table class="ui celled table">
+				  <thead>
+				    <tr><th>Type</th>
+				    <th>Amount</th>
+				    <th>Balance</th>
+				    <th>Date</th>
+				  </tr></thead>
+				  <tbody>
+				    <tr v-for="tx in txs">
+				      <td data-label="">
 						<a title="Show Transaction on Explorer" target="_blank" v-bind:href="coin.block_explorers['NavExplorer'].url+'/tx/'+tx.transaction">
-			    			<i class="ui avatar ion-android-arrow-up" style="color:orange" v-if="tx.type=='SEND'"></i>
-			    			<i class="ui avatar ion-android-arrow-down" style="color:green" v-if="tx.type=='RECEIVE'"></i>
-			    		</a>
-					</div>
-			    	<div class="content">
-			      		<span style="color:#cc6600" v-if="tx.type=='SEND'">-{{sb.toBitcoin(tx.sent)}}</span>
-						<span style="color:#669900" v-if="tx.type=='RECEIVE'">+{{sb.toBitcoin(tx.received)}}</span>
-			    	</div>
-			    	<div class="content">
-			    		<small style="margin-top:15px;color:#676767;" v-bind:title="'Block Number : ' + tx.height">{{moment(tx.time).format('MM/DD/YYYY HH:MM:ss')}}</small>
-			    	</div>
-				</div>
+							<i class="ui avatar ion-android-arrow-up" style="color:#cc6600" v-if="tx.type=='SEND'"></i>
+							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.type=='RECEIVE'"></i>
+							<i class="ui avatar ion-ios-snowy" style="color:#00CCCC" v-if="tx.type=='COLD_STAKING'"></i>
+						</a>
+				      </td>
+				      <td data-label="Amount">
+						    <span style="color:#cc6600" v-if="tx.type=='SEND'">-{{sb.toBitcoin(tx.sent)}}</span>
+							<span style="color:#669900" v-if="tx.type=='RECEIVE'">+{{sb.toBitcoin(tx.received)}}</span>
+							<span style="color:#669900" v-if="tx.type=='COLD_STAKING'">+{{getStakingReward(tx)}}</span>
+				      </td>
+				      <td data-label="Balance">
+				      	{{sb.toBitcoin(tx.balance)}}
+				      </td>
+				      <td data-label="Date">
+				      	<small style="margin-top:15px;color:#676767;" v-bind:title="'Block Number : ' + tx.height">{{moment(tx.time).format('MM/DD/YYYY HH:MM:ss')}}</small>
+				      </td>
+				    </tr>
+				  </tbody>
+				</table>
 			</div>
 		</div>
 
@@ -446,7 +520,8 @@ body
 					<label>Amount</label>
 					<input type="text" name="send_amount" placeholder="Amount" v-model="send_amount">
 				  </div>
-				  <a class="ui button" v-on:click="send()">Send</a>
+				  <a class="ui button green" v-on:click="send()">Send</a>
+				  <a class="ui button violet right floated" v-on:click="useAllFunds()">Use All Funds</a>
 			</form>
 			<div class="ui accordion">
 				<div class="title">
@@ -455,6 +530,61 @@ body
 				</div>
 				<div class="content">
 					<pre>{{utxo}}</pre>
+				</div>
+			</div>
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='staking'">
+			<a class="ui violet ribbon label">Staking</a>
+			<p></p>
+			<div class="ui grid">
+ 				<div class="six wide column">
+ 					<img style="width:256px;height:auto" src="img/undraw_solution_mindset_34bi.svg">
+					<p>NEXT lightweight wallet provides Cold Staking.</p>
+					<div class="ui list">
+					  <a class="item">
+					    <i class="right ion-android-checkbox-outline icon"></i>
+					    <div class="content">
+					      <div class="header">Non-custodial</div>
+					    </div>
+					  </a>
+					  <a class="item">
+					    <i class="right ion-android-checkbox-outline icon"></i>
+					    <div class="content">
+					      <div class="header">Only wallet owner have spending permission </div>
+					    </div>
+					  </a>
+					  <a class="item">
+					    <i class="right ion-android-checkbox-outline icon"></i>
+					    <div class="content">
+					      <div class="header">10% Fixed rate staking fee</div>
+					    </div>
+					  </a>
+					  <a class="item">
+					    <i class="right ion-android-checkbox-outline icon"></i>
+					    <div class="content">
+					      <div class="header">Track your staking rewards in your wallet</div>
+					    </div>
+					  </a>
+					</div>
+				</div>
+				 <div class="ten wide column top">
+				 	<div class="header">
+					<p>
+						<div class="ui toggle checkbox"><input disabled type="checkbox" name="public" v-model="settings.cold_staking"><label>Cold Staking</label></div>
+					</p>
+					<table class="ui basic table">
+					  <tbody>
+					    <tr>
+					      <td>Cold Staking Address</td>
+					    </tr>
+					    <tr>
+					      <td>{{(settings.cold_staking_address?settings.cold_staking_address:"N/A")}}</td>
+					  </tr>
+					  </tbody>
+					</table>
+					<button class="violet large ui button" style="margin-top:45px;" v-on:click="startStaking()"><i data-feather="play" class="svg-icon-tiny"></i>&nbsp;Start Staking</button>
+				</div>
 				</div>
 			</div>
 		</div>
@@ -590,33 +720,21 @@ body
 				  <tbody>
 					<tr>
 				      <td>
-				        <i class="ion-android-arrow-dropright"></i> Available in NAV
+				        <i class="ion-android-arrow-dropright"></i> Available
 				      </td>
-				      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.available)}} NAV</td>
-				    </tr>
-					<tr>
-				      <td>
-				        <i class="ion-android-arrow-dropright"></i> Available in USD
-				      </td>
-				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_usd).toFixed(2))}} USD</td>
-				    </tr>
-					<tr>
-				      <td>
-				        <i class="ion-android-arrow-dropright"></i> Available in EUR
-				      </td>
-				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_eur).toFixed(2))}} EURO</td>
-				    </tr>
-					<tr>
-				      <td>
-				        <i class="ion-android-arrow-dropright"></i> Available in BTC
-				      </td>
-				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_btc).toFixed(2))}} BTC</td>
+				      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.available.toFixed(0))}} NAV</td>
 				    </tr>
 				    <tr>
 				      <td>
 				        <i class="ion-android-arrow-dropright"></i> Locked
 				      </td>
 				      <td class="right aligned collapsing">{{formatnumbers(cfundStats.funds.locked)}} NAV</td>
+				    </tr>
+					<tr>
+				      <td>
+				        <i class="ion-android-arrow-dropright"></i> Available in USD
+				      </td>
+				      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price.data.quote.USD.price).toFixed(2))}} USD</td>
 				    </tr>
 					</tbody>
 				</table>
@@ -867,15 +985,15 @@ body
 			</div>
 			</div>
 			<div v-else>
-				<div class="ui active inline indeterminate loader"></div>
+				No proposal.
 			</div>
 		</div>
 
 		<div class="ui segment" v-show="currentPage=='cfund-payment-requests'">
 			<a class="ui violet ribbon label">Payment Requests</a>
 			<p></p>
-			<div class="ui link cards" v-if="Object.keys(paymentRequests).length>0">
-				<div class="card" v-for="paymentRequest in getPaymentRequests(paymentRequests)">
+			<div class="ui link cards" v-if="paymentRequests['null'].length>0">
+				<div class="card" v-for="paymentRequest in paymentRequests.null">
 			    <div class="content">
 			      <div class="header">{{formatNumber(paymentRequest.requestedAmount.slice(0, -3))}} {{coin.symbol}}</div>
 			      <div class="meta">
@@ -1059,6 +1177,41 @@ body
 				<div style="width:128px;height:128;margin-bottom:15px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
 				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
 			</div>
+		    <button type="button" class="ui button gray large" v-on:click="mcreateWallet()"><i data-feather="plus" class="svg-icon-tiny"></i>&nbsp;Create New Wallet</button><br/>
+		    <button type="button" class="ui button gray large" v-on:click="mimportWallet()" style="margin-top:30px;"><i data-feather="log-in" class="svg-icon-tiny"></i>&nbsp;Import Wallet</button>
+			</form>
+	</div>
+
+	<div class="ui container" v-show="!walletExist && step==2">
+			<div class="top">
+				<div style="width:128px;height:128;margin-bottom:15px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
+				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+			</div>
+			<form class="ui form">
+				<h4 class="ui dividing header">Import Wallet</h4>
+				<label>Please enter mnemonics for your wallet</label>				
+				<br/><br/>
+			  <div class="field">
+			    <label>Mnemonics</label>
+			    <input type="text" name="txt_mnemonics" v-model="txt_mnemonics" placeholder="">
+			  </div>
+ 			  <div class="field">
+			    <label>Password</label>
+			    <input type="password" name="password" v-model="password" placeholder="" autofocus>
+			  </div>
+			  <div class="field">
+			    <label>Password (Again)</label>
+			    <input type="password" name="password_again" v-model="password_again" placeholder="">
+			  </div>
+			  <button type="button" class="ui button gray large" v-on:click="importWallet()"><i data-feather="check" class="svg-icon-tiny"></i>&nbsp;Import Wallet</button>
+			</form>
+	</div>
+
+	<div class="ui container" v-show="!walletExist && step==3">
+			<div class="top">
+				<div style="width:128px;height:128;margin-bottom:15px;"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="feather" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-feather fa-w-16 fa-5x"><path fill="#6435C9" d="M467.14 44.84c-62.55-62.48-161.67-64.78-252.28 25.73-78.61 78.52-60.98 60.92-85.75 85.66-60.46 60.39-70.39 150.83-63.64 211.17l178.44-178.25c6.26-6.25 16.4-6.25 22.65 0s6.25 16.38 0 22.63L7.04 471.03c-9.38 9.37-9.38 24.57 0 33.94 9.38 9.37 24.6 9.37 33.98 0l66.1-66.03C159.42 454.65 279 457.11 353.95 384h-98.19l147.57-49.14c49.99-49.93 36.38-36.18 46.31-46.86h-97.78l131.54-43.8c45.44-74.46 34.31-148.84-16.26-199.36z" class=""></path></svg></div>
+				<div class="logo-text">&nbsp;Welcome to the NEXT Lite Wallet</div>
+			</div>
 			<form class="ui form">
 				<h4 class="ui dividing header">Create Wallet</h4>
 				<label>Please provide a password for your wallet</label>				
@@ -1075,7 +1228,7 @@ body
 			</form>
 	</div>
 
-	<div class="ui container" v-show="!walletExist && step==2">
+	<div class="ui container" v-show="!walletExist && step==4">
 			<div class="top">
 				<div>
 					<i data-feather="feather" class="logo-icon"></i>
@@ -1171,12 +1324,14 @@ var app = new Vue({
   	month:0,
   	year:0,
   	step:0,
+  	network:'',
   	nav_request_who:'',
   	nav_request_email:'',
   	nav_request_details:'',
   	nav_request_timeline:'',
-  	proposalFilter:'',
+  	proposalFilter:'pending',
   	token:'',
+  	txt_mnemonics:'',
   	acceptTerms:false,
   	acceptRecoveryPhrase:false,
   	password:'',
@@ -1209,7 +1364,8 @@ var app = new Vue({
 	txs:[],
 	proposals:[],
 	sponsorshipRequestList:[],
-	paymentRequests:[],
+	paymentRequests:{"null":[]},
+	settings:{},
 	cfundStats:{},
 	price:{},
     coin:{
@@ -1305,8 +1461,9 @@ var app = new Vue({
 	{
 		if (this.walletExist && this.walletUnlocked)
 		{
-			this.getPrice();
+			this.getSettings();
 			this.getBalance();
+			this.getPrice();
 			this.getHeight();
 			this.getCFundStats();
 			this.listAddr();
@@ -1315,18 +1472,6 @@ var app = new Vue({
 			this.getUTXO();
 			this.getTXHistory();
 		}
-	},
-    getPaymentRequests: function (paymentRequests)
-	{
-		var pR=[];
-		jQuery.each(paymentRequests, function(key, value) {
-			//console.log(value);
-			if (value.length>0)
-			{
-				pR.push(value[0]); 
-			}
-		});
-		return pR;
 	},
 	getYesVotesProportion: function (proposal)
 	{
@@ -1527,6 +1672,57 @@ var app = new Vue({
 	{	
 		this.step++;
     },
+    mimportWallet: function ()
+	{
+		this.step=2;
+	},
+    mcreateWallet: function ()
+	{
+		this.step=3;
+	},
+    importWallet: function ()
+	{
+		if (!this.txt_mnemonics)
+		{
+			swal({title:"Import Wallet",type:"warning",html:"Please specify mnemonics"});
+		}
+		else if (!this.password)
+		{
+			swal({title:"Import Wallet",type:"warning",html:"Please specify a password"});
+		}
+		else if (this.password.length<6)
+		{
+			swal({title:"Import Wallet",type:"warning",html:"Password minimum length is 6"});
+		}
+		else if (this.password!=this.password_again)
+		{
+			swal({title:"Import Wallet",type:"warning",html:"Your passwords did not match"});
+		}
+		else
+		{
+			let vm=this;
+			axios.post('http://127.0.0.1:3001/importwallet', {token:vm.token, password: vm.password, mnemonics:vm.txt_mnemonics},this.config)
+			.then(function (response)
+			{
+				if(response.data.error)
+				{
+					swal({title:"Import Wallet",type:"error",html:response.data.message});
+				}
+				else
+				{
+					vm.privateKey=response.data.privateKey;
+					vm.mnemonics=response.data.mnemonics;
+					vm.step=4;
+				}
+			})
+			.catch(function (error)
+			{
+			})
+			.then(function ()
+			{
+			});  
+		}
+	},
     createWallet: function ()
 	{
 		if (!this.password)
@@ -1549,7 +1745,7 @@ var app = new Vue({
 			{
 				vm.privateKey=response.data.privateKey;
 				vm.mnemonics=response.data.mnemonics;
-				vm.step++;
+				vm.step=4;
 			})
 			.catch(function (error)
 			{
@@ -1559,7 +1755,6 @@ var app = new Vue({
 			{
 			});  
 		}
-
     },
     loadWallet: function ()
 	{
@@ -1580,6 +1775,7 @@ var app = new Vue({
 		.then(function (response)
 		{
 			vm.token=response.data.token;
+			vm.network=response.data.network;
 		  	vm.isWalletExist();
 		})
 		.catch(function (error)
@@ -1597,6 +1793,22 @@ var app = new Vue({
 		.then(function (response)
 		{
 			vm.balance=response.data;
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		});  
+    },
+    getSettings: function ()
+	{	
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/settings', {token:vm.token},this.config)
+		.then(function (response)
+		{
+			vm.settings=response.data;
 		})
 		.catch(function (error)
 		{
@@ -1769,6 +1981,40 @@ var app = new Vue({
 		{
 		});  
     },
+    startStaking: function ()
+	{	
+		let vm=this;
+		swal({
+            title: "Confirm Cold Staking",
+            html: "A cold staking address will be created for your wallet and the balance you have will be sent to your automatically created Cold Staking address.<p></p><p>Are you sure?</p>",
+            type: "question",
+            showCancelButton: true,
+            confirmButtonColor: '#6435C9',
+		    confirmButtonText: 'Yes, I am sure!',
+		    cancelButtonText: "No, cancel it!",
+        }).then((result) => {
+            if (result.value) {
+				axios.post('http://127.0.0.1:3001/startstaking', {token:vm.token},this.config)
+				.then(function (response)
+				{
+					if (response.data.error)
+					{
+						swal({title:"Staking",type:"warning",html:response.data.error});
+					}
+					else
+					{
+						vm.settings.cold_staking=1;
+						vm.settings.cold_staking_address=response.data.coldStakingAddress;
+						swal({title:"Staking",type:"success",html:"Staking successfully started"});
+					}
+				})
+				.catch(function (error)
+				{
+					console.log(error);
+				})
+            }
+        });
+    },
     getnewaddress: function ()
 	{
 		let vm=this;
@@ -1863,6 +2109,34 @@ var app = new Vue({
 		.then(function ()
 		{
 		}); 
+	},
+	useAllFunds: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/useallfunds', {token:vm.token},this.config)
+		.then(function (response)
+		{
+			//console.log(response.data);
+			if (response.data.error)
+			{
+				swal({title:"Use All Funds",type:"error",html:response.data.message});
+			}
+			else
+			{
+				vm.send_amount=response.data.amount;
+			}
+		})
+		.catch(function (error)
+		{
+			console.log(error);
+		})
+		.then(function ()
+		{
+		}); 
+	},
+	getStakingReward: function (tx)
+	{
+		return(sb.toBitcoin(parseFloat(tx.received)-parseFloat(tx.sent)));
 	},
 	create_sponsorship_request: function ()
 	{

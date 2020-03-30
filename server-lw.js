@@ -10,6 +10,8 @@ var sb=require('satoshi-bitcoin');
 var server;
 var walletFileName;
 var token="";
+var settings;
+const configFileName=__dirname+(process.platform == 'win32' ?'\\':'/')+"lw.config.json";
 const config={ headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, responseType: 'text' }
 const bitcore=require('bitcore-lib') ;
 const crypto=require('crypto');
@@ -17,9 +19,30 @@ const Client=require('bitcoin-core');
 const stringifyObject=require('stringify-object');
 var Mnemonic=require('bitcore-mnemonic');
 var Message=require('bitcore-message');
-
+var Fee=100000;
 const low=require('lowdb');
 const FileSync=require('lowdb/adapters/FileSync');
+console.log("Checking config file :" + configFileName);
+
+if (fs.existsSync(configFileName))
+{
+	settings=require(configFileName);
+	console.log("Config file exist");
+	console.log(settings);
+}
+else
+{
+	settings={cold_staking: 0,cold_staking_address: ""};
+	const jsonString = JSON.stringify(settings)
+	fs.writeFile(configFileName, jsonString, err => {
+	    if (err) {
+	        console.log('Error writing config file', err)
+	    } else {
+	        console.log('Successfully wrote config file')
+	    }
+	})
+	console.log(settings);
+}
 
 var ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
@@ -39,6 +62,32 @@ function initWallet(password,res)
 	var code = new Mnemonic(Mnemonic.Words.ENGLISH);
 	db.defaults({addr:[],mnemonics:code.toString(),count:0}).write();
 	generate(res);
+}
+
+function importWallet(mnemonics,password,res)
+{
+	console.log("Import Wallet");
+	console.log("Password:"+password);
+	
+	var valid = Mnemonic.isValid(mnemonics);
+	if (!valid)
+	{
+		console.log("Mnemonics not valid");
+		sendResponse(res,200,JSON.stringify(
+		{
+			"error":true,
+			"message":"Invalid mnemonics"
+		}));
+	}
+	else
+	{
+		console.log("Mnemonics valid");
+		ENCRYPTION_KEY=crypto.createHash('md5').update(password).digest("hex"); // Must be 256 bytes (32 characters)
+		adapter=new FileSync(walletFileName, {serialize: (data) => encrypt(JSON.stringify(data)),deserialize: (data) => JSON.parse(decrypt(data))});
+		db=low(adapter);
+		db.defaults({addr:[],mnemonics:mnemonics,count:0}).write();
+		generate(res);
+	}
 }
 
 function unlockWallet(password)
@@ -166,7 +215,7 @@ server=http.createServer(function (req, res)
 			{
 				const randomBytes=crypto.randomBytes(256);
 				token=crypto.createHash('md5').update(randomBytes, 'utf8').digest('hex');
-				sendResponse(res,200,JSON.stringify({"error":false,"token":token}));
+				sendResponse(res,200,JSON.stringify({"error":false,"token":token,"network":network}));
 			}
 			else
 			{
@@ -184,6 +233,11 @@ server=http.createServer(function (req, res)
 		if (req.url=="/initwallet")
 		{
 			initWallet(post.password,res);
+		}
+
+		if (req.url=="/importwallet")
+		{
+			importWallet(post.mnemonics,post.password,res);
 		}
 		
 		if (req.url=="/generate")
@@ -235,7 +289,218 @@ server=http.createServer(function (req, res)
 				"isUnlocked":retval
 			}));
 		}
-		
+
+		if (req.url=="/useallfunds")
+		{
+			const publicAddress=db.get('addr').value()[0].publicAddress;
+		    axios.get(apiURL+'utxo', {
+		        params: {
+		          network: network,
+		          a: publicAddress
+		        }
+		      })
+		      .then(function (response)
+		      {
+		        var utxo=response.data;
+		        console.log(utxo);
+		        if(utxo.length>0)
+		        {
+		            try
+		            {
+		                var tx=new bitcore.Transaction()
+		                .from(utxo);
+		                amount=(tx.inputAmount-Fee)/100000000;
+		                console.log(amount);
+		                sendResponse(res,200,JSON.stringify(
+						{
+							"amount":amount
+						}
+						));
+		            }
+		            catch(err)
+		            {
+		                console.log(err);
+		            }
+		        }
+		        else
+		        {
+					sendResponse(res,200,JSON.stringify(
+					{
+						"error":true,
+						"message":"No NAV was found in your wallet.<br/>No UTXO record found."
+					}
+					));
+		        }
+		    })
+		    .catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});
+		}
+
+		if (req.url=="/settings")
+		{
+			console.log("Get settings...");
+			console.log(settings);
+			sendResponse(res,200,JSON.stringify(settings));
+		}
+
+		if (req.url=="/startstaking")
+		{
+			console.log("Start staking...");
+			const publicAddress=db.get('addr').value()[0].publicAddress;
+			var privateKey = bitcore.PrivateKey.fromWIF(db.get('addr').value()[0].privateKey.toString());
+			var message = new Message("next wallet cold staking permission "+publicAddress);
+			var signature = message.sign(privateKey);
+			axios.get(apiURL+'getcoldstakingaddress', {
+				params: {
+				  network: network,
+				  a: publicAddress,
+				  signature : signature
+				}
+			})
+			.then(function (response)
+			{
+			    try
+				{
+					if (!response.data.error)
+					{
+						var data=response.data;
+						var coldStakingAddress=response.data.coldStakingAddress;
+						//
+					    axios.get(apiURL+'utxo', {
+					        params: {
+					          network: network,
+					          a: publicAddress
+					        }
+					      })
+					      .then(function (response)
+					      {
+					        var utxo=response.data;
+					        console.log(utxo);
+					        if(utxo.length>0)
+					        {
+					            try
+					            {
+					                var tx=new bitcore.Transaction()
+					                .from(utxo);
+					                amount=(tx.inputAmount-Fee)/100000000;
+					                console.log("UTXO Amount :" + amount);
+					                //
+								    console.log(response.data);
+									settings.cold_staking=1;
+									settings.cold_staking_address=coldStakingAddress;
+									const jsonString=JSON.stringify(settings);
+									console.log(jsonString);
+									fs.writeFile(configFileName, jsonString, err => {
+									    if (err) {
+									        console.log('Error writing config file', err)
+									    } else {
+									        console.log('Successfully wrote config file')
+									    }
+									})
+									// ##### SEND #####
+									axios.get(apiURL+'utxo', {
+										params: {
+										  network: network,
+										  a: publicAddress
+										}
+									})
+									.then(function (response)
+									{
+										console.log("Amount:"+sb.toSatoshi(amount));
+										var utxo=response.data;	  
+									    try
+										{
+											console.log("To:"+coldStakingAddress);
+											console.log("Amount:"+amount);
+											const publicAddress=db.get('addr').value()[0].publicAddress;
+											const privateKey=db.get('addr').value()[0].privateKey;
+											var tx = new bitcore.Transaction()
+											.from(utxo)
+											.to(coldStakingAddress, sb.toSatoshi(amount))
+											.settime(moment().unix())
+											.change(publicAddress)
+											.sign(privateKey);
+											console.log(tx.toObject());
+											console.log(tx.serialize());
+											axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize().toString(),config)
+											.then((retval) =>
+											{
+												console.log(retval.data);
+												//sendResponse(res,200,retval.data);
+												sendResponse(res,200,JSON.stringify(data));
+											}
+											).catch((e) => {sendError(res, 200,e);})
+										}
+										catch(err)
+										{
+											sendResponse(res,200,JSON.stringify(
+											{
+												"error":true,
+												"errno":err.errno,
+												"code":err.code,
+												"path":err.path,
+												"message":err.message
+											}
+											));
+										}
+									})
+									.catch(function (error)
+									{
+										console.log(error);
+									})
+									.then(function ()
+									{
+									});
+									// ##### SEND #####
+					            }
+					            catch(err)
+					            {
+					                console.log(err);
+					            }
+					        }
+					        else
+					        {
+					        	console.log("No UTXO record found");
+								sendResponse(res,200,JSON.stringify(
+								{
+									"error":"You have no NAV in your wallet. Deposit some NAV into your wallet to start the staking process."
+								}));
+					        }
+					    })
+					    .catch(function (error)
+						{
+							console.log(error);
+						})
+						.then(function ()
+						{
+						});
+					}
+					else
+					{
+						sendResponse(res,200,JSON.stringify(
+						{
+							"error":response.data.error
+						}));
+					}
+				}
+				catch(err)
+				{
+				}
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});
+		}
+
 		if (req.url=="/sign")
 		{
 			console.log(post.message);
@@ -489,36 +754,140 @@ server=http.createServer(function (req, res)
 		
 		if (req.url=="/balance")
 		{
- 		    const publicAddress=db.get('addr').value()[0].publicAddress;
-			axios.get(apiURL+'balance', {
-				params: {
-					network: network,
-					a: publicAddress
-				}
-			})
-			.then(function (response)
+ 		    var url;
+			const publicAddress=db.get('addr').value()[0].publicAddress;
+			if (network!="main")
 			{
-				sendResponse(res,200,JSON.stringify(response.data));
-				console.log(JSON.stringify(response.data));
-			})
-			.catch(function (error)
-			{
-				console.log(error);
-			})
-		    .then(function ()
-			{
-			});  
+			    axios.get(apiURL+'utxo', {
+			        params: {
+			          network: network,
+			          a: publicAddress
+			        }
+			      })
+			      .then(function (response)
+			      {
+			        var utxo=response.data;
+			        if(utxo.length>0)
+			        {
+			            try
+			            {
+			                var tx=new bitcore.Transaction()
+			                .from(utxo);
+			                amount=(tx.inputAmount);
+							sendResponse(res,200,JSON.stringify(
+							{
+								"hash":"",
+								"received":0,
+								"receivedCount":0,
+								"sent":0,
+								"sentCount":0,
+								"staked":0,
+								"stakedCount":0,
+								"stakedSent":0,
+								"stakedReceived":0,
+								"coldStaked":0,
+								"coldStakedCount":0,
+								"coldStakedSent":0,
+								"coldStakedReceived":0,
+								"coldStakedBalance":0,
+								"balance":amount,
+								"blockIndex":0,
+								"richListPosition":0
+							}));
+			            }
+			            catch(err)
+			            {
+			                console.log(err);
+			            }
+			        }
+			        else
+			        {
+						sendResponse(res,200,JSON.stringify(
+						{
+							"hash":"",
+							"received":0,
+							"receivedCount":0,
+							"sent":0,
+							"sentCount":0,
+							"staked":0,
+							"stakedCount":0,
+							"stakedSent":0,
+							"stakedReceived":0,
+							"coldStaked":0,
+							"coldStakedCount":0,
+							"coldStakedSent":0,
+							"coldStakedReceived":0,
+							"coldStakedBalance":0,
+							"balance":0,
+							"blockIndex":0,
+							"richListPosition":0
+						}));
+			        }
+			    })
+			    .catch(function (error)
+				{
+					console.log(error);
+				})
+				.then(function ()
+				{
+				});
+			}
+ 		    if (network=="main")
+ 		    {
+	 	   		url=apiExplorerURL+'address/'+publicAddress;
+				axios.get(url, {
+					params: {
+						network: network,
+						a: publicAddress
+					}
+				})
+				.then(function (response)
+				{
+					sendResponse(res,200,JSON.stringify(response.data));
+					console.log(JSON.stringify(response.data));
+				})
+				.catch(function (error)
+				{
+					console.log(error);
+					if(error.response.data.status=="404")
+					{
+						sendResponse(res,200,JSON.stringify(
+						{
+							"hash":"",
+							"received":0,
+							"receivedCount":0,
+							"sent":0,
+							"sentCount":0,
+							"staked":0,
+							"stakedCount":0,
+							"stakedSent":0,
+							"stakedReceived":0,
+							"coldStaked":0,
+							"coldStakedCount":0,
+							"coldStakedSent":0,
+							"coldStakedReceived":0,
+							"coldStakedBalance":0,
+							"balance":0,
+							"blockIndex":0,
+							"richListPosition":0
+						}));
+					}
+				})
+			    .then(function ()
+				{
+				}); 
+			}
 		}
 
 		if (req.url=="/price")
 		{
-			axios.get("https://api.coinmarketcap.com/v1/ticker/"+post.symbol+"/?convert=EUR", {
+			axios.get("https://pro-api.coinmarketcap.com/v1/tools/price-conversion?CMC_PRO_API_KEY=5cec0298-3dc5-4d8e-8109-6f720eb152bd&id=377&amount=1&convert=USD", {
 				params: {}
 			})
 			.then(function (response)
 			{
 				sendResponse(res,200,JSON.stringify(response.data));
-				console.log(JSON.stringify(response.data));
+				//console.log(JSON.stringify(response.data));
 			})
 			.catch(function (error)
 			{
@@ -582,7 +951,7 @@ server=http.createServer(function (req, res)
 			.then(function (response)
 			{
 				sendResponse(res,200,JSON.stringify(response.data));
-				console.log(JSON.stringify(response.data));
+				//console.log(JSON.stringify(response.data));
 			})
 			.catch(function (error)
 			{
@@ -627,10 +996,10 @@ server=http.createServer(function (req, res)
 			.then(function (response)
 			{
 				sendResponse(res,200,JSON.stringify(response.data));
-				console.log("PAYMENT REQUESTS");
+				/*console.log("PAYMENT REQUESTS");
 				console.log("================");
 				console.log(JSON.stringify(response.data));
-				console.log("================");
+				console.log("================");*/
 			})
 			.catch(function (error)
 			{
@@ -759,6 +1128,10 @@ if (network=="dev")
 {
 	walletFileName+="wallet.db.dev";
 }
+if (network=="test")
+{
+	walletFileName+="wallet.db.test";
+}
 if (network=="main")
 {
 	walletFileName+="wallet.db";
@@ -770,9 +1143,13 @@ if (network=="main")
 {
 	bitcore.Networks.defaultNetwork = bitcore.Networks.livenet;
 }
-else
+if (network=="test")
 {
 	bitcore.Networks.defaultNetwork = bitcore.Networks.testnet;
+}
+if (network=="dev")
+{
+	bitcore.Networks.defaultNetwork = bitcore.Networks.devnet;
 }
 process.on('uncaughtException', function(err)
 {

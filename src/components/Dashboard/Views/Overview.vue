@@ -39,11 +39,11 @@
       <div>
         <div class="ui segment">
           <a class="ui green ribbon label"><i style="font-size:2em;" class="ion-social-buffer"></i></a>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{walletInfo.balance}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.coldstaking_balance!=='undefined'" title='Cold Staking Balance'><div class="ui gray button tiny"><i class="ion-ios-snowy"></i></div><a class="ui basic left pointing label tiny">{{walletInfo.coldstaking_balance}} {{coin.symbol}}</a></div>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'" title="Unconfirmed"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing gray label tiny">{{walletInfo.unconfirmed_balance}} {{coin.symbol}}</a></div>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.immature_balance!=='undefined'" title="Immature"><div class="ui gray button tiny"><i class="ion-egg"></i></div><a class="ui basic left pointing gray label tiny">{{walletInfo.immature_balance}} {{coin.symbol}}</a></div>
-			<div class="ui labeled button" tabindex="0" v-if="coin.bool_support_staking=='1' && typeof info.stake!=='undefined'" title="Staking"><div class="ui gray button tiny"><i class="ion-leaf"></i></div><a class="ui basic left pointing gray label tiny">{{info.stake}} {{coin.symbol}}</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.balance).toFixed(2))}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.coldstaking_balance!=='undefined'" title='Cold Staking Balance'><div class="ui gray button tiny"><i class="ion-ios-snowy"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(walletInfo.coldstaking_balance)}} {{coin.symbol}}</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'" title="Unconfirmed"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing gray label tiny">{{formatNumbers(walletInfo.unconfirmed_balance)}} {{coin.symbol}}</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.immature_balance!=='undefined'" title="Immature"><div class="ui gray button tiny"><i class="ion-egg"></i></div><a class="ui basic left pointing gray label tiny">{{formatNumbers(walletInfo.immature_balance)}} {{coin.symbol}}</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="coin.bool_support_staking=='1' && typeof info.stake!=='undefined'" title="Staking"><div class="ui gray button tiny"><i class="ion-leaf"></i></div><a class="ui basic left pointing gray label tiny">{{formatNumbers(info.stake)}} {{coin.symbol}}</a></div>
         </div>
       </div>
     </div>
@@ -51,12 +51,12 @@
       <div>
         <div class="ui segment">
 			<a class="ui blue ribbon label"><i style="font-size:2em;" class="ion-arrow-swap"></i></a>
-			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i></div><a class="ui basic label">{{parseFloat(price[0].price_usd).toFixed(2)}}</a></div>
-			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-bitcoin"></i></div><a class="ui basic label">{{price[0].price_btc}}</a></div>
+			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i></div><a class="ui basic label">{{parseFloat(price.data.quote.USD.price).toFixed(2)}}</a></div>
+			<!--<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-bitcoin"></i></div><a class="ui basic label">{{price[0].price_btc}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-arrow-graph-up-right"></i> Rank</div><a class="ui basic label">{{price[0].rank}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-stats-bars"></i> 1H </div><a class="ui basic label">{{price[0].percent_change_1h}}%</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-stats-bars"></i> 24H</div><a class="ui basic label">{{price[0].percent_change_24h}}%</a></div>
-			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-stats-bars"></i> 7D</div><a class="ui basic label">{{price[0].percent_change_7d}}%</a></div>
+			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-stats-bars"></i> 7D</div><a class="ui basic label">{{price[0].percent_change_7d}}%</a></div>!-->
         </div>
       </div>
     </div>
@@ -338,6 +338,11 @@ export default {
 		if (!n) return "0";
 		return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
 	},
+	formatNumbers: function(n) {
+      if (n==undefined) return;
+      var parts = n.toString().split(".");
+      return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+    },
     numberWithCommas: n => {
       if (!n) {
         return "0.00"

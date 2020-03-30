@@ -34,6 +34,10 @@
         <i class="ion-erlenmeyer-flask"></i>
         <p>COMMUNITY FUND</p>
       </sidebar-link>
+      <sidebar-link v-if="coin.bool_support_dao=='1'" to="/admin/dao">
+        <i class="ion-code"></i>
+        <p>DAO</p>
+      </sidebar-link>
       <sidebar-link to="/admin/block-explorer">
         <i class="ion-android-search"></i>
         <p>BLOCK EXPLORER</p>

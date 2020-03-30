@@ -5,5 +5,8 @@ next-win32-x64/
 node_modules/
 electron-builder/
 resources/
+update/
 *.exe
 *.zip
+wallet.db
+lw.config.json

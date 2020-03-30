@@ -15,9 +15,12 @@ import Merchants from 'src/components/Dashboard/Views/Merchants.vue'
 import PeerList from 'src/components/Dashboard/Views/PeerList.vue'
 import CommunityProposals from 'src/components/Dashboard/Views/CommunityProposals.vue'
 import CommunityFund from 'src/components/Dashboard/Views/CommunityFund.vue'
+import DAO from 'src/components/Dashboard/Views/DAO.vue'
 import MeetCommunity from 'src/components/Dashboard/Views/MeetCommunity.vue'
 import MyProposals from 'src/components/Dashboard/Views/MyProposals.vue'
 import CreateProposal from 'src/components/Dashboard/Views/CreateProposal.vue'
+import CreateConsultation from 'src/components/Dashboard/Views/CreateConsultation.vue'
+import ProposeConsensusChange from 'src/components/Dashboard/Views/ProposeConsensusChange.vue'
 import ProposalVoteList from 'src/components/Dashboard/Views/ProposalVoteList.vue'
 import PaymentRequestVoteList from 'src/components/Dashboard/Views/PaymentRequestVoteList.vue'
 import News from 'src/components/Dashboard/Views/News.vue'
@@ -113,6 +116,11 @@ const routes = [
         component: CommunityFund
       },
       {
+        path: 'dao',
+        name: 'DAO',
+        component: DAO
+      },
+      {
         path: 'meet-community',
         name: 'MeetCommunity',
         component: MeetCommunity
@@ -121,6 +129,16 @@ const routes = [
         path: 'create-proposal',
         name: 'CreateProposal',
         component: CreateProposal
+      },
+      {
+        path: 'create-consultation',
+        name: 'CreateConsultation',
+        component: CreateConsultation
+      },
+      {
+        path: 'propose-consensus-change',
+        name: 'ProposeConsensusChange',
+        component: ProposeConsensusChange
       },
       {
         path: 'proposal-vote-list',

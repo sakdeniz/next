@@ -71,9 +71,9 @@
       <td>
         <i class="ion-android-arrow-dropright"></i> Available in USD
       </td>
-      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_usd).toFixed(2))}} USD</td>
+      <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price.data.quote.USD.price).toFixed(2))}} USD</td>
     </tr>
-	<tr>
+	<!--<tr>
       <td>
         <i class="ion-android-arrow-dropright"></i> Available in EUR
       </td>
@@ -84,7 +84,7 @@
         <i class="ion-android-arrow-dropright"></i> Available in BTC
       </td>
       <td class="right aligned collapsing">{{formatnumbers(parseFloat(cfundStats.funds.available*price[0].price_btc).toFixed(2))}} BTC</td>
-    </tr>
+    </tr>!-->
     <tr>
       <td>
         <i class="ion-android-arrow-dropright"></i> Locked
@@ -517,7 +517,7 @@ export default {
   created: function() {
     this.getInfo();
 	this.getCFundStats();
-	this.listproposals("all");
+	this.listproposals("pending");
 	this.getPrice();
   },
   mounted: function() {

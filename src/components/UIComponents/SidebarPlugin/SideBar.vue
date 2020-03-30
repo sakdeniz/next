@@ -5,11 +5,11 @@
        :data-color="coin.bgcolor"
        :data-image="backgroundImage">
     <div class="sidebar-wrapper">
-      <div class="logo">
+      <!--<div class="logo">
 		<a href="#" class="simple-text">
 			<span class="logo-text">NEXT</span>
         </a>
-      </div>
+      </div>!-->
 
       <slot name="content"></slot>
       <ul class="nav">
