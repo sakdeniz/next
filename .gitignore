@@ -8,5 +8,5 @@ resources/
 update/
 *.exe
 *.zip
-wallet.db
+wallet.*
 lw.config.json

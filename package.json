@@ -1,9 +1,9 @@
 {
   "name": "next",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "main.js",
   "description": "NEXT Wallet",
-  "author": "sakdeniz",
+  "author": "NavCoin Developers",
   "private": false,
   "scripts": {
     "dev": "node build/dev-server.js",

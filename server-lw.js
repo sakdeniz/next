@@ -47,7 +47,7 @@ else
 var ENCRYPTION_KEY;
 const IV_LENGTH = 16; // For AES, this is always 16
 const apiURL='https://navcommunity.net/api/lw/';
-const apiExplorerURL='https://api.navexplorer.com/api/';
+const apiExplorerURL='https://api.v2.navexplorer.com/';
 const network='main';
 var adapter;
 var db;
@@ -245,6 +245,95 @@ server=http.createServer(function (req, res)
 			generate(res);
 		}
 		
+		if (req.url=="/sweepprivatekey")
+		{
+			if (!bitcore.PrivateKey.isValid(post.privatekey))
+			{
+				sendResponse(res,200,JSON.stringify(
+				{
+					"error":true,
+					"message":"Private key is not valid"
+				}));
+			}
+			var privateKey = bitcore.PrivateKey.fromWIF(post.privatekey);
+			var publicKey = privateKey.toAddress();
+			console.log("Sweep Address Public Key : " + publicKey);
+			const publicAddress=db.get('addr').value()[0].publicAddress;
+		    axios.get(apiURL+'utxo', {
+		        params: {
+		          network: network,
+		          a: publicKey.toString()
+		        }
+		      })
+		      .then(function (response)
+		      {
+		        var utxo=response.data;
+		        if(utxo.length>0)
+		        {
+		            try
+		            {
+		                var tx=new bitcore.Transaction()
+		                .from(utxo);
+		                amount=(tx.inputAmount-Fee)/100000000;
+					    try
+						{
+							var tx = new bitcore.Transaction()
+							.from(utxo)
+							.to(publicAddress, sb.toSatoshi(amount))
+							.settime(moment().unix())
+							.change(publicAddress)
+							.sign(privateKey);
+							console.log(tx.toObject());
+							console.log(tx.serialize());
+							axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize().toString(),config)
+							.then((retval) =>
+							{
+								console.log(retval.data);
+								sendResponse(res,200,JSON.stringify(
+								{
+									"amount":amount,
+									"address":publicKey.toString(),
+									"message":"Transfer completed successfully."
+								}));
+							}
+							).catch((e) => {sendError(res, 200,e);})
+						}
+						catch(err)
+						{
+							sendResponse(res,200,JSON.stringify(
+							{
+								"error":true,
+								"errno":err.errno,
+								"code":err.code,
+								"path":err.path,
+								"message":err.message
+							}));
+						}
+		            }
+		            catch(err)
+		            {
+		                console.log(err);
+		            }
+		        }
+		        else
+		        {
+					sendResponse(res,200,JSON.stringify(
+					{
+						"error":true,
+						"message":"No NAV was found in this address.<br/>No UTXO record found."
+					}
+					));
+		        }
+		    })
+		    .catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});
+		}
+
 		if (req.url=="/iswalletexist")
 		{
 			console.log(post.token);
@@ -370,6 +459,11 @@ server=http.createServer(function (req, res)
 					{
 						var data=response.data;
 						var coldStakingAddress=response.data.coldStakingAddress;
+						
+						var stakingAddress = bitcore.Address.fromString(response.data.stakingAddress);
+						var spendingAddress = bitcore.Address.fromString(publicAddress);
+						console.log(bitcore.Address({hash: new Buffer(stakingAddress.toObject().hash + spendingAddress.toObject().hash, 'hex'), type: 'coldstaking', network: 'mainnet'}));
+
 						//
 					    axios.get(apiURL+'utxo', {
 					        params: {
@@ -746,6 +840,109 @@ server=http.createServer(function (req, res)
 			});
 		}
 		
+		if (req.url=="/voteproposal")
+		{
+		    const publicAddress=db.get('addr').value()[0].publicAddress;
+			axios.get(apiURL+'utxo', {
+				params: {
+					network: network,
+					a: publicAddress
+				}
+			})
+			.then(function (response)
+			{
+				var utxo=response.data;	 
+				var hash=post.hash;
+				var revHash="";
+				if (hash.length%2==0)
+				{
+					for (var i=hash.length-1;i>=0;i-=2)
+					{
+						revHash+=hash[i-1]+hash[i];
+					}
+				}
+				console.log("Reversed hash:"+revHash);
+				console.log(utxo);
+			    try
+				{
+					var script = new bitcore.Script()
+					.add('OP_RETURN')
+					.add('OP_CFUND')
+					.add('OP_PROP')
+					.add(post.vote=="yes"?'OP_YES':'OP_NO')
+					.add(new Buffer(revHash, 'hex'));
+
+					var script2 = new bitcore.Script()
+					.add('OP_RETURN')
+					.add('OP_CFUND')
+
+					console.log("-------");
+					console.log("PROPOSAL VOTE");
+					console.log("-------");
+
+					console.log("Hash:"+post.hash);
+					console.log("Vote:"+post.vote);
+
+					console.log("-------");
+					console.log("SCRIPT");
+					console.log("-------");
+					console.log(script.toString());
+
+					const publicAddress=db.get('addr').value()[0].publicAddress;
+					const privateKey=db.get('addr').value()[0].privateKey;
+					var tx=new bitcore.Transaction()
+					.from(utxo)
+					.addOutput(new bitcore.Transaction.Output({
+						script: script,
+						satoshis: 0
+					}))
+					.addOutput(new bitcore.Transaction.Output({
+						script: script2,
+						satoshis: 10000000
+					}))
+					.settime(moment().unix())
+					.change("4cFeoU5Y7q4Ngb5NY2x17RyFWmrS8Nf393LBsWRy2Kknyr5UTos9PwmDx3wH1THyNjDcRSbMCVbiRX8zAi9ninvrf")
+					.setversion("8")
+					.sign(privateKey);
+					console.log("-----------");
+					console.log("TRANSACTION");
+					console.log("-----------");
+					console.log(tx.toObject());
+					console.log("----------");
+					console.log("SERIALIZED");
+					console.log("----------");
+					console.log(tx.serialize({disableSmallFees: false,disableMoreOutputThanInput:true}));
+					console.log("-----------");
+					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize({disableSmallFees: false,disableMoreOutputThanInput:true}).toString(),config)
+					.then((retval) =>
+					{
+						console.log(retval.data);
+						sendResponse(res,200,retval.data);
+					}
+					).catch((e) => {sendError(res, 200,e);})
+				}
+				catch(err)
+				{
+					sendResponse(res,200,JSON.stringify(
+					{
+						"error":true,
+						"errno":err.errno,
+						"code":err.code,
+						"path":err.path,
+						"message":err.message
+					}
+					));
+				}
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+			})
+			.then(function ()
+			{
+			});
+		}
+
 		if (req.url=="/listaddr")
 		{
 			const publicAddress=db.get('addr').value()[0].publicAddress;
@@ -1139,7 +1336,7 @@ if (network=="main")
 console.log("NEXT Light Wallet NodeJS Server started...");
 console.log("Network : " + network);
 console.log("Wallet Filename : " + walletFileName);
-if (network=="main")
+if (network=="mainnet")
 {
 	bitcore.Networks.defaultNetwork = bitcore.Networks.livenet;
 }

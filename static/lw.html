@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <link href="plugins/semantic/semantic.min.css" rel="stylesheet" type="text/css" />
 <link href="plugins/ionicons/css/ionicons.min.css" rel="stylesheet" type="text/css"/>
+<link href="plugins/fontawesome-free-5.8.1-web/css/all.min.css" rel="stylesheet" type="text/css"/>
 <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 <script src="plugins/vuejs/vue.min.js"></script>
 <script src="plugins/jquery/jquery.min.js"></script>
@@ -18,7 +19,6 @@
 <script src="plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script src="plugins/sb/sb.js"></script>
 <style>
-
 body
 {
 	background: #fcfcfc;
@@ -131,7 +131,6 @@ body
 			<a class="item" v-on:click="route('staking')">Staking</a>
 			<a class="item" v-on:click="route('sign')">Sign</a>
 			<a class="item" v-on:click="route('verify')">Verify</a>
-			<a class="item" v-on:click="route('tools')">Tools</a>
 			<div class="ui dropdown item" tabindex="0">
 				Community Fund
 				<i class="dropdown icon"></i>
@@ -148,6 +147,16 @@ body
 					<a class="item" v-on:click="listProposalRequestList();route('cfund-request-nav-list');">Sponshorsip Request List</a>
 				</div>
 			</div>
+
+			<div class="ui dropdown item" tabindex="0">
+				Tools
+				<i class="dropdown icon"></i>
+				<div class="menu" tabindex="-1">
+					<a class="item" v-on:click="route('mnemonics')">Show Mnemonics & Private Key</a>
+					<a class="item" v-on:click="route('sweepPrivateKey')">Sweep Private Key</a>
+				</div>
+			</div>
+
 			<div class="right menu">
 				<div class="item">
 					<div class="ui action left">
@@ -356,6 +365,10 @@ body
 					      	</span>
 						  	<br/>
 						  	<br/>
+						  	<div style="margin-top:5px;margin-bottom:5px;">
+						  		<a class="ui button tiny green" v-on:click="voteProposal(proposal,'yes')">Yes</a>
+						  		<a class="ui button tiny red" v-on:click="voteProposal(proposal,'no')">No</a>
+						  	</div>
 						  	<div class="ui three column grid">
 								
 								<div class="column">
@@ -444,30 +457,6 @@ body
 			    </tr>
 			    <tr>
 			      <td nowrap>
-			        <i class="ion-ios-snowy"></i> Cold Staked
-			      </td>
-			      <td>{{balance.coldStaked?formatBalance(balance.coldStaked):0}} <span class="ui violet circular label">{{balance.coldStakedCount?balance.coldStakedCount:0}}</span></td>
-			    </tr>
-			    <tr>
-			      <td nowrap>
-			        <i class="ion-ios-snowy"></i> Cold Staked Balance
-			      </td>
-			      <td>{{formatBalance(balance.coldStakedBalance)}}</td>
-			    </tr>
-			   	<tr>
-			      <td nowrap>
-			        <i class="ion-ios-snowy"></i> Staked Sent
-			      </td>
-			      <td>{{formatBalance(balance.stakedSent)}}</td>
-			    </tr>
-			   	<tr>
-			      <td nowrap>
-			        <i class="ion-ios-snowy"></i> Staked Received
-			      </td>
-			      <td>{{formatBalance(balance.stakedReceived)}}</td>
-			    </tr>
-			    <tr>
-			      <td nowrap>
 			        <i class="ion-connection-bars"></i> Rich List Position
 			      </td>
 			      <td>{{balance.richListPosition}}</td>
@@ -477,24 +466,28 @@ body
 			<div class="ui middle aligned divided list">
 				<table class="ui celled table">
 				  <thead>
-				    <tr><th>Type</th>
-				    <th>Amount</th>
-				    <th>Balance</th>
-				    <th>Date</th>
-				  </tr></thead>
+				    <tr>
+				    	<th>Type</th>
+				    	<th>Amount</th>
+				    	<th>Balance</th>
+				    	<th>Date</th>
+					</tr>
+				  </thead>
 				  <tbody>
 				    <tr v-for="tx in txs">
 				      <td data-label="">
 						<a title="Show Transaction on Explorer" target="_blank" v-bind:href="coin.block_explorers['NavExplorer'].url+'/tx/'+tx.transaction">
-							<i class="ui avatar ion-android-arrow-up" style="color:#cc6600" v-if="tx.type=='SEND'"></i>
-							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.type=='RECEIVE'"></i>
-							<i class="ui avatar ion-ios-snowy" style="color:#00CCCC" v-if="tx.type=='COLD_STAKING'"></i>
+							<i class="ui avatar ion-android-arrow-up" style="color:#cc6600" v-if="tx.type=='send'"></i>
+							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.type=='receive'"></i>
+							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.type=='community_fund_payout'"></i>
+							<i class="ui avatar ion-ios-snowy" style="color:#673ab7" v-if="tx.type=='cold_stake'"></i>
 						</a>
 				      </td>
 				      <td data-label="Amount">
-						    <span style="color:#cc6600" v-if="tx.type=='SEND'">-{{sb.toBitcoin(tx.sent)}}</span>
-							<span style="color:#669900" v-if="tx.type=='RECEIVE'">+{{sb.toBitcoin(tx.received)}}</span>
-							<span style="color:#669900" v-if="tx.type=='COLD_STAKING'">+{{getStakingReward(tx)}}</span>
+						    <span style="color:#cc6600" v-if="tx.type=='send'">-{{formatBalance(tx.input-tx.output)}}</span>
+							<span style="color:#669900" v-if="tx.type=='receive'">+{{formatBalance(tx.output-tx.input)}}</span>
+							<span style="color:#669900" v-if="tx.type=='community_fund_payout'">+{{formatBalance(tx.output)}}</span>
+							<span style="color:#673ab7" v-if="tx.type=='cold_stake'">+{{getStakingReward(tx)}}</span>
 				      </td>
 				      <td data-label="Balance">
 				      	{{sb.toBitcoin(tx.balance)}}
@@ -623,15 +616,30 @@ body
 			</form>
 		</div>
 
-		<div class="ui segment" v-show="currentPage=='tools'">
+		<div class="ui segment" v-show="currentPage=='mnemonics'">
 			<a class="ui violet ribbon label">Tools</a>
 			<p></p>
-			<button class="ui button gray" v-on:click="getnewaddress()">Show Private Key & Mnemonics</button>
+			<button class="ui button gray" v-on:click="getnewaddress()">Private Key & Mnemonics</button>
 			<div v-if="address" class="ui message">
 				<h5>Public Address</h5><p>{{address}}</p>
 				<h5>Private Key</h5><p>{{privateKey}}</p>
 				<h5>Mnemonics</h5><p>{{mnemonics}}</p>
 			</div>
+		</div>
+
+		<div class="ui segment" v-show="currentPage=='sweepPrivateKey'">
+			<a class="ui violet ribbon label">Sweep Private Key</a>
+			<p></p>
+			<p>If you have a private key for your NavCoins in another wallet, paste this address in the field below. If the private key you provided is correct and there is NAV at the specified address, all NAVs will be transferred to your wallet.</p>
+			<form class="ui form">
+			  <div class="field">
+					<label>Private Key</label>
+					<input type="text" name="send_address" placeholder="Enter a NavCoin private key to sweep" v-model="sweep_address">
+				</div>
+			  <div class="field">
+				<a class="ui button" v-on:click="sweepPrivateKey()"><i class="fas fa-broom"></i>&nbsp;Sweep Address</a>
+			  </div>
+			</form>
 		</div>
 
 		<div class="ui segment" v-show="currentPage=='cfund-introduction'">
@@ -929,6 +937,10 @@ body
 			      	</span>
 				  	<br/>
 				  	<br/>
+				  	<div style="margin-top:5px;margin-bottom:5px;">
+				  		<a class="ui button green" v-on:click="voteProposal(proposal,'yes')">Yes</a>
+						<a class="ui button red" v-on:click="voteProposal(proposal,'no')">No</a>
+					</div>
 				  	<div class="ui three column grid">
 						
 						<div class="column">
@@ -1346,6 +1358,7 @@ var app = new Vue({
 	message:'',
 	privateKey:'',
 	signature:'',
+	sweep_address:'',
 	verify_message:'',
 	verify_address:'',
 	verify_signature:'',
@@ -1587,9 +1600,18 @@ var app = new Vue({
 		return dDisplay;
 	},
     formatBalance: n => {
-    	if (n==0) return n;
-		if (n) return sb.toBitcoin(n); else return "";
-	},
+        if (n==0) return n;
+        if (n)
+        {
+        	var amount=sb.toBitcoin(n);
+       	    var parts=amount.toString().split(".");
+        	return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+        }
+        else
+        {
+        	return "";
+        }
+    },
     formatNumber: n => {
 		if (!n) return "0";
 		return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
@@ -1679,6 +1701,29 @@ var app = new Vue({
     mcreateWallet: function ()
 	{
 		this.step=3;
+	},
+	sweepPrivateKey: function ()
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/sweepprivatekey', {token:vm.token, privatekey: vm.sweep_address},this.config)
+		.then(function (response)
+		{
+			console.log(response);
+			if(response.data.error)
+			{
+				swal({title:"Sweep Private Key",type:"error",html:response.data.message});
+			}
+			else
+			{
+				swal({title:"Sweep Private Key",type:"success",html:response.data.address + "<br/>" + response.data.amount + "<br/>" + response.data.message});
+			}
+		})
+		.catch(function (error)
+		{
+		})
+		.then(function ()
+		{
+		}); 
 	},
     importWallet: function ()
 	{
@@ -2021,7 +2066,7 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/generate', {token:vm.token},this.config)
 		.then(function (response)
 		{
-			//console.log(response.data);
+			console.log(response.data);
 			vm.address=response.data.address;
 			vm.privateKey=response.data.privateKey;
 			vm.mnemonics=response.data.mnemonics;
@@ -2134,9 +2179,32 @@ var app = new Vue({
 		{
 		}); 
 	},
+	voteProposal: function (proposal,vote)
+	{
+		let vm=this;
+		axios.post('http://127.0.0.1:3001/voteproposal', {token:vm.token, hash: proposal.hash, vote:vote},this.config)
+		.then(function (response)
+		{
+			if (response.data.includes("error"))
+			{
+				swal({title:"Proposal Vote",type:"error",html:response.data});
+			}
+			else
+			{
+				swal({title:"Proposal Vote",type:"success",html:"Your vote successfully submitted."});
+			}
+		})
+		.catch(function (error)
+		{
+			console.log("Error:"+error);
+		})
+		.then(function ()
+		{
+		}); 
+	},
 	getStakingReward: function (tx)
 	{
-		return(sb.toBitcoin(parseFloat(tx.received)-parseFloat(tx.sent)));
+		return(sb.toBitcoin(parseFloat(tx.output)-parseFloat(tx.input)));
 	},
 	create_sponsorship_request: function ()
 	{
