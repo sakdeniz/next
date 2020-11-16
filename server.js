@@ -29,12 +29,12 @@ function Send(client,post,to,res)
 			if (post.isprivate)
 			{
 				console.log("Private Send");
-				client.anonSend(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				client.privateSendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 			}
 			else
 			{
 				console.log("Send");
-				client.sendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				client.sendToAddress(to,parseFloat(post.amount),post.comment,post.commentto,null,true).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 			}
 			//console.log("Locking wallet...");
 			//client.walletLock().then((retval) => client.walletPassphrase(post.encryption_password,1073741824,true)).catch((e) => {sendError(res, 200,e);});
@@ -45,7 +45,7 @@ function Send(client,post,to,res)
 		if (post.isprivate)
 		{
 			console.log("Private Send");
-			client.anonSend(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+			client.privateSendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 		}
 		else
 		{
@@ -100,7 +100,7 @@ server=http.createServer(function (req, res)
 	req.on('end', function ()
 	{
 		var post= body ? JSON.parse(body) : {}
-		if (post.rpcport) port=post.rpcport; else port=44446;
+		if (post.rpcport) port=post.rpcport; else port=44444;
 		if (post.rpcuser) rpcuser=post.rpcuser; else rpcuser="test";
 		if (post.token) rpcpassword=post.token; else rpcpassword="test";
 		const client = new Client({host:"localhost",port:port,username:rpcuser,password:rpcpassword});
@@ -224,7 +224,7 @@ server=http.createServer(function (req, res)
 						const password=fs.readFileSync(fileWalletPassword,'utf8');
 						if (password!=null)
 						{
-							console.log("Password already set")
+							console.log("Password already set : " + fileWalletPassword)
 							sendResponse(res, 200,"true");
 						}
 						else
@@ -392,6 +392,25 @@ server=http.createServer(function (req, res)
 						Send(client,post,to,res);
 					}
 				}
+				if (req.url=="/scanviewkey")
+				{
+					client.scanViewKey(post.viewkey.toString(),post.timestamp).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/swap")
+				{
+					if (post.swap_type=="nav_to_xnav")
+					{
+						client.sendToAddress(post.to,parseFloat(post.amount),"","","",false).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
+					else if (post.swap_type=="xnav_to_nav")
+					{
+						client.privateSendToAddress(post.to,parseFloat(post.amount),"","","",false).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+					}
+					else
+					{
+						sendError(res, 200,{ message: "Undefined swap type " + post.swap_type});
+					}
+				}
 				if (req.url=="/proposaldonate")
 				{
 					console.log("Proposal donate. Hash:"+post.proposal_hash+",Payment Address:"+post.proposal_paymentaddress+",Amount:"+post.donate_amount);
@@ -547,6 +566,10 @@ server=http.createServer(function (req, res)
 				{
 					client.getNewAddress().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/getnewprivateaddress")
+				{
+					client.getNewPrivateAddress().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/stop")
 				{
 					client.stop().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
@@ -634,6 +657,14 @@ server=http.createServer(function (req, res)
 				{
 					client.command('listaddressgroupings').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/listprivateaddresses")
+				{
+					client.command('listprivateaddresses').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/listprivateunspent")
+				{
+					client.command('listprivateunspent').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/listreceivedbyaddress")
 				{
 					client.listReceivedByAddress(1,true).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
@@ -645,6 +676,14 @@ server=http.createServer(function (req, res)
 				if (req.url=="/dumpmasterprivkey")
 				{
 					client.command('dumpmasterprivkey').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/dumpmnemonic")
+				{
+					client.command('dumpmnemonic').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/dumpviewprivkey")
+				{
+					client.command('dumpviewprivkey').then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/importprivkey")
 				{
@@ -663,21 +702,6 @@ server=http.createServer(function (req, res)
 				{
 					console.log("node="+post.node+" command="+post.command);
 					client.addAnonServer(post.node,post.command,"true").then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
-				}
-				if (req.url=="/getanonservers")
-				{
-					var fs=require('fs');
-					var data=fs.readFileSync(global.fileConfig,'utf8');
-					var arr=[];
-					data.split("\n").map(function (val)
-					{
-						if (val.indexOf("addanonserver")!=-1)
-						{
-							arr.push(val.split("=")[1]);
-							console.log("Anon server -> " + val.split("=")[1])
-						}
-					});
-					sendResponse(res, 200,JSON.stringify(arr));
 				}
 				if (req.url=="/navcommunity-getproposals")
 				{

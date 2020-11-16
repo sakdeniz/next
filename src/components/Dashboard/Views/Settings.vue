@@ -32,6 +32,34 @@
 		<div class="ui one column grid">
 			<div class="column">
 				<div class="ui segment">
+					<a class="ui purple ribbon label">Dump Mnemonic</a>
+					<div class="ui ignored warning message">By saving your seed words, you can restore your wallet in the future.</div>
+					<div><code>{{mnemonic}}</code></div>
+					<div class="row">
+						<div class="col-md-12" style="margin-left:10px">
+							<button class="ui icon tiny button blue" v-on:click="dumpMnemonic"><i class="ion-wrench"></i>&nbsp;Dump Mnemonics</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui one column grid">
+			<div class="column">
+				<div class="ui segment">
+					<a class="ui purple ribbon label">Dump View Private Key</a>
+					<div class="ui ignored warning message">Reveals the current blsct view key</div>
+					<div><code>{{viewprivatekey}}</code></div>
+					<div class="row">
+						<div class="col-md-12" style="margin-left:10px">
+							<button class="ui icon tiny button blue" v-on:click="dumpViewPrivateKey"><i class="ion-wrench"></i>&nbsp;Dump View Private Key</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui one column grid">
+			<div class="column">
+				<div class="ui segment">
 					<a class="ui purple ribbon label">Backup & Import Wallet</a>
 					<div class="row">
 						<div class="col-md-12" style="margin-left:10px">
@@ -263,6 +291,8 @@ export default {
 	 isDemo,
       walletpassphrase,
 	  masterprivkey,
+	  mnemonic,
+	  viewprivatekey,
 	  privkey,
       signmessage,
       navaddress,
@@ -409,6 +439,48 @@ export default {
    		  if (!res.data["error"])
 		  {
               vm.masterprivkey = res.data;
+          } else {
+            swal({
+              type: 'warning',
+              title: 'Oops...',
+              text: res.data["error"]["message"]
+            });
+          }
+		}).catch(function(err) {
+        console.log(err);
+      })
+    },
+    dumpMnemonic: function(event) {
+      let vm = this;
+      axios.post(window.hostname + 'dumpmnemonic', {
+        rpcuser: window.rpcuser,
+		token: window.token,
+        rpcport: window.rpcport
+      }, window.config).then(function(res) {
+   		  if (!res.data["error"])
+		  {
+              vm.mnemonic = res.data;
+          } else {
+            swal({
+              type: 'warning',
+              title: 'Oops...',
+              text: res.data["error"]["message"]
+            });
+          }
+		}).catch(function(err) {
+        console.log(err);
+      })
+    },
+    dumpViewPrivateKey: function(event) {
+      let vm = this;
+      axios.post(window.hostname + 'dumpviewprivkey', {
+        rpcuser: window.rpcuser,
+		token: window.token,
+        rpcport: window.rpcport
+      }, window.config).then(function(res) {
+   		  if (!res.data["error"])
+		  {
+              vm.viewprivatekey = res.data;
           } else {
             swal({
               type: 'warning',

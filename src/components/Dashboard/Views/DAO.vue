@@ -124,10 +124,9 @@
         		</table>
         	</div>
         </div>
-
         <div class="ui fluid card violet" v-for="(consultation,index) in consultations">
 			<div class="content">
-				<div class="right floated meta">Cycle {{consultation.votingCycle}}</div>
+				<div class="right floated meta">Cycle {{consultation.votingCyclesFromCreation}}</div>
 				<!--({{consultation.version}})!-->
 				<div class="header">
 					<span v-if="consultation.version==13" class="ion-gear-a"></span>
@@ -215,7 +214,7 @@
 									<a class="ui gray header" v-on:click="vote(itm.hash,'abs')"><i class="question circle outline icon" aria-hidden="true"></i></a>
 								</td>
 								<td nowrap>
-									{{itm.string}}
+									{{itm.answer}}
 								</td>
 								<td nowrap>
 									{{itm.support}}

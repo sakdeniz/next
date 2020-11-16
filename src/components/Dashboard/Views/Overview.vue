@@ -6,7 +6,7 @@
 	      <div class="ui column grid">
 	  <div>
         <div class="ui segment">
-          <a class="ui red ribbon label"><i style="font-size:2em;" class="ion-android-wifi"></i></a>
+          <a class="ui red ribbon label" style="width:100px;"><i style="font-size:2em;" class="ion-android-wifi"></i> <span style="position:absolute;font-size:1em;margin-left:4px;margin-top:7px;">Wallet</span></a>
 			<sui-dropdown icon="ion-network" class="labeled icon twitter tiny button floating">
 				<div v-if="blockchainInfo.chain==='test'">
 					Test
@@ -38,7 +38,7 @@
     <div class="ui column grid" style="margin-top:22px">
       <div>
         <div class="ui segment">
-          <a class="ui green ribbon label"><i style="font-size:2em;" class="ion-social-buffer"></i></a>
+          <a class="ui violet ribbon label" style="width:100px;"><i style="font-size:2em;" class="ion-eye"></i> <span style="position:absolute;font-size:1em;margin-left:4px;margin-top:7px;">Public</span></a>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.balance).toFixed(2))}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.coldstaking_balance!=='undefined'" title='Cold Staking Balance'><div class="ui gray button tiny"><i class="ion-ios-snowy"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(walletInfo.coldstaking_balance)}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'" title="Unconfirmed"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing gray label tiny">{{formatNumbers(walletInfo.unconfirmed_balance)}} {{coin.symbol}}</a></div>
@@ -47,11 +47,21 @@
         </div>
       </div>
     </div>
+    <div class="ui column grid" style="margin-top:22px">
+      <div>
+        <div class="ui segment">
+          <a class="ui teal ribbon label" style="width:100px;"><i style="font-size:2em;" class="ion-eye-disabled"></i> <span style="position:absolute;font-size:1em;margin-left:4px;margin-top:7px;">Private</span></a>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance!=='undefined'"><div class="ui teal button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance).toFixed(2))}} {{coin.symbol}}&nbsp;</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance!=='undefined'" title="Pending"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance_pending).toFixed(2))}} {{coin.symbol}}&nbsp;</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance_locked!=='undefined'" title="Locked"><div class="ui gray button tiny"><i class="ion-locked"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance_locked).toFixed(2))}} {{coin.symbol}}&nbsp;</a></div>
+        </div>
+      </div>
+    </div>
     <div class="ui column grid" v-if="price" style="margin-top:22px">
       <div>
         <div class="ui segment">
-			<a class="ui blue ribbon label"><i style="font-size:2em;" class="ion-arrow-swap"></i></a>
-			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i></div><a class="ui basic label">{{parseFloat(price.data.quote.USD.price).toFixed(2)}}</a></div>
+          <a class="ui blue ribbon label" style="width:100px;"><i style="font-size:2em;" class="ion-social-usd"></i> <span style="position:absolute;font-size:1em;margin-left:4px;margin-top:7px;">Fiat</span></a>
+			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-usd"></i> USD</div><a class="ui basic label">{{parseFloat(price.data.quote.USD.price).toFixed(2)}}</a></div>
 			<!--<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-social-bitcoin"></i></div><a class="ui basic label">{{price[0].price_btc}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-arrow-graph-up-right"></i> Rank</div><a class="ui basic label">{{price[0].rank}}</a></div>
 			<div class="ui labeled button tiny" tabindex="0"><div class="ui button tiny"><i class="ion-stats-bars"></i> 1H </div><a class="ui basic label">{{price[0].percent_change_1h}}%</a></div>
@@ -61,7 +71,8 @@
       </div>
     </div>
     </div>
-	</div>
+</div>
+
 	<div v-else class="ui tiny button gray" style="margin-bottom:25px">
       <div class="row">
         <div class="col-md-12"><i class="ion-asterisk loading icon"></i>&nbsp;{{errorMessage}}</div>

@@ -26,7 +26,7 @@
             <sui-dropdown-item v-on:click="listproposals('featured')">Featured</sui-dropdown-item>
             <sui-dropdown-item v-on:click="listproposals('pending')">Pending</sui-dropdown-item>
             <sui-dropdown-item v-on:click="listproposals('accepted')">Accepted</sui-dropdown-item>
-            <sui-dropdown-item v-on:click="listproposals('accepted waiting for enough coins in fund')">Accepted, waiting for enough coins in fund</sui-dropdown-item>
+            <sui-dropdown-item v-on:click="listproposals('accepted, waiting for enough coins in fund')">Accepted, waiting for enough coins in fund</sui-dropdown-item>
 			<sui-dropdown-item v-on:click="listproposals('accepted waiting for end of voting period')">Accepted, waiting for end of voting period</sui-dropdown-item>
 			<sui-dropdown-item v-on:click="listproposals('rejected waiting for end of voting period')">Rejected, waiting for end of voting period</sui-dropdown-item>
 			<sui-dropdown-item v-on:click="listproposals('expired waiting for end of voting period')">Expired, waiting for end of voting period</sui-dropdown-item>

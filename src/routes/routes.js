@@ -24,7 +24,7 @@ import ProposeConsensusChange from 'src/components/Dashboard/Views/ProposeConsen
 import ProposalVoteList from 'src/components/Dashboard/Views/ProposalVoteList.vue'
 import PaymentRequestVoteList from 'src/components/Dashboard/Views/PaymentRequestVoteList.vue'
 import News from 'src/components/Dashboard/Views/News.vue'
-import BlockExplorer from 'src/components/Dashboard/Views/BlockExplorer.vue'
+import Swap from 'src/components/Dashboard/Views/Swap.vue'
 import OpenAlias from 'src/components/Dashboard/Views/OpenAlias.vue'
 import ColdStaking from 'src/components/Dashboard/Views/ColdStaking.vue'
 import About from 'src/components/Dashboard/Views/About.vue'
@@ -161,9 +161,9 @@ const routes = [
         component: News
       },
       {
-        path: 'block-explorer',
-        name: 'BlockExplorer',
-        component: BlockExplorer
+        path: 'swap',
+        name: 'Swap',
+        component: Swap
       },
       {
         path: 'open-alias',

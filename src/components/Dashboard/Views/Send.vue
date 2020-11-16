@@ -15,37 +15,14 @@
             <br>Amount ({{coin.symbol}}) : <input type="text" class="form-control" style="width:100%;" id="amount" name="amount"></input>
             <br>Comment (Optional) : <input type="text" class="form-control" style="width:100%;" id="comment" name="comment"></input><small>A comment used to store what the transaction is for. This is not part of the transaction, just kept in your wallet.</small>
             <br>Comment To (Optional) : <input type="text" class="form-control" style="width:100%;" id="commentto" name="commentto"></input><small>A comment to store the name of the person or organization to which you're sending the transaction. This is not part of the transaction, just kept in your wallet.</small>
-			<div v-if="coin.bool_anon_send=='1'" style="margin-left:10px;margin-top:20px;display:none">
-				<sui-checkbox label="Private Payment" toggle v-model="cPrivateSend"/>
+			<div v-if="coin.bool_anon_send=='1'" style="margin-left:10px;margin-top:20px;">
+				<sui-checkbox label="Use Private Balance" toggle v-model="cPrivateSend"/>
 			</div>
             <br><br><button class='btn btn-fill btn-info' v-on:click='send'><i class="ion-paper-airplane"></i>&nbsp;Send</button>
           </div>
           <div id="address-table"></div>
         </div>
       </div>
-
-      <div class="col-md-12" v-if="coin.bool_anon_send=='1'" style="display:none">
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title"><i class='ion-ios-bookmarks-outline'></i>&nbsp;NavTech Servers</h4></div>
-          <div class="card-body">
-            <div class="ui ignored warning message">List of NavTech servers currently configured in your wallet to process private payments.<br>When performing a private payment, a random server from this list will be used.</div>
-            <input type="text" class="form-control" style="width:100%;" name="node" id="node" value="" placeholder="IP:Port"/>
-            <br/><button class='btn btn-fill btn-success' v-on:click='addNode'><i class="ion-plus"></i>&nbsp;Add Node</button><br/><br/>
-            <table>
-              <tr>
-                <th nowrap>Action</th>
-                <th nowrap>Server</th>
-              </tr>
-              <tr v-for="itm in node_arr">
-                <td nowrap><button title="Delete" class="btn btn-xs btn-fill btn-danger" v-on:click="deleteNode(itm.index,itm.node)"><i class="ion-close-round"></i></button></td>
-                <td>{{itm.node}}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-
 
       <div class="col-md-12">
         <div class="card">
@@ -139,7 +116,6 @@ export default {
     var i = 0;
     var ni = 0;
     var arr = [];
-    var node_arr = [];
     var cPrivateSend = false;
     axios.post(window.hostname + 'getaddressbook', {
       rpcuser: window.rpcuser,
@@ -164,24 +140,10 @@ export default {
         i++;
       });
     });
-    axios.post(window.hostname + 'getanonservers', {
-      rpcuser: window.rpcuser,
-	  token: window.token,
-      rpcport: window.rpcport
-    }, window.config).then(function(res) {
-      jsonQ.each(res.data, function(key, value) {
-        node_arr.push({
-          index: ni,
-          node: value
-        });
-        ni++;
-      });
-    });
     return {
       i,
       ni,
       arr,
-      node_arr,
       cPrivateSend
     }
   },

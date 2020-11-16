@@ -42,7 +42,7 @@ else
 	}
 	window.rpcuser="test";
 	window.token="test";
-	window.rpcport="44446";
+	window.rpcport="44444";
 	window.warning="0";
 }
 new Vue({

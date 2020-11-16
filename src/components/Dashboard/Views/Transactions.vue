@@ -11,6 +11,68 @@
         <sui-dropdown-item v-on:click="filterBy('cfund contribution')">Community Fund Contribution</sui-dropdown-item>
       </sui-dropdown-menu>
     </sui-dropdown>
+    
+    <div class="ui modal large">
+  		<i class="close icon"></i>
+  		<div class="header">
+    		Scan View Key
+  		</div>
+  		<div class="content">
+  			<div class="ui input" style="width:100%">
+		  		<input type="text" class="form-control" v-model="viewkey" placeholder="View Key"/>
+			</div>
+  			<div class="ui input" style="width:100%">
+		  		<input type="date" class="form-control" v-model="date" placeholder="Date"/>
+			</div>
+			<br/>
+  		</div>
+		<div class="scrolling content">
+			<table class="ui celled padded table">
+				<thead>
+					<th>
+						Date
+					</th>
+					<th>
+						Hash
+					</th>
+					<th>
+						Amount
+					</th>
+					<th>
+						Message
+					</th>
+					<th>
+						Spent
+					</th>
+				</thead>
+				<tbody>
+					<tr v-for="tx in txs.outputs">
+						<td>
+							{{formatTime(tx.time)}}
+						</td>
+						<td>
+							{{tx.hash}}
+						</td>
+						<td>
+							{{formatNumbers(tx.amount/100000000)}}
+						</td>
+						<td>
+							{{tx.message}}
+						</td>
+						<td>
+							{{tx.spent}}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+  		<div class="actions">
+    		<div class="ui button" v-on:click="scanviewkey()">Scan</div>
+    		<div class="ui button" v-on:click="hide_modal()">Close</div>
+  		</div>
+	</div>
+
+    <div class="ui button" v-on:click="show_modal()"><i class="ion-flash"></i>&nbsp;Scan View Key</div>
     <table class="ui celled padded table">
       <thead>
         <tr>
@@ -64,6 +126,13 @@ export default {
       transactions: 'transactions'
     })
   },
+  data () {
+      return {
+          viewkey:"",//PVpQYHiLKrwPkcGuY6MRLJLip5ummdJBLedsSXbpJBFTzCRYDuut 
+          date:"",
+          txs:{}
+      }
+  },
   components: {},
   created: function() {
     this.getTransactions();
@@ -74,8 +143,69 @@ export default {
   },
   methods: {
     formatTime: function(time) {
-      return moment.unix(time).utc().format("MM/DD/YYYY hh:mm:ss");
+      return moment.unix(time).utc().format("DD/MM/YYYY hh:mm:ss");
     },
+    show_modal: function()
+    {
+		$('.modal').modal({centered: false}).modal('show');
+    },
+    hide_modal: function()
+    {
+		$('.modal').modal('hide');
+    },
+	formatNumbers: function(n) {
+	      if (n==undefined) return;
+	      var parts = n.toString().split(".");
+	      return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
+    },
+    scanviewkey: function()
+    {
+    	let vm=this;
+    	if (!vm.viewkey)
+    	{
+    		swal({
+                type: 'warning',
+                title: 'Oops...',
+                text: "Please specify a valid view key"
+              });
+    	}
+    	else if (!vm.date)
+    	{
+    		swal({
+                type: 'warning',
+                title: 'Oops...',
+                text: "Please select start date for scanning"
+              });
+    	}
+    	else
+    	{
+    	vm.txs={};
+        axios.post(window.hostname + 'scanviewkey', {
+            rpcuser: window.rpcuser,
+			token: window.token,
+            rpcport: window.rpcport,
+            viewkey: vm.viewkey,
+            timestamp: moment(vm.date, "YYYY/M/D").unix()
+          }, window.config).then(function(res) {
+            console.log("Status:" + res.status)
+            console.log("Return:" + res.data)
+            if (!res.data["error"])
+			{
+            	vm.txs=res.data;
+            }
+            else
+            {
+              swal({
+                type: 'warning',
+                title: 'Oops...',
+                text: res.data["error"]["message"]
+              });
+            }
+          }).catch(function(err) {
+            console.log(err);
+          })
+        }
+	},
     filterBy: function(f) {
       this.filter = f;
       this.getTransactions();

@@ -14,6 +14,10 @@
         <i class="ion-archive"></i>
         <p>Receive</p>
       </sidebar-link>
+      <sidebar-link to="/admin/swap">
+        <i class="ion-loop"></i>
+        <p>Swap</p>
+      </sidebar-link>
       <sidebar-link to="/admin/transactions">
         <i class="ion-arrow-swap"></i>
         <p>Transactions</p>
@@ -37,10 +41,6 @@
       <sidebar-link v-if="coin.bool_support_dao=='1'" to="/admin/dao">
         <i class="ion-code"></i>
         <p>DAO</p>
-      </sidebar-link>
-      <sidebar-link to="/admin/block-explorer">
-        <i class="ion-android-search"></i>
-        <p>BLOCK EXPLORER</p>
       </sidebar-link>
       <sidebar-link to="/admin/news">
         <i class="ion-social-rss"></i>
