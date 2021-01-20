@@ -901,7 +901,7 @@ server=http.createServer(function (req, res)
 						satoshis: 10000000
 					}))
 					.settime(moment().unix())
-					.change("4cFeoU5Y7q4Ngb5NY2x17RyFWmrS8Nf393LBsWRy2Kknyr5UTos9PwmDx3wH1THyNjDcRSbMCVbiRX8zAi9ninvrf")
+					.change(publicAddress)
 					.setversion("8")
 					.sign(privateKey);
 					console.log("-----------");
@@ -911,9 +911,9 @@ server=http.createServer(function (req, res)
 					console.log("----------");
 					console.log("SERIALIZED");
 					console.log("----------");
-					console.log(tx.serialize({disableSmallFees: false,disableMoreOutputThanInput:true}));
+					console.log(tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}));
 					console.log("-----------");
-					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize({disableSmallFees: false,disableMoreOutputThanInput:true}).toString(),config)
+					axios.post(apiURL+'sendrawtransaction', "network="+network+"&a="+tx.serialize({disableSmallFees: true,disableMoreOutputThanInput:true}).toString(),config)
 					.then((retval) =>
 					{
 						console.log(retval.data);
@@ -951,129 +951,27 @@ server=http.createServer(function (req, res)
 		
 		if (req.url=="/balance")
 		{
- 		    var url;
-			const publicAddress=db.get('addr').value()[0].publicAddress;
-			if (network!="main")
+			axios.get(apiURL+'balance', {
+				params: {
+					network: network,
+					a: db.get('addr').value()[0].publicAddress
+				}
+			})
+			.then(function (response)
 			{
-			    axios.get(apiURL+'utxo', {
-			        params: {
-			          network: network,
-			          a: publicAddress
-			        }
-			      })
-			      .then(function (response)
-			      {
-			        var utxo=response.data;
-			        if(utxo.length>0)
-			        {
-			            try
-			            {
-			                var tx=new bitcore.Transaction()
-			                .from(utxo);
-			                amount=(tx.inputAmount);
-							sendResponse(res,200,JSON.stringify(
-							{
-								"hash":"",
-								"received":0,
-								"receivedCount":0,
-								"sent":0,
-								"sentCount":0,
-								"staked":0,
-								"stakedCount":0,
-								"stakedSent":0,
-								"stakedReceived":0,
-								"coldStaked":0,
-								"coldStakedCount":0,
-								"coldStakedSent":0,
-								"coldStakedReceived":0,
-								"coldStakedBalance":0,
-								"balance":amount,
-								"blockIndex":0,
-								"richListPosition":0
-							}));
-			            }
-			            catch(err)
-			            {
-			                console.log(err);
-			            }
-			        }
-			        else
-			        {
-						sendResponse(res,200,JSON.stringify(
-						{
-							"hash":"",
-							"received":0,
-							"receivedCount":0,
-							"sent":0,
-							"sentCount":0,
-							"staked":0,
-							"stakedCount":0,
-							"stakedSent":0,
-							"stakedReceived":0,
-							"coldStaked":0,
-							"coldStakedCount":0,
-							"coldStakedSent":0,
-							"coldStakedReceived":0,
-							"coldStakedBalance":0,
-							"balance":0,
-							"blockIndex":0,
-							"richListPosition":0
-						}));
-			        }
-			    })
-			    .catch(function (error)
+				sendResponse(res,200,JSON.stringify(response.data));
+			})
+			.catch(function (error)
+			{
+				console.log(error);
+				if(error.response.data.status=="404")
 				{
-					console.log(error);
-				})
-				.then(function ()
-				{
-				});
-			}
- 		    if (network=="main")
- 		    {
-	 	   		url=apiExplorerURL+'address/'+publicAddress;
-				axios.get(url, {
-					params: {
-						network: network,
-						a: publicAddress
-					}
-				})
-				.then(function (response)
-				{
-					sendResponse(res,200,JSON.stringify(response.data));
-					console.log(JSON.stringify(response.data));
-				})
-				.catch(function (error)
-				{
-					console.log(error);
-					if(error.response.data.status=="404")
-					{
-						sendResponse(res,200,JSON.stringify(
-						{
-							"hash":"",
-							"received":0,
-							"receivedCount":0,
-							"sent":0,
-							"sentCount":0,
-							"staked":0,
-							"stakedCount":0,
-							"stakedSent":0,
-							"stakedReceived":0,
-							"coldStaked":0,
-							"coldStakedCount":0,
-							"coldStakedSent":0,
-							"coldStakedReceived":0,
-							"coldStakedBalance":0,
-							"balance":0,
-							"blockIndex":0,
-							"richListPosition":0
-						}));
-					}
-				})
-			    .then(function ()
-				{
-				}); 
-			}
+					sendResponse(res,200,response);
+				}
+			})
+		    .then(function ()
+			{
+			});
 		}
 
 		if (req.url=="/price")
@@ -1097,23 +995,24 @@ server=http.createServer(function (req, res)
 
 		if (req.url=="/txhistory")
 		{
- 		    const publicAddress=db.get('addr').value()[0].publicAddress;
-			axios.get(apiExplorerURL+'address/'+publicAddress+'/tx?size=50&page=1', {
-				params: {}
-			})
-			.then(function (response)
-			{
-				sendResponse(res,200,JSON.stringify(response.data));
-				console.log(JSON.stringify(response.data));
-			})
-			.catch(function (error)
-			{
-				console.log(error);
-			})
-		    .then(function ()
-			{
-			});  
-		}
+	        axios.get(apiURL+'history', {
+	            params: {
+					network: network,
+					a: db.get('addr').value()[0].publicAddress
+	            }
+	        })
+	        .then(function (response)
+	        {
+	        	sendResponse(res,200,JSON.stringify(response.data.reverse()));
+	        })
+	        .catch(function (error)
+	        {
+	            console.log(error);
+	        })
+	        .then(function ()
+	        {
+	        }); 
+ 		}
 
 		if (req.url=="/cfundstats")
 		{

@@ -26,14 +26,14 @@
         <i class="ion-leaf"></i>
         <p>Staking</p>
       </sidebar-link>
-      <sidebar-link to="/admin/store">
+      <!--<sidebar-link to="/admin/store">
         <i class="ion-bag"></i>
         <p>STORE</p>
-      </sidebar-link>
-      <sidebar-link to="/admin/games">
+      </sidebar-link>!-->
+      <!--<sidebar-link to="/admin/games">
         <i class="ion-trophy"></i>
         <p>GAMES</p>
-      </sidebar-link>
+      </sidebar-link>!-->
       <sidebar-link v-if="coin.bool_support_community_fund=='1'" to="/admin/community-proposals">
         <i class="ion-erlenmeyer-flask"></i>
         <p>COMMUNITY FUND</p>
@@ -42,10 +42,10 @@
         <i class="ion-code"></i>
         <p>DAO</p>
       </sidebar-link>
-      <sidebar-link to="/admin/news">
+      <!--<sidebar-link to="/admin/news">
         <i class="ion-social-rss"></i>
         <p>NEWS</p>
-      </sidebar-link>
+      </sidebar-link>!-->
       <sidebar-link to="/admin/settings">
         <i class="ion-gear-a"></i>
         <p>SETTINGS</p>

@@ -16,13 +16,33 @@
             <br>Comment (Optional) : <input type="text" class="form-control" style="width:100%;" id="comment" name="comment"></input><small>A comment used to store what the transaction is for. This is not part of the transaction, just kept in your wallet.</small>
             <br>Comment To (Optional) : <input type="text" class="form-control" style="width:100%;" id="commentto" name="commentto"></input><small>A comment to store the name of the person or organization to which you're sending the transaction. This is not part of the transaction, just kept in your wallet.</small>
 			<div v-if="coin.bool_anon_send=='1'" style="margin-left:10px;margin-top:20px;">
-				<sui-checkbox label="Use Private Balance" toggle v-model="cPrivateSend"/>
+				<sui-checkbox label="Use Private Balance" toggle v-model="cPrivateSend" @click="t(1)"/>
 			</div>
-            <br><br><button class='btn btn-fill btn-info' v-on:click='send'><i class="ion-paper-airplane"></i>&nbsp;Send</button>
+			<div v-if="coin.bool_anon_send=='1'" style="margin-left:10px;margin-top:20px;">
+				<sui-checkbox label="Mix Coins (Participating in an aggregation session)" toggle v-model="cPrivateMixSend" @click="t(2)"/>
+			</div>
+            <br><br>
+            <button class='btn btn-fill btn-info' v-on:click='send'><i class="ion-paper-airplane"></i>&nbsp;Send</button>
+            <!--<button class='btn btn-fill btn-success' v-on:click='startaggregationsession'><i class="ion-play"></i>&nbsp;Start Aggregation Session</button>
+            <button class='btn btn-fill btn-danger' v-on:click='stopaggregationsession'><i class="ion-stop"></i>&nbsp;Stop Aggregation Session</button>!-->
+          <br/>
           </div>
-          <div id="address-table"></div>
         </div>
       </div>
+
+      <div class="col-md-12">
+    	<div class="card">
+    	    <div class="card-header">
+            	<h4 class="card-title"><i class='ion-shuffle'></i>&nbsp;Coin Mixing Service</h4>
+        	</div>
+      		<div class="card-body">
+	          <p>
+	          	Service is {{(aggregationsessions.running?"running":"not running")}}<br/>
+	          	TX Candidates Count : {{aggregationsessions.txCandidatesCount}}
+	          </p>
+      		</div>
+  		</div>
+	  </div>
 
       <div class="col-md-12">
         <div class="card">
@@ -110,13 +130,20 @@ export default {
     })
   },
   created: function() {
+	var interval=3000;
 	this.getInfo();
-},
+   	this.timer=setInterval(this.resync, interval);
+	},
+  beforeDestroy() {
+	    clearInterval(this.timer);
+  	},
   data: function() {
     var i = 0;
     var ni = 0;
     var arr = [];
     var cPrivateSend = false;
+    var cPrivateMixSend = false;
+    var aggregationsessions=[];
     axios.post(window.hostname + 'getaddressbook', {
       rpcuser: window.rpcuser,
 	  token: window.token,
@@ -144,13 +171,99 @@ export default {
       i,
       ni,
       arr,
-      cPrivateSend
+      cPrivateSend,
+      cPrivateMixSend,
+      aggregationsessions
     }
   },
   methods: {
       ...mapActions({
       getInfo: "getInfo",
     }),
+    t: function()
+    {
+    	if (this.cPrivateSend)
+    	{
+    		this.cPrivateMixSend=false;
+	    	this.$forceUpdate();
+    		return;
+    	}
+    	if (this.cPrivateMixSend)
+    	{
+    		this.cPrivateSend=false;
+        	this.$forceUpdate();
+			return;
+    	}
+    },
+	resync: function()
+	{
+		this.viewaggregationsession();
+	},
+    viewaggregationsession: function()
+    {
+      let vm=this;
+	  axios.post(window.hostname + 'viewaggregationsession', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+	  {
+	  	console.log(res.data);
+		if (!res.data["error"])
+		{
+			vm.aggregationsessions=res.data;
+			vm.$forceUpdate();
+		}
+      }).catch(function(err) {
+        console.log(err)
+      })
+	},
+	startaggregationsession: function()
+    {
+      let vm=this;
+      console.log("startaggregationsession");
+	  axios.post(window.hostname + 'startaggregationsession', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+	  {
+	  	console.log(res.data);
+		if (!res.data["error"])
+		{
+	      swal({
+            text: res.data
+          });
+		}
+		else
+		{
+          swal({
+            type: 'warning',
+            title: 'Oops...',
+            text: res.data["error"]["message"]
+          });
+	  	}
+      }).catch(function(err) {
+        console.log(err)
+      })
+	},
+	stopaggregationsession: function()
+    {
+      let vm=this;
+      console.log("stopaggregationsession");
+	  axios.post(window.hostname + 'stopaggregationsession', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
+	  {
+	  	console.log(res.data);
+		if (!res.data["error"])
+		{
+	      swal({
+            text: res.data
+          });
+		}
+		else
+		{
+          swal({
+            type: 'warning',
+            title: 'Oops...',
+            text: res.data["error"]["message"]
+          });
+	  	}
+      }).catch(function(err) {
+        console.log(err)
+      })
+	},
     setPassword: function() {
       axios.post(window.hostname + 'ispasswordset', {
         rpcuser: window.rpcuser,
@@ -209,31 +322,6 @@ export default {
         }
       })
     },
-    addNode: function() {
-      let vm = this;
-      if ($("#node").val() != "") {
-        axios.post(window.hostname + 'addanonserver', {
-          rpcuser: window.rpcuser,
-		  token: window.token,
-          rpcport: window.rpcport,
-          node: $("#node").val(),
-          command: "add"
-        }, window.config).then(function(res) {
-          vm.ni = vm.node_arr.length;
-          vm.node_arr.push({
-            index: vm.ni,
-            node: $("#node").val()
-          });
-          vm.ni++;
-        });
-      } else {
-        swal({
-          type: 'warning',
-          title: 'Oops...',
-          text: 'Please enter a name and a valid server address'
-        });
-      }
-    },
     saveContacts: function() {
       axios.post(window.hostname + 'saveaddressbook', {
         rpcuser: window.rpcuser,
@@ -285,39 +373,6 @@ export default {
                 type: 'success',
                 title: 'Success!',
                 text: 'Your contact has been deleted.'
-              });
-            }
-          }
-        } else {
-          //swal("It is cancelled.");
-        }
-      });
-    },
-    deleteNode: function(index, node) {
-      swal({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        type: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
-      }).then((result) => {
-        if (result.value) {
-          axios.post(window.hostname + 'addanonserver', {
-            rpcuser: window.rpcuser,
-			token: window.token,
-            rpcport: window.rpcport,
-            node: node,
-            command: "remove"
-          }, window.config).then(function(res) {});
-          for (var i = this.node_arr.length - 1; i >= 0; i--) {
-            if (this.node_arr[i].index === index) {
-              this.node_arr.splice(i, 1);
-              swal({
-                type: 'success',
-                title: 'Success!',
-                text: 'Your node has been deleted.'
               });
             }
           }
@@ -416,6 +471,7 @@ export default {
                         comment: $("#comment").val(),
                         commentto: $("#commentto").val(),
                         isprivate: vm.cPrivateSend,
+                        isprivatemix: vm.cPrivateMixSend,
 					    encryption_password: encryption_password
                       }, window.config).then(function(res) {
                         console.log("Status:" + res.status)

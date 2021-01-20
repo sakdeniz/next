@@ -47,9 +47,14 @@ function Send(client,post,to,res)
 			console.log("Private Send");
 			client.privateSendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 		}
+		else if (post.isprivatemix)
+		{
+			console.log("Private Mix Send");
+			client.privateSendMixToAddress (to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+		}
 		else
 		{
-			console.log("Send");
+			console.log("Public Send");
 			client.sendToAddress(to,parseFloat(post.amount),post.comment,post.commentto).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 		}
 	}
@@ -319,6 +324,19 @@ server=http.createServer(function (req, res)
 							sendResponse(res, 200,"Config file succesfully saved.");
 						}
 					});
+				}
+
+				if (req.url=="/startaggregationsession")
+				{
+					client.startAggregationSession().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/stopaggregationsession")
+				{
+					client.stopAggregationSession().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/viewaggregationsession")
+				{
+					client.viewAggregationSession().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
 				if (req.url=="/backupwallet")
 				{

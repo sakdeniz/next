@@ -405,7 +405,6 @@ export default {
       return proposals.filter(item => item.featured === '1')
     },
     resync: function() {
-	  let vm=this;
 	  this.getWalletInfo();
 	  if (this.walletInfo.walletversion)
 	  {
@@ -413,19 +412,18 @@ export default {
 		this.getTransactions();
 		this.getBlockchainInfo();
 		if (vm.coin.bool_support_community_fund=="1") this.getCFundStats();
-		if (vm.coin.bool_support_staking=="1")
-		{
+	  }
+    },
+    resync2: function() {
+	  if (this.blockchainInfo.verificationprogress && vm.coin.bool_support_community_fund=="1")
+	  {
+		 if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0)=="100") this.getCombinedProposals();
+		 if (vm.coin.bool_support_staking=="1")
+		 {
 			this.getInfo();
 			this.getStakingInfo();
 			this.getStakeReport();
 		}
-	  }
-    },
-    resync2: function() {
-	  let vm=this;
-	  if (this.blockchainInfo.verificationprogress && vm.coin.bool_support_community_fund=="1")
-	  {
-		 if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0)=="100") this.getCombinedProposals();
 	  }
     },
     switchnetwork: function(network) {

@@ -262,7 +262,8 @@ export default
 			}
 	      }).catch(function(err) {
 	        console.log(err)
-	      })	      // Received by address
+	      })
+	      // Received by address
 	      axios.post(window.hostname + 'listreceivedbyaddress', {rpcuser: window.rpcuser,token: window.token,rpcport: window.rpcport}, window.config).then(function(res)
 		  {
 			if (!res.data["error"])

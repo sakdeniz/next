@@ -180,6 +180,7 @@ body
 						<i class="ion-android-funnel icon"></i> {{formatNumber(height)}}
 					</div>
 				</div>
+					
 				<div class="ui column active inline indeterminate loader right floated" v-else></div>
 				<div class="content" v-if='balance'>
 					<h3>{{formatBalance(balance.balance)}} {{coin.symbol}}</h3>
@@ -443,24 +444,6 @@ body
 			      </td>
 			      <td>{{balance.received?formatBalance(balance.received):0}} <span class="ui violet circular label">{{balance.receivedCount?balance.receivedCount:0}}</span></td>
 			    </tr>
-			    <tr>
-			      <td>
-			        <i class="ion-android-arrow-up"></i> Sent
-			      </td>
-			      <td>{{balance.sent?formatBalance(balance.sent):0}} <span class="ui violet circular label">{{balance.sentCount?balance.sentCount:0}}</span></td>
-			    </tr>
-			    <tr>
-			      <td>
-			        <i class="ion-android-add"></i> Staked
-			      </td>
-			      <td>{{balance.staked?formatBalance(balance.staked):0}} <span class="ui violet circular label">{{balance.stakedCount?balance.stakedCount:0}}</span></td>
-			    </tr>
-			    <tr>
-			      <td nowrap>
-			        <i class="ion-connection-bars"></i> Rich List Position
-			      </td>
-			      <td>{{balance.richListPosition}}</td>
-			    </tr>
 			  </tbody>
 			</table>
 			<div class="ui middle aligned divided list">
@@ -477,23 +460,19 @@ body
 				    <tr v-for="tx in txs">
 				      <td data-label="">
 						<a title="Show Transaction on Explorer" target="_blank" v-bind:href="coin.block_explorers['NavExplorer'].url+'/tx/'+tx.transaction">
-							<i class="ui avatar ion-android-arrow-up" style="color:#cc6600" v-if="tx.type=='send'"></i>
-							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.type=='receive'"></i>
-							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.type=='community_fund_payout'"></i>
-							<i class="ui avatar ion-ios-snowy" style="color:#673ab7" v-if="tx.type=='cold_stake'"></i>
+							<i class="ui avatar ion-android-arrow-up" style="color:#cc6600" v-if="tx.changes.balance<0"></i>
+							<i class="ui avatar ion-android-arrow-down" style="color:#669900" v-if="tx.changes.balance>0"></i>
 						</a>
 				      </td>
 				      <td data-label="Amount">
-						    <span style="color:#cc6600" v-if="tx.type=='send'">-{{formatBalance(tx.input-tx.output)}}</span>
-							<span style="color:#669900" v-if="tx.type=='receive'">+{{formatBalance(tx.output-tx.input)}}</span>
-							<span style="color:#669900" v-if="tx.type=='community_fund_payout'">+{{formatBalance(tx.output)}}</span>
-							<span style="color:#673ab7" v-if="tx.type=='cold_stake'">+{{getStakingReward(tx)}}</span>
+                            <span style="color:#cc6600" v-if="tx.changes.balance<0">{{formatBalance(tx.changes.balance)}}</span>
+                            <span style="color:#669900" v-if="tx.changes.balance>0">+{{formatBalance(tx.changes.balance)}}</span>
 				      </td>
 				      <td data-label="Balance">
-				      	{{sb.toBitcoin(tx.balance)}}
+				      	{{sb.toBitcoin(tx.changes.balance)}}
 				      </td>
 				      <td data-label="Date">
-				      	<small style="margin-top:15px;color:#676767;" v-bind:title="'Block Number : ' + tx.height">{{moment(tx.time).format('MM/DD/YYYY HH:MM:ss')}}</small>
+				      	<small style="margin-top:15px;color:#676767;" v-bind:title="'Block Number : ' + tx.height">{{formatDate(tx.time)}}</small>
 				      </td>
 				    </tr>
 				  </tbody>
@@ -1442,6 +1421,10 @@ var app = new Vue({
   		if (typeof s !== 'string') return ''
   		return s.charAt(0).toUpperCase() + s.slice(1)
 	},
+	formatDate: n =>
+    {
+        if (n) return moment.unix(n).format('DD/MM/YYYY HH:mm:ss'); else return "";
+    },
 	setProposalFilter: function(filter) {
 		this.proposalFilter=filter;
     },
@@ -1474,6 +1457,8 @@ var app = new Vue({
 	{
 		if (this.walletExist && this.walletUnlocked)
 		{
+			this.txs=[];
+			this.balance='';
 			this.getSettings();
 			this.getBalance();
 			this.getPrice();
@@ -1994,7 +1979,7 @@ var app = new Vue({
 		axios.post('http://127.0.0.1:3001/txhistory', {token:vm.token},this.config)
 		.then(function (response)
 		{
-			//console.log(response.data);
+			console.log(response.data);
 			vm.txs=response.data;
 		})
 		.catch(function (error)
