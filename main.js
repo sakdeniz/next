@@ -1,6 +1,7 @@
 //os.type(); // Linux, Darwin or Windows_NT
 //os.platform(); // 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
 //process.arch // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', 'x32', and 'x64'
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var os=require("os");
 var child=require('child_process').spawn;
 var child_ef=require('child_process').execFile;
@@ -46,7 +47,8 @@ var reindexchainstate;
 var reindex;
 var zapwallettxes;
 var bootstrap="";
-var printtoconsole=" -printtoconsole";
+//var printtoconsole=" -printtoconsole";
+var printtoconsole="";
 var bBootstrap=false;
 var bShowBootstrapWindow=false;
 var bShowWelcomeWindow=false;
@@ -1162,7 +1164,7 @@ function createMainWindow ()
 	if (!bError || bBootstrap || bShowBootstrapWindow || bShowWelcomeWindow) return false;
 	console.log('Main window created.');
 	var server=require("./server");
-	win=new BrowserWindow({width: 1275, height: 850});
+	win=new BrowserWindow({width: 1350, height: 850});
 	win.setMenu(null);
 	win.loadURL(`file://${__dirname}/dist/index.html?version=${version}&rpcuser=${rpcuser}&rpcpassword=${rpcpassword}&rpcport=${rpcport}&coin=`+JSON.stringify(coin));
 	win.webContents.executeJavaScript(`window.localStorage.setItem("update_preference","`+store.get("update_preference")+`")`);

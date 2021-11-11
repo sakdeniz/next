@@ -1,6 +1,7 @@
 <template>
 <div class="content">
   <div class="container-fluid">
+
     <div class="row" v-if="blockchainInfo.chain">
       <div class="col-md-12">
 	      <div class="ui column grid">
@@ -27,7 +28,7 @@
 				</sui-dropdown-menu>
 			</sui-dropdown>
 			<button role="button" class="ui icon labeled tiny button gray" title="Core Version"><i class="ion-code icon"></i>Core v{{networkInfo.version}}</button>
-			<button role="button" class="ui icon labeled tiny button gray" title="Downloaded Block Number/Current Block Height"><i class="ion-cube icon"></i>{{formatNumber(blockchainInfo.blocks)}}/{{formatNumber(blockchainInfo.headers)}}</button>
+			<button role="button" class="ui icon labeled tiny button gray" title="Downloaded Block Number/Current Block Height"><i class="ion-cube icon"></i>{{formatNumber(blockchainInfo.blocks)}}/{{formatNumber(blockchainInfo.headers)}} (~{{blocks_per_second}} BPS)</button>
 			<button role="button" class="ui icon labeled tiny button gray" title="Blockchain verification progress"><i class="ion-android-checkmark-circle icon"></i>{{calculateBlockchainVerification(blockchainInfo.verificationprogress)}}%</button>
 			<button v-if="coin.bool_support_staking=='1'" role="button" class="ui icon labeled tiny button gray" title="Staking Status"><i class="ion-flash icon"></i>{{stakingInfo.staking ? "Staking Active" : "Staking Inactive"}}</button>
 			<router-link to="/admin/peer-list"><button role="button" class="ui icon labeled tiny button gray" title="Connection Count"><i class="ion-earth icon"></i>{{networkInfo.connections}}</button></router-link>
@@ -39,7 +40,7 @@
       <div>
         <div class="ui segment">
           <a class="ui violet ribbon label" style="width:100px;"><i style="font-size:2em;" class="ion-eye"></i> <span style="position:absolute;font-size:1em;margin-left:4px;margin-top:7px;">Public</span></a>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.balance).toFixed(2))}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.balance!=='undefined'"><div class="ui violet button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.balance))}} {{coin.symbol}}&nbsp;<span v-if="info.unlocked_until==0" title="Wallet Locked"><i class="ion-android-lock"></i></span></a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.coldstaking_balance!=='undefined'" title='Cold Staking Balance'><div class="ui gray button tiny"><i class="ion-ios-snowy"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(walletInfo.coldstaking_balance)}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.unconfirmed_balance!=='undefined'" title="Unconfirmed"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing gray label tiny">{{formatNumbers(walletInfo.unconfirmed_balance)}} {{coin.symbol}}</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.immature_balance!=='undefined'" title="Immature"><div class="ui gray button tiny"><i class="ion-egg"></i></div><a class="ui basic left pointing gray label tiny">{{formatNumbers(walletInfo.immature_balance)}} {{coin.symbol}}</a></div>
@@ -51,7 +52,7 @@
       <div>
         <div class="ui segment">
           <a class="ui teal ribbon label" style="width:100px;"><i style="font-size:2em;" class="ion-eye-disabled"></i> <span style="position:absolute;font-size:1em;margin-left:4px;margin-top:7px;">Private</span></a>
-			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance!=='undefined'"><div class="ui teal button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance).toFixed(2))}} {{coin.symbol}}&nbsp;</a></div>
+			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance!=='undefined'"><div class="ui teal button tiny"><i class="ion-archive"></i> Balance</div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance))}} {{coin.symbol}}&nbsp;</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance!=='undefined'" title="Pending"><div class="ui gray button tiny"><i class="ion-clock"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance_pending).toFixed(2))}} {{coin.symbol}}&nbsp;</a></div>
 			<div class="ui labeled button" tabindex="0" v-if="typeof walletInfo.private_balance_locked!=='undefined'" title="Locked"><div class="ui gray button tiny"><i class="ion-locked"></i></div><a class="ui basic left pointing label tiny">{{formatNumbers(parseFloat(walletInfo.private_balance_locked).toFixed(2))}} {{coin.symbol}}&nbsp;</a></div>
         </div>
@@ -143,6 +144,38 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="ui two column grid">
+		<div class="column">
+			<div class="ui fluid card">
+				<div class="content">
+					<div class="header"><i class="ion-film-marker icon"></i>What is Navcoin?</div>
+					<div class="description" style="min-height:45px">
+						Find out what makes Navcoin unique.
+					</div>
+					<video width="320" height="240" poster="https://nextwallet.org/videos/intro/nav.png" controls>
+					  <source src="https://nextwallet.org/videos/intro/navcoin.mp4" type="video/mp4">
+						Your browser does not support the video tag.
+					</video>
+				</div>
+			</div>
+		</div>
+  		<div class="column">
+			<div class="ui fluid card">
+				<div class="content">
+					<div class="header"><i class="ion-film-marker icon"></i>What is xNAV?</div>
+					<div class="description" style="min-height:45px">
+						Our groundbreaking privacy protocol is now live on mainnet. Check out this video to learn all its unique features!
+					</div>
+					<video width="320" height="240" poster="https://nextwallet.org/videos/intro/xnav.png" controls>
+					  <source src="https://nextwallet.org/videos/intro/xnav.mp4" type="video/mp4">
+						Your browser does not support the video tag.
+					</video>
+				</div>
+			</div>
+		</div>
+	</div>
+
     <h4 v-if="proposals.length>0" class="card-title">Featured Proposals</h4>
     <div class="row">
       <div v-for="proposal in getFeaturedProposals(proposals)" :key="proposal.hash" class="col-md-6 col-sm-12">
@@ -281,6 +314,13 @@ export default {
   components: {
     StatsCard
   },
+  data: function() {
+    var previous_block = 0;
+    var blocks_per_second = 0;
+    return {
+      previous_block,blocks_per_second
+    }
+  },
   computed: {
     ...mapState({
       coin: "coin",
@@ -300,7 +340,7 @@ export default {
   },
   created: function() {
 	let vm=this;
-	var interval=3000;
+	var interval=1000;
 	var interval2=10000;
 	this.getCoin();
 	this.getCoins();
@@ -350,6 +390,7 @@ export default {
 		return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
 	},
 	formatNumbers: function(n) {
+		return n;
       if (n==undefined) return;
       var parts = n.toString().split(".");
       return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts[1] ? "." + parts[1] : "");
@@ -408,17 +449,19 @@ export default {
 	  this.getWalletInfo();
 	  if (this.walletInfo.walletversion)
 	  {
+		this.blocks_per_second=this.blockchainInfo.blocks-this.previous_block;
+		this.previous_block=this.blockchainInfo.blocks;
 		this.getNetworkInfo();
 		this.getTransactions();
 		this.getBlockchainInfo();
-		if (vm.coin.bool_support_community_fund=="1") this.getCFundStats();
+		if (this.coin.bool_support_community_fund=="1") this.getCFundStats();
 	  }
     },
     resync2: function() {
-	  if (this.blockchainInfo.verificationprogress && vm.coin.bool_support_community_fund=="1")
+	  if (this.blockchainInfo.verificationprogress && this.coin.bool_support_community_fund=="1")
 	  {
 		 if (parseFloat(this.blockchainInfo.verificationprogress * 100).toFixed(0)=="100") this.getCombinedProposals();
-		 if (vm.coin.bool_support_staking=="1")
+		 if (this.coin.bool_support_staking=="1")
 		 {
 			this.getInfo();
 			this.getStakingInfo();
@@ -547,3 +590,10 @@ export default {
   }
 }
 </script>
+<style>
+video {
+  /* override other styles to make responsive */
+  width: 100%    !important;
+  height: auto   !important;
+}
+</style>
