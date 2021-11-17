@@ -62,4 +62,4 @@ nsis:
   shortcutName : "NEXT"
 npmRebuild: true
 nodeGypRebuild: false
-electronVersion: 2.0.7
+electronVersion: 16.0.0

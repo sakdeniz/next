@@ -73,8 +73,8 @@
 </div>
 </template>
 <script>
-import ChartCard from 'src/components/UIComponents/Cards/ChartCard.vue'
-import StatsCard from "src/components/UIComponents/Cards/StatsCard.vue";
+import ChartCard from '../../UIComponents/Cards/ChartCard.vue'
+import StatsCard from "../../UIComponents/Cards/StatsCard.vue";
 import axios from "axios";
 import moment from "moment";
 import Vue from "vue";

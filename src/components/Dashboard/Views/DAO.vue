@@ -245,9 +245,9 @@
 </div>
 </template>
 <script>
-import Card from 'src/components/UIComponents/Cards/Card.vue'
-import LTable from 'src/components/UIComponents/Table.vue'
-import Checkbox from 'src/components/UIComponents/Inputs/Checkbox.vue'
+import Card from '../../UIComponents/Cards/Card.vue'
+import LTable from '../../UIComponents/Table.vue'
+import Checkbox from '../../UIComponents/Inputs/Checkbox.vue'
 import axios from 'axios';
 import moment from 'moment';
 import Vue from 'vue';

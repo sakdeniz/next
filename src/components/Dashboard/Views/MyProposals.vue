@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import Card from 'src/components/UIComponents/Cards/Card.vue'
+import Card from '../../UIComponents/Cards/Card.vue'
 import axios from 'axios';
 import moment from 'moment';
 import Vue from 'vue';

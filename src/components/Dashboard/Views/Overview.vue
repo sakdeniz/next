@@ -284,7 +284,7 @@
 </div>
 </template>
 <script>
-import StatsCard from "src/components/UIComponents/Cards/StatsCard.vue";
+import StatsCard from "../../UIComponents/Cards/StatsCard.vue";
 import axios from "axios";
 import moment from "moment";
 import Vue from "vue";
