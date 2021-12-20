@@ -58,7 +58,7 @@
     "moment": "^2.29.1",
     "net": "^1.0.2",
     "node-sass": "^6.0.1",
-    "printf": "^0.3.0",
+    "printf": "^0.6.1",
     "restler": "^3.4.0",
     "satoshi-bitcoin": "^1.0.4",
     "semantic-ui-vue": "^0.2.11",
