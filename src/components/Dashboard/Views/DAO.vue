@@ -142,22 +142,22 @@
 							{{consultation}}
 						</pre>
 					</div>!-->
-					<span v-if="consultation.version==3" class="label ui default">
+					<span class="label ui default">
 						Min : {{consultation.min}}
 					</span>
-					<span v-if="consultation.version==3" class="label ui default">
+					<span class="label ui default">
 						Max : {{consultation.max}}
 					</span>
 					<span v-if="consultation.version==5" class="label ui default">
 						Max Selection : {{consultation.max}}
 					</span>
-					<span v-if="consultation.version==3 && consultation.state==0">
+					<span v-if="consultation.state==0">
 						<a class="ui green header" v-on:click="support(consultation.hash,true)"><i class="thumbs up outline icon" aria-hidden="true"></i></a>
 						<a class="ui red header" v-on:click="support(consultation.hash,false)"><i class="thumbs down outline icon" aria-hidden="true"></i></a>
 					</span>
 				</div>
 				
-				<div v-for="(itm,index) in consultation.answers" v-if="consultation.version==3">
+				<!--<div v-for="(itm,index) in consultation.answers">
 					<div style="margin-bottom:15px;" v-if="consultation.state==1">
 						<a class="ui button success" v-on:click="vote_value(consultation,consultation.min,consultation.max)">Vote</a>
 					</div>
@@ -168,18 +168,18 @@
 									Option
 								</th>
 								<th style="width:100%">
-									Votes
+									Support
 								</th>
 							</tr>
 						</thead>
-						<tr v-for="(support, option) in itm" :key="support">
-							<td>{{option}}</td>
-							<td>{{support}}</td>
+						<tr>
+							<td>{{itm.answer}}</td>
+							<td>{{itm.support}}</td>
 						</tr>
 					</table>
-				</div>
+				</div>!-->
 
-					<table class="table table-bordered" v-if="consultation.version==1||consultation.version==5||consultation.version==13" >
+					<table class="table table-bordered">
 						<thead>
 							<tr>
 								<th nowrap v-if="consultation.state==0">

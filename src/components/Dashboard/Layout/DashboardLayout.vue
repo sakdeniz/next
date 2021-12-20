@@ -42,6 +42,18 @@
         <i class="ion-code"></i>
         <p>DAO</p>
       </sidebar-link>
+      <sidebar-link v-if="coin.bool_support_community_fund=='1'" to="/admin/private-token">
+        <i class="ion-hammer"></i>
+        <p>Private Token</p>
+      </sidebar-link>
+      <sidebar-link v-if="coin.bool_support_community_fund=='1'" to="/admin/nft">
+        <i class="ion-image"></i>
+        <p>NFT Workshop</p>
+      </sidebar-link>
+      <sidebar-link v-if="coin.bool_support_community_fund=='1'" to="/admin/dotNAV">
+        <i class="ion-earth"></i>
+        <p>dotNAV</p>
+      </sidebar-link>
       <!--<sidebar-link to="/admin/news">
         <i class="ion-social-rss"></i>
         <p>NEWS</p>

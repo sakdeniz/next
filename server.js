@@ -365,6 +365,31 @@ server=http.createServer(function (req, res)
 				{
 					client.walletPassphraseChange(post.old_password,post.new_password).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
 				}
+				if (req.url=="/createtoken")
+				{
+					client.createtoken(post.name,post.symbol,post.max_supply).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/minttoken")
+				{
+					client.minttoken(post.mint_token_id,post.mint_token_destination,post.mint_token_amount).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/burntoken")
+				{
+					client.burntoken(post.mint_token_id,post.mint_token_amount).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/createnft")
+				{
+					client.createnft(post.name,post.scheme,post.max_supply).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/mintnft")
+				{
+					console.log(post);
+					client.mintnft(post.mint_token_id,post.mint_nft_id,post.mint_nft_destination,post.mint_nft_meta_data).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
+				if (req.url=="/listtokens")
+				{
+					client.listtokens().then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});
+				}
 				if (req.url=="/walletpassphrase")
 				{
 					client.walletPassphrase(post.passphrase,1073741824,post.bunlockforstaking).then((retval) => sendResponse(res, 200,JSON.stringify(retval))).catch((e) => {sendError(res, 200,e);});

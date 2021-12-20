@@ -909,7 +909,7 @@ function handleCommand(line)
 		if (os.type()==="Linux") Directory+="/";
 		if (bTestnet)
 		{
-			Directory+="testnet3";
+			Directory+="testnet06nov2021";
 			if (os.type()==="Windows_NT") Directory+="\\";
 			if (os.type()==="Darwin") Directory+="/";
 			if (os.type()==="Linux") Directory+="/";

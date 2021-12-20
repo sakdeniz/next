@@ -17,7 +17,7 @@
 				"data_dir_windows":"NavCoin4",
 				"data_dir_osx":"NavCoin4",
 				"data_dir_linux":".navcoin4",
-				"testnet_dir":"testnet3",
+				"testnet_dir":"testnet06nov2021",
 				"daemon_file_windows":"navcoind.exe",
 				"daemon_file_osx":"navcoind",
 				"daemon_file_linux":"navcoind",

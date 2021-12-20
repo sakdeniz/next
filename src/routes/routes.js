@@ -27,6 +27,9 @@ import News from '../components/Dashboard/Views/News.vue'
 import Swap from '../components/Dashboard/Views/Swap.vue'
 import OpenAlias from '../components/Dashboard/Views/OpenAlias.vue'
 import ColdStaking from '../components/Dashboard/Views/ColdStaking.vue'
+import PrivateToken from '../components/Dashboard/Views/PrivateToken.vue'
+import NFT from '../components/Dashboard/Views/NFT.vue'
+import dotNAV from '../components/Dashboard/Views/dotNAV.vue'
 import About from '../components/Dashboard/Views/About.vue'
 
 const routes = [
@@ -121,6 +124,11 @@ const routes = [
         component: DAO
       },
       {
+        path: 'dotNAV',
+        name: 'dotNAV',
+        component: dotNAV
+      },
+      {
         path: 'meet-community',
         name: 'MeetCommunity',
         component: MeetCommunity
@@ -174,6 +182,16 @@ const routes = [
         path: 'cold-staking',
         name: 'ColdStaking',
         component: ColdStaking
+      },
+      {
+        path: 'private-token',
+        name: 'PrivateToken',
+        component: PrivateToken
+      },
+      {
+        path: 'nft',
+        name: 'NFT',
+        component: NFT
       },
       {
         path: 'about',
